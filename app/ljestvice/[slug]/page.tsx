@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { getGpStandings, type GpCategoryCode } from "@/lib/standings/gp";
 import { getAkademijaStandings } from "@/lib/standings/akademija";
@@ -49,13 +50,28 @@ export default async function StandingsPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
-      <div className="mb-6">
-        <span className="badge-title mb-2 inline-block">
-          Sezona {activeSeason.yearLabel}
-        </span>
-        <h1 className="font-display text-2xl font-bold text-navy">
-          {config.title}
-        </h1>
+      <div className="mb-6 flex items-center gap-4">
+        {config.system === "AKADEMIJA" && (
+          <Image
+            src="/logo-akademija.png"
+            alt="ŠK Dubrovnik Akademija"
+            width={64}
+            height={64}
+            className="h-16 w-16 flex-shrink-0"
+          />
+        )}
+        <div>
+          <span
+            className={`badge-title mb-2 inline-block ${
+              config.system === "AKADEMIJA" ? "bg-academy/15 text-academy" : ""
+            }`}
+          >
+            Sezona {activeSeason.yearLabel}
+          </span>
+          <h1 className="font-display text-2xl font-bold text-navy">
+            {config.title}
+          </h1>
+        </div>
       </div>
       <StandingsTable rows={rows ?? []} />
     </div>
