@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 const STATUS_LABELS: Record<string, string> = {
@@ -56,7 +57,9 @@ export default async function KalendarPage() {
                     {season.tournaments.map((t) => (
                       <tr key={t.id}>
                         <td className="px-4 py-3 font-medium text-navy">
-                          {t.name}
+                          <Link href={`/turniri/${t.id}`} className="hover:underline">
+                            {t.name}
+                          </Link>
                           {t.isFinal && <span className="badge-title ml-2">Finale</span>}
                         </td>
                         <td className="px-4 py-3 text-ink/70">

@@ -8,6 +8,8 @@ export const tournamentSchema = z.object({
   rounds: z.coerce.number().int().min(1).max(20),
   level: z.enum(["KLUPSKA", "NATJECATELJSKA", "VRHUNSKA"]).optional().or(z.literal("")),
   tempo: z.enum(["STANDARD", "RAPID", "BLITZ"]),
+  baseMinutes: z.coerce.number().int().min(1).max(180).optional().or(z.literal("")),
+  incrementSeconds: z.coerce.number().int().min(0).max(60).optional().or(z.literal("")),
   isFinal: z.coerce.boolean().default(false),
   isJuniorFinal: z.coerce.boolean().default(false),
   status: z

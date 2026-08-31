@@ -19,6 +19,8 @@ type TournamentFormProps = {
     isFinal?: boolean;
     isJuniorFinal?: boolean;
     status?: string;
+    baseMinutes?: number | null;
+    incrementSeconds?: number | null;
   };
 };
 
@@ -103,6 +105,33 @@ export function TournamentForm({
             <option value="RAPID">Rapid / ubrzani</option>
             <option value="BLITZ">Blitz / brzopotezni</option>
           </select>
+        </Field>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field
+          label="Osnovno vrijeme (minute)"
+          error={state.errors?.baseMinutes}
+          hint="npr. 10 za 10 minuta po igraču"
+        >
+          <input
+            type="number"
+            name="baseMinutes"
+            defaultValue={defaultValues.baseMinutes ?? ""}
+            className="input"
+          />
+        </Field>
+        <Field
+          label="Dodatak (sekunde po potezu)"
+          error={state.errors?.incrementSeconds}
+          hint="npr. 5 za +5 sek po potezu"
+        >
+          <input
+            type="number"
+            name="incrementSeconds"
+            defaultValue={defaultValues.incrementSeconds ?? ""}
+            className="input"
+          />
         </Field>
       </div>
 

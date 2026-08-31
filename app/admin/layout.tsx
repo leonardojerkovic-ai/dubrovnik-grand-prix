@@ -31,6 +31,9 @@ export default async function AdminLayout({
           <a href="/admin/tournaments" className="hover:text-crimson">
             Turniri
           </a>
+          <a href="/admin/announcements" className="hover:text-crimson">
+            Najave
+          </a>
           <a href="/admin/documents" className="hover:text-crimson">
             Dokumenti
           </a>

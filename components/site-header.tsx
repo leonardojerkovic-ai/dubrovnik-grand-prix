@@ -19,6 +19,7 @@ const NAV = [
   { href: "/o-nama", label: "O nama" },
   { href: "/faq", label: "FAQ" },
   { href: "/kalendar", label: "Kalendar" },
+  { href: "/najave", label: "Najave turnira" },
   { href: "/prijave", label: "Prijave na turnire" },
   { href: "/dokumenti", label: "Dokumenti" },
   { href: "/postani-clan", label: "Postani član" },

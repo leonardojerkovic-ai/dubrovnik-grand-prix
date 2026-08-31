@@ -48,6 +48,8 @@ export default async function EditTournamentPage({
           isFinal: tournament.isFinal,
           isJuniorFinal: tournament.isJuniorFinal,
           status: tournament.status,
+          baseMinutes: tournament.baseMinutes,
+          incrementSeconds: tournament.incrementSeconds,
         }}
       />
     </div>

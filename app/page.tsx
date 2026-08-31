@@ -96,7 +96,9 @@ export default async function HomePage() {
               <li key={t.id} className="flex items-center gap-4 px-4 py-3">
                 <RankBadge place={i + 1} />
                 <div className="flex-1">
-                  <p className="font-semibold text-navy">{t.name}</p>
+                  <Link href={`/turniri/${t.id}`} className="font-semibold text-navy hover:underline">
+                    {t.name}
+                  </Link>
                   <p className="text-sm text-ink/60">
                     {t.date.toLocaleDateString("hr-HR", {
                       day: "numeric",

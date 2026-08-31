@@ -237,6 +237,12 @@ model Tournament {
 
   tempo Tempo
 
+  // Stvarni tempo igre za prikaz (npr. "10 min + 5 sek po potezu") — Tempo
+  // enum gore ostaje za FT faktor u bodovnom izračunu (čl. 8 GP), ova dva
+  // polja su samo informativna za korisnike.
+  baseMinutes      Int?
+  incrementSeconds Int?
+
   isFinal       Boolean @default(false) // GP Finale / Prvenstvo Akademije
   isJuniorFinal Boolean @default(false) // Juniorsko GP Finale (samo GP sustav)
 
@@ -255,6 +261,7 @@ model Tournament {
 
   results       TournamentResult[]
   registrations TournamentRegistration[]
+  announcements Announcement[]
 
   @@index([seasonId, date])
   @@map("tournaments")
@@ -355,13 +362,14 @@ model Document {
 }
 
 model Announcement {
-  id           String   @id @default(cuid())
+  id           String      @id @default(cuid())
   title        String
-  body         String   @db.Text
-  publishedAt  DateTime @default(now())
+  body         String      @db.Text
+  publishedAt  DateTime    @default(now())
   tournamentId String?
+  tournament   Tournament? @relation(fields: [tournamentId], references: [id], onDelete: SetNull)
   seasonId     String?
-  season       Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  season       Season?     @relation(fields: [seasonId], references: [id], onDelete: SetNull)
 
   @@map("announcements")
 }
