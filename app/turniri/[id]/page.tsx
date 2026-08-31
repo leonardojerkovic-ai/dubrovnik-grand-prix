@@ -23,6 +23,12 @@ function formatTimeControl(baseMinutes: number | null, incrementSeconds: number 
   return `${baseMinutes} min${inc > 0 ? ` + ${inc} sek/potez` : ""}`;
 }
 
+type PlayerEntry = SortablePlayerEntry & {
+  id: string;
+  rank: number | null;
+  gpPoints: number | null;
+};
+
 export default async function TournamentDetailPage({
   params,
 }: {
@@ -34,6 +40,12 @@ export default async function TournamentDetailPage({
       season: true,
       registrations: {
         where: { status: "PRIJAVLJEN" },
+        include: { player: { include: { ratingsCurrent: true } } },
+      },
+      // Igrače koje je admin unio kroz rezultate (npr. odigrani turnir bez
+      // da su se svi prethodno samostalno prijavili online) treba prikazati
+      // isto kao i one koji su se sami prijavili — spajamo oba izvora niže.
+      results: {
         include: { player: { include: { ratingsCurrent: true } } },
       },
     },
@@ -48,16 +60,50 @@ export default async function TournamentDetailPage({
         ? "rapid"
         : "blitz";
 
-  const entries: (SortablePlayerEntry & { id: string })[] =
-    tournament.registrations.map((r) => ({
+  // Spoji igrače iz samoprijava I admin-unesenih rezultata, po playerId
+  // (bez duplikata) — rezultat (rank/bodovi), ako postoji, ide uz igrača.
+  const playerMap = new Map<string, PlayerEntry>();
+
+  for (const r of tournament.registrations) {
+    playerMap.set(r.player.id, {
       id: r.player.id,
       firstName: r.player.firstName,
       lastName: r.player.lastName,
       title: r.player.title,
       rating: r.player.ratingsCurrent?.[ratingField] ?? null,
-    }));
+      rank: null,
+      gpPoints: null,
+    });
+  }
 
-  const sortedPlayers = sortPlayersByRatingTitleSurname(entries);
+  for (const res of tournament.results) {
+    const existing = playerMap.get(res.player.id);
+    playerMap.set(res.player.id, {
+      id: res.player.id,
+      firstName: res.player.firstName,
+      lastName: res.player.lastName,
+      title: res.player.title,
+      rating: existing?.rating ?? res.player.ratingsCurrent?.[ratingField] ?? null,
+      rank: res.rank,
+      gpPoints: res.gpPoints,
+    });
+  }
+
+  const sortedPlayers = sortPlayersByRatingTitleSurname(Array.from(playerMap.values()));
+  // Ako turnir ima unesene rezultate, prirodnije je poredati po plasmanu
+  // (rank) nego po rejtingu — rezultat je "istinitiji" pokazatelj od
+  // prijave. Rejting-sort i dalje vrijedi za igrače bez rezultata (koji su
+  // samo prijavljeni, turnir se još nije odigrao).
+  const hasAnyResults = tournament.results.length > 0;
+  const displayPlayers = hasAnyResults
+    ? [...sortedPlayers].sort((a, b) => {
+        if (a.rank == null && b.rank == null) return 0;
+        if (a.rank == null) return 1; // bez rezultata idu na kraj
+        if (b.rank == null) return -1;
+        return a.rank - b.rank;
+      })
+    : sortedPlayers;
+
   const timeControl = formatTimeControl(tournament.baseMinutes, tournament.incrementSeconds);
 
   return (
@@ -107,10 +153,10 @@ export default async function TournamentDetailPage({
       </dl>
 
       <h2 className="font-display text-lg font-bold text-navy mb-3">
-        Prijavljeni igrači ({sortedPlayers.length})
+        {hasAnyResults ? "Sudionici" : "Prijavljeni igrači"} ({displayPlayers.length})
       </h2>
 
-      {sortedPlayers.length === 0 ? (
+      {displayPlayers.length === 0 ? (
         <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
           Još nema prijava za ovaj turnir.
         </p>
@@ -122,12 +168,17 @@ export default async function TournamentDetailPage({
                 <th className="px-3 py-2 w-10">#</th>
                 <th className="px-4 py-2">Igrač</th>
                 <th className="px-4 py-2 text-right font-mono">Rejting</th>
+                {hasAnyResults && (
+                  <th className="px-4 py-2 text-right font-mono">GP bodovi</th>
+                )}
               </tr>
             </thead>
             <tbody className="divide-y divide-navy/10">
-              {sortedPlayers.map((p, i) => (
+              {displayPlayers.map((p, i) => (
                 <tr key={p.id}>
-                  <td className="px-3 py-2 text-ink/50 font-mono">{i + 1}.</td>
+                  <td className="px-3 py-2 text-ink/50 font-mono">
+                    {p.rank ?? i + 1}.
+                  </td>
                   <td className="px-4 py-2 font-medium text-navy">
                     {p.title !== "NONE" && (
                       <span className="badge-title mr-2">{p.title}</span>
@@ -137,6 +188,11 @@ export default async function TournamentDetailPage({
                   <td className="px-4 py-2 text-right font-mono tabular-nums">
                     {p.rating ?? 0}
                   </td>
+                  {hasAnyResults && (
+                    <td className="px-4 py-2 text-right font-mono tabular-nums">
+                      {p.gpPoints ?? "—"}
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
