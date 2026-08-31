@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
 
-export default function PrijavaPage() {
+function PrijavaForm() {
   const params = useSearchParams();
   const callbackUrl = params.get("callbackUrl") ?? "/";
   const [email, setEmail] = useState("");
@@ -84,6 +84,7 @@ export default function PrijavaPage() {
       >
         Nastavi s Google računom
       </button>
+
       <p className="mt-4 text-sm text-ink/60">
         Nemaš račun?{" "}
         <a href="/registracija" className="text-navy underline">
@@ -91,5 +92,13 @@ export default function PrijavaPage() {
         </a>
       </p>
     </div>
+  );
+}
+
+export default function PrijavaPage() {
+  return (
+    <Suspense fallback={null}>
+      <PrijavaForm />
+    </Suspense>
   );
 }
