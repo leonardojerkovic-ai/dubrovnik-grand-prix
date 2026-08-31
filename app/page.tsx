@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 import { RankBadge } from "@/components/rank-badge";
 
@@ -29,6 +30,14 @@ export default async function HomePage() {
       <section className="relative overflow-hidden bg-navy text-paper">
         <div className="absolute inset-0 bg-checker-pattern bg-[length:40px_40px] opacity-[0.04]" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
+          <Image
+            src="/logo.png"
+            alt="ŠK Dubrovnik Grand Prix"
+            width={112}
+            height={112}
+            className="mb-6 h-24 w-24 md:h-28 md:w-28"
+            priority
+          />
           <div className="mb-4 flex flex-wrap gap-2">
             {gpSeason && (
               <span className="badge-title">Dubrovnik GP — sezona {gpSeason.yearLabel}</span>
