@@ -1,0 +1,361 @@
+// ============================================================================
+// Dubrovnik Grand Prix — Prisma shema
+// Provider: PostgreSQL (Supabase)
+// ============================================================================
+//
+// Supabase zahtijeva DVA connection stringa:
+//   DATABASE_URL — pooled konekcija preko PgBouncera (port 6543), koristi je
+//                  aplikacija u produkciji (Vercel serverless funkcije)
+//   DIRECT_URL   — direktna konekcija (port 5432), koristi je Prisma ISKLJUČIVO
+//                  za migracije (`prisma migrate`), jer PgBouncer u transaction
+//                  modu ne podržava neke DDL naredbe
+//
+// Oba stringa se nalaze u Supabase dashboardu: Project Settings -> Database
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ----------------------------------------------------------------------------
+// ENUMI
+// ----------------------------------------------------------------------------
+
+enum Role {
+  PLAYER
+  ADMIN
+  GP_MANAGER // voditelj GP-a / voditelj natjecanja Akademije (čl. 26 / čl. 21)
+}
+
+enum Title {
+  GM
+  IM
+  FM
+  CM
+  WGM
+  WIM
+  WFM
+  WCM
+  MK // majstorski kandidat
+  I
+  II
+  III
+  IV
+  V
+  NONE
+}
+
+enum Gender {
+  M
+  F
+}
+
+enum SystemType {
+  GP        // Dubrovnik Grand Prix (glavni sustav)
+  AKADEMIJA // Grand Prix Akademije (odvojen sustav, čl. 2 GP Akademije)
+}
+
+enum TournamentLevel {
+  KLUPSKA        // FC = 1.00
+  NATJECATELJSKA // FC = 1.25
+  VRHUNSKA       // FC = 1.50
+}
+
+enum Tempo {
+  STANDARD // FT = 1.00
+  RAPID    // FT = 0.90
+  BLITZ    // FT = 0.75
+}
+
+enum RatingType {
+  STANDARD
+  RAPID
+  BLITZ
+}
+
+enum TournamentFormat {
+  SWISS
+  ROUND_ROBIN
+}
+
+enum TournamentStatus {
+  NAJAVA
+  PRIJAVE_OTVORENE
+  U_TIJEKU
+  ZAVRSEN
+}
+
+enum RegistrationStatus {
+  PRIJAVLJEN
+  OTKAZAN
+  NA_CEKANJU
+}
+
+enum DocumentCategory {
+  PRAVILNIK
+  ZAPISNIK
+  OSTALO
+}
+
+// ----------------------------------------------------------------------------
+// KORISNICI I IGRAČI
+// ----------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String? // null ako se korisnik prijavljuje isključivo preko Googlea
+  googleId      String?  @unique
+  role          Role     @default(PLAYER)
+  emailVerified DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  player Player? // 1:1 — korisnički račun povezan s profilom igrača
+
+  @@map("users")
+}
+
+model Player {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  fideId        String?  @unique
+  title         Title    @default(NONE)
+  gender        Gender
+  birthYear     Int       // godište — koristi se za GP dobne kategorije (U12/U16/U20), čl. 22 GP: "prema godištu"
+  birthDate     DateTime? // točan datum rođenja — potreban za Akademiju čl. 3 ("nije navršio 14 godina" = točan datum, ne godište)
+  isClubMember  Boolean  @default(false) // "Članstvo u ŠK Dubrovnik DA/NE" — na dan turnira se koristi snapshot, ovo je TRENUTNO stanje
+  memberSince   DateTime?
+  photoUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
+
+  ratingsCurrent   PlayerRatingCurrent?
+  ratingsHistory   PlayerRatingSnapshot[]
+  results          TournamentResult[]
+  registrations    TournamentRegistration[]
+  categoryHistory  PlayerCategoryMembership[]
+  hallOfFameEntries HallOfFame[]
+
+  @@index([lastName, firstName])
+  @@map("players")
+}
+
+/// Trenutni (najnoviji) rejting — brzi lookup za profil igrača, javne stranice.
+/// Ažurira se ručno svakog 1. u mjesecu; svaki update ISTOVREMENO kreira
+/// zapis u PlayerRatingSnapshot (povijest se nikad ne briše/prepisuje).
+model PlayerRatingCurrent {
+  playerId String @id
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  standard Int?
+  rapid    Int?
+  blitz    Int?
+
+  updatedAt DateTime @updatedAt
+
+  @@map("player_ratings_current")
+}
+
+/// Povijesni snapshot rejtinga na određeni datum (mjesečni unos admina).
+/// Za izračun FR (čl. 7 GP pravilnika) uzima se snapshot s najvećim
+/// snapshotDate <= datum turnira, za odgovarajući ratingType (tempo turnira).
+model PlayerRatingSnapshot {
+  id           String     @id @default(cuid())
+  playerId     String
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  ratingType   RatingType
+  ratingValue  Int
+  snapshotDate DateTime // datum na koji je vrijednost bila važeća (npr. 1. u mjesecu)
+  createdAt    DateTime   @default(now())
+
+  @@index([playerId, ratingType, snapshotDate])
+  @@map("player_rating_snapshots")
+}
+
+// ----------------------------------------------------------------------------
+// SEZONE, TURNIRI, REZULTATI
+// ----------------------------------------------------------------------------
+
+model Season {
+  id         String     @id @default(cuid())
+  system     SystemType
+  yearLabel  String     // npr. "2027" (GP) ili "2026/27" (Akademija)
+  startDate  DateTime
+  endDate    DateTime
+  isActive   Boolean    @default(false)
+  createdAt  DateTime   @default(now())
+
+  tournaments    Tournament[]
+  hallOfFame     HallOfFame[]
+  announcements  Announcement[]
+  documents      Document[]
+
+  @@unique([system, yearLabel])
+  @@map("seasons")
+}
+
+model Tournament {
+  id       String @id @default(cuid())
+  seasonId String
+  season   Season @relation(fields: [seasonId], references: [id])
+
+  name   String
+  date   DateTime
+  format TournamentFormat
+  rounds Int
+
+  // Polja specifična za GP (null za Akademiju):
+  level TournamentLevel?
+
+  tempo Tempo
+
+  isFinal       Boolean @default(false) // GP Finale / Prvenstvo Akademije
+  isJuniorFinal Boolean @default(false) // Juniorsko GP Finale (samo GP sustav)
+
+  // Ograničenje prava nastupa (čl. 14 GP): npr. ["U16"], ["ZENE"], null = otvoren svima
+  restrictedCategories Json?
+
+  status TournamentStatus @default(NAJAVA)
+
+  minPlayersMet Boolean @default(false) // izračunato nakon unosa rezultata (N>=6 za GP / N>=7 za Akademiju + odigran predviđen broj kola)
+
+  registrationOpensAt  DateTime?
+  registrationClosesAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  results       TournamentResult[]
+  registrations TournamentRegistration[]
+
+  @@index([seasonId, date])
+  @@map("tournaments")
+}
+
+model TournamentResult {
+  id           String @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  playerId     String
+  player       Player     @relation(fields: [playerId], references: [id])
+
+  rank        Int     // R — konačni plasman
+  gamesPlayed Boolean @default(true) // false = igrač nije odigrao nijednu partiju -> ne ulazi u N
+
+  // Rejting korišten za FR izračun (GP) — automatski popunjen iz najbližeg
+  // PlayerRatingSnapshot prije/na datum turnira, admin može override-ati ručno.
+  ratingSnapshotUsed Int?
+  ratingOverridden   Boolean @default(false)
+
+  gpPoints Int? // izračunati GP bodovi za ovaj rezultat (spremljeno radi audit traga)
+
+  isLocked  Boolean  @default(false) // zaključano 7 dana nakon objave (čl. 29 GP / čl. 22 Akademija)
+  lockedAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tournamentId, playerId])
+  @@index([playerId])
+  @@map("tournament_results")
+}
+
+model TournamentRegistration {
+  id           String   @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  playerId     String
+  player       Player     @relation(fields: [playerId], references: [id])
+
+  status       RegistrationStatus @default(PRIJAVLJEN)
+  registeredAt DateTime            @default(now())
+
+  @@unique([tournamentId, playerId])
+  @@map("tournament_registrations")
+}
+
+// ----------------------------------------------------------------------------
+// KATEGORIJE
+// ----------------------------------------------------------------------------
+
+/// Referentni popis ljestvica po sustavu.
+/// GP: OPCI, ZENE, U20, U16, U12, S50, S65, U1800
+/// Akademija: UKUPNO, U08, U10, U12, ZENE
+model StandingsCategory {
+  id     String     @id @default(cuid())
+  system SystemType
+  code   String // npr. "U16", "S65", "OPCI"
+  name   String
+
+  @@unique([system, code])
+  @@map("standings_categories")
+}
+
+/// Snapshot pripadnosti kategoriji NA DAN turnira — čl. 22 GP izričito kaže
+/// da promjena pripadnosti tijekom sezone ne djeluje retroaktivno, pa se
+/// pripadnost ne smije izvoditi "live" iz birthYear/rating u trenutku upita,
+/// nego mora biti zabilježena po turniru.
+model PlayerCategoryMembership {
+  id           String @id @default(cuid())
+  playerId     String
+  player       Player @relation(fields: [playerId], references: [id])
+  tournamentId String
+  categoryCode String // referencira StandingsCategory.code
+
+  @@unique([playerId, tournamentId, categoryCode])
+  @@map("player_category_memberships")
+}
+
+// ----------------------------------------------------------------------------
+// SADRŽAJ: DOKUMENTI, NAJAVE, HALL OF FAME
+// ----------------------------------------------------------------------------
+
+model Document {
+  id       String           @id @default(cuid())
+  title    String
+  fileUrl  String
+  category DocumentCategory
+  seasonId String?
+  season   Season?          @relation(fields: [seasonId], references: [id])
+
+  createdAt DateTime @default(now())
+
+  @@map("documents")
+}
+
+model Announcement {
+  id           String   @id @default(cuid())
+  title        String
+  body         String   @db.Text
+  publishedAt  DateTime @default(now())
+  tournamentId String?
+  seasonId     String?
+  season       Season?  @relation(fields: [seasonId], references: [id])
+
+  @@map("announcements")
+}
+
+model HallOfFame {
+  id           String   @id @default(cuid())
+  seasonId     String
+  season       Season   @relation(fields: [seasonId], references: [id])
+  categoryCode String
+  playerId     String
+  player       Player   @relation(fields: [playerId], references: [id])
+  place        Int      // 1, 2, 3
+  pointsTotal  Int
+
+  @@unique([seasonId, categoryCode, place])
+  @@map("hall_of_fame")
+}
