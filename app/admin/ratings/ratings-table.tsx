@@ -24,13 +24,22 @@ export function RatingsTable({ players }: { players: PlayerRow[] }) {
   const [feedback, setFeedback] = useState<{ ok: boolean; text: string } | null>(null);
 
   function update(playerId: string, field: "standard" | "rapid" | "blitz", raw: string) {
-    setValues((prev) => ({
-      ...prev,
-      [playerId]: {
-        ...prev[playerId],
-        [field]: raw === "" ? null : Number(raw),
-      },
-    }));
+    setValues((prev) => {
+      const existing: RatingRow = prev[playerId] ?? {
+        playerId,
+        standard: null,
+        rapid: null,
+        blitz: null,
+      };
+      return {
+        ...prev,
+        [playerId]: {
+          ...existing,
+          playerId,
+          [field]: raw === "" ? null : Number(raw),
+        },
+      };
+    });
   }
 
   function handleSave() {
