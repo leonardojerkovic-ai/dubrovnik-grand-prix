@@ -79,7 +79,7 @@ export function SiteHeader() {
             onClick={() => setMobileOpen((v) => !v)}
             aria-label={mobileOpen ? "Zatvori izbornik" : "Otvori izbornik"}
             aria-expanded={mobileOpen}
-            className="lg:hidden flex h-9 w-9 flex-col items-center justify-center gap-1 rounded-md border border-navy/20"
+            className="lg:hidden flex h-11 w-11 flex-col items-center justify-center gap-1 rounded-md border border-navy/20"
           >
             <span
               className={`block h-0.5 w-5 bg-navy transition-transform ${mobileOpen ? "translate-y-[5px] rotate-45" : ""}`}
@@ -104,7 +104,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded px-2 py-1.5 text-sm text-navy hover:bg-sky-light"
+                className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light active:bg-sky-light"
               >
                 {item.label}
               </Link>
@@ -120,7 +120,7 @@ export function SiteHeader() {
                 key={item.href}
                 href={item.href}
                 onClick={() => setMobileOpen(false)}
-                className="rounded px-2 py-1.5 text-sm text-navy hover:bg-sky-light"
+                className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light active:bg-sky-light"
               >
                 {item.label}
               </Link>
