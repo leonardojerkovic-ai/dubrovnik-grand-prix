@@ -122,6 +122,20 @@ export async function updateSeason(
 }
 
 export async function deleteSeason(seasonId: string): Promise<void> {
-  await prisma.season.delete({ where: { id: seasonId } });
+  try {
+    await prisma.season.delete({ where: { id: seasonId } });
+  } catch (err: unknown) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code?: string }).code === "P2003"
+    ) {
+      throw new Error(
+        "Ova sezona ima turnire — prvo obriši sve turnire te sezone, pa onda sezonu."
+      );
+    }
+    throw err;
+  }
   revalidatePath("/admin/seasons");
 }

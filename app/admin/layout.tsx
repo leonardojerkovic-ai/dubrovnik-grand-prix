@@ -37,6 +37,9 @@ export default async function AdminLayout({
           <a href="/admin/hall-of-fame" className="hover:text-crimson">
             Hall of Fame
           </a>
+          <a href="/admin/users" className="hover:text-crimson">
+            Korisnici
+          </a>
         </nav>
       </div>
       {children}

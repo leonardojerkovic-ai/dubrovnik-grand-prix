@@ -118,8 +118,23 @@ model User {
   updatedAt     DateTime @updatedAt
 
   player Player? // 1:1 — korisnički račun povezan s profilom igrača
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
+}
+
+/// Token za reset lozinke — jednokratan, s rokom trajanja.
+model PasswordResetToken {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
 model Player {
@@ -138,7 +153,7 @@ model Player {
   updatedAt     DateTime @updatedAt
 
   userId String? @unique
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   ratingsCurrent   PlayerRatingCurrent?
   ratingsHistory   PlayerRatingSnapshot[]
@@ -208,7 +223,9 @@ model Season {
 model Tournament {
   id       String @id @default(cuid())
   seasonId String
-  season   Season @relation(fields: [seasonId], references: [id])
+  // Restrict: ne dopušta brisanje sezone dok god ima turnira (zaštita od
+  // slučajnog masovnog brisanja) — admin mora prvo obrisati turnire pojedinačno.
+  season   Season @relation(fields: [seasonId], references: [id], onDelete: Restrict)
 
   name   String
   date   DateTime
@@ -246,9 +263,11 @@ model Tournament {
 model TournamentResult {
   id           String @id @default(cuid())
   tournamentId String
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  // Cascade: rezultat bez turnira nema smisla — brisanjem turnira brišu se i njegovi rezultati.
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   playerId     String
-  player       Player     @relation(fields: [playerId], references: [id])
+  // Cascade: brisanje igrača (rijetka, svjesna admin radnja) briše i njegove rezultate.
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   rank        Int     // R — konačni plasman
   gamesPlayed Boolean @default(true) // false = igrač nije odigrao nijednu partiju -> ne ulazi u N
@@ -274,9 +293,9 @@ model TournamentResult {
 model TournamentRegistration {
   id           String   @id @default(cuid())
   tournamentId String
-  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   playerId     String
-  player       Player     @relation(fields: [playerId], references: [id])
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
 
   status       RegistrationStatus @default(PRIJAVLJEN)
   registeredAt DateTime            @default(now())
@@ -309,7 +328,7 @@ model StandingsCategory {
 model PlayerCategoryMembership {
   id           String @id @default(cuid())
   playerId     String
-  player       Player @relation(fields: [playerId], references: [id])
+  player       Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
   tournamentId String
   categoryCode String // referencira StandingsCategory.code
 
@@ -327,7 +346,8 @@ model Document {
   fileUrl  String
   category DocumentCategory
   seasonId String?
-  season   Season?          @relation(fields: [seasonId], references: [id])
+  // SetNull: brisanje sezone ne briše dokumente, samo im ukloni poveznicu na sezonu.
+  season   Season?          @relation(fields: [seasonId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
@@ -341,7 +361,7 @@ model Announcement {
   publishedAt  DateTime @default(now())
   tournamentId String?
   seasonId     String?
-  season       Season?  @relation(fields: [seasonId], references: [id])
+  season       Season?  @relation(fields: [seasonId], references: [id], onDelete: SetNull)
 
   @@map("announcements")
 }
@@ -349,10 +369,12 @@ model Announcement {
 model HallOfFame {
   id           String   @id @default(cuid())
   seasonId     String
-  season       Season   @relation(fields: [seasonId], references: [id])
+  // Restrict: povijesni zapisi pobjednika se ne smiju izgubiti slučajnim brisanjem sezone.
+  season       Season   @relation(fields: [seasonId], references: [id], onDelete: Restrict)
   categoryCode String
   playerId     String
-  player       Player   @relation(fields: [playerId], references: [id])
+  // Restrict: ne dopušta brisanje igrača koji ima Hall of Fame zapis bez svjesne odluke.
+  player       Player   @relation(fields: [playerId], references: [id], onDelete: Restrict)
   place        Int      // 1, 2, 3
   pointsTotal  Int
 

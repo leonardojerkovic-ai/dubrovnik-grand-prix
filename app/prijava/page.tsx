@@ -85,6 +85,12 @@ function PrijavaForm() {
         Nastavi s Google računom
       </button>
 
+      <p className="mt-2 text-sm text-ink/60">
+        <a href="/zaboravljena-lozinka" className="text-navy underline">
+          Zaboravljena lozinka?
+        </a>
+      </p>
+
       <p className="mt-4 text-sm text-ink/60">
         Nemaš račun?{" "}
         <a href="/registracija" className="text-navy underline">

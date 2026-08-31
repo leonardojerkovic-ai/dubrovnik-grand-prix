@@ -102,6 +102,20 @@ export async function updatePlayer(
 }
 
 export async function deletePlayer(playerId: string): Promise<void> {
-  await prisma.player.delete({ where: { id: playerId } });
+  try {
+    await prisma.player.delete({ where: { id: playerId } });
+  } catch (err: unknown) {
+    if (
+      typeof err === "object" &&
+      err !== null &&
+      "code" in err &&
+      (err as { code?: string }).code === "P2003"
+    ) {
+      throw new Error(
+        "Ovaj igrač ima Hall of Fame zapis — obriši prvo taj zapis (Admin → Hall of Fame) ako stvarno želiš izbrisati igrača."
+      );
+    }
+    throw err;
+  }
   revalidatePath("/admin/players");
 }

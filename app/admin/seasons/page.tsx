@@ -73,7 +73,7 @@ export default async function AdminSeasonsPage() {
                     className="inline"
                   >
                     <ConfirmDeleteButton
-                      confirmText={`Obrisati sezonu ${s.yearLabel}? Ovo briše i sve njene turnire i rezultate. Ova radnja se ne može poništiti.`}
+                      confirmText={`Obrisati sezonu ${s.yearLabel}? Moguće je samo ako sezona nema turnira.`}
                     />
                   </form>
                 </td>
