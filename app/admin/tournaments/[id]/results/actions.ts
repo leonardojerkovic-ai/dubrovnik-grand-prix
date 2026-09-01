@@ -20,6 +20,7 @@ import {
   type ScoringSnapshot,
 } from "@/lib/scoring/rulebook";
 import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
+import { wasClubMemberOn } from "@/lib/membership";
 
 export type ResultRow = {
   playerId: string;
@@ -75,6 +76,23 @@ export async function saveTournamentResults(
     const ineligiblePlayers: string[] = [];
     const recomputedPlayers: string[] = [];
     const ruleVersion = tournament.season.rulebookVersion;
+
+    // Članstvo NA DAN TURNIRA (čl. 4) — zapisuje se uz rezultat i poslije se
+    // ne mijenja. Naknadno učlanjenje ne djeluje retroaktivno.
+    const membershipPlayers = await prisma.player.findMany({
+      where: { id: { in: playedRows.map((r) => r.playerId) } },
+      select: {
+        id: true,
+        isClubMember: true,
+        memberSince: true,
+        memberUntil: true,
+      },
+    });
+    const membershipById = new Map(membershipPlayers.map((p) => [p.id, p]));
+    const memberOnDate = (playerId: string): boolean => {
+      const p = membershipById.get(playerId);
+      return p ? wasClubMemberOn(p, tournament.date) : false;
+    };
 
     if (tournament.season.system === "GP") {
       if (!tournament.level) {
@@ -209,6 +227,7 @@ export async function saveTournamentResults(
             playerId: row.playerId,
             rank: row.rank,
             gamesPlayed: true,
+            wasClubMember: memberOnDate(row.playerId),
             ratingSnapshotUsed: calc.ratingUsed,
             ratingOverridden: true,
             gpPoints: calc.points,
@@ -217,6 +236,7 @@ export async function saveTournamentResults(
           update: {
             rank: row.rank,
             gamesPlayed: true,
+            wasClubMember: memberOnDate(row.playerId),
             ratingSnapshotUsed: calc.ratingUsed,
             gpPoints: calc.points,
             scoringSnapshot: calc.snapshot,

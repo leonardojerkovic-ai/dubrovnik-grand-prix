@@ -147,8 +147,16 @@ model Player {
   gender        Gender
   birthYear     Int       // godište — koristi se za GP dobne kategorije (U12/U16/U20), čl. 22 GP: "prema godištu"
   birthDate     DateTime? // točan datum rođenja — potreban za Akademiju čl. 3 ("nije navršio 14 godina" = točan datum, ne godište)
-  isClubMember  Boolean  @default(false) // "Članstvo u ŠK Dubrovnik DA/NE" — na dan turnira se koristi snapshot, ovo je TRENUTNO stanje
+  /// TRENUTNO stanje članstva. Za ljestvice se NE koristi — čl. 4 traži
+  /// članstvo na dan početka turnira, pa se ono zapisuje po rezultatu
+  /// (TournamentResult.wasClubMember). Ovo polje služi za prikaz profila i
+  /// za pravo nastupa na završnim turnirima (čl. 11 Akademije).
+  isClubMember  Boolean  @default(false)
   memberSince   DateTime?
+  /// Datum prestanka članstva. Prazno = i dalje član. Bez ovoga se izlazak
+  /// iz kluba ne može zabilježiti, pa bi bivši član trajno ostajao "član"
+  /// za sve buduće turnire.
+  memberUntil   DateTime?
   photoUrl      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -288,6 +296,12 @@ model TournamentResult {
 
   rank        Int     // R — konačni plasman
   gamesPlayed Boolean @default(true) // false = igrač nije odigrao nijednu partiju -> ne ulazi u N
+
+  /// Je li igrač bio član ŠK Dubrovnik NA DAN TURNIRA — čl. 4. Zapisuje se
+  /// pri spremanju rezultata i poslije se ne mijenja. Ljestvice filtriraju
+  /// po ovome, a ne po Player.isClubMember: naknadno učlanjenje ne smije
+  /// retroaktivno uvrstiti igrača na već odigrane turnire.
+  wasClubMember Boolean @default(false)
 
   // Rejting korišten za FR izračun (GP) — automatski popunjen iz najbližeg
   // PlayerRatingSnapshot prije/na datum turnira, admin može override-ati ručno.

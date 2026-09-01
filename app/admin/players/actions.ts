@@ -22,6 +22,8 @@ function parseFormData(formData: FormData) {
     birthYear: formData.get("birthYear"),
     birthDate: formData.get("birthDate"),
     isClubMember: formData.get("isClubMember") === "on",
+    memberSince: formData.get("memberSince"),
+    memberUntil: formData.get("memberUntil"),
   };
 }
 
@@ -36,7 +38,9 @@ export async function createPlayer(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { fideId, birthDate, ...rest } = parsed.data;
+  const { fideId, birthDate, memberSince, memberUntil, ...rest } = parsed.data;
+  const toDate = (v: string | undefined) =>
+    v && v.length > 0 ? new Date(v) : null;
 
   try {
     await prisma.player.create({
@@ -44,6 +48,8 @@ export async function createPlayer(
         ...rest,
         fideId: fideId && fideId.length > 0 ? fideId : null,
         birthDate: birthDate && birthDate.length > 0 ? new Date(birthDate) : null,
+        memberSince: toDate(memberSince),
+        memberUntil: toDate(memberUntil),
       },
     });
   } catch (err: unknown) {
@@ -76,7 +82,9 @@ export async function updatePlayer(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { fideId, birthDate, ...rest } = parsed.data;
+  const { fideId, birthDate, memberSince, memberUntil, ...rest } = parsed.data;
+  const toDate = (v: string | undefined) =>
+    v && v.length > 0 ? new Date(v) : null;
 
   try {
     await prisma.player.update({
@@ -85,6 +93,8 @@ export async function updatePlayer(
         ...rest,
         fideId: fideId && fideId.length > 0 ? fideId : null,
         birthDate: birthDate && birthDate.length > 0 ? new Date(birthDate) : null,
+        memberSince: toDate(memberSince),
+        memberUntil: toDate(memberUntil),
       },
     });
   } catch (err: unknown) {

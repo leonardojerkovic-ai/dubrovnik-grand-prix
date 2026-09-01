@@ -55,7 +55,8 @@ export async function getAkademijaStandings(
 
   for (const t of season.tournaments) {
     for (const r of t.results) {
-      if (!r.player.isClubMember) continue; // čl. 4 — samo članovi na službenoj ljestvici
+      // čl. 4 — članstvo NA DAN TURNIRA, ne trenutno stanje.
+      if (!r.wasClubMember) continue;
 
       const entry = playerMap.get(r.playerId) ?? {
         player: {

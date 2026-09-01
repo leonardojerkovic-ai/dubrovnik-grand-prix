@@ -36,6 +36,16 @@ export const playerSchema = z.object({
   // Opcionalan — obavezan tek za Akademiju igrače (čl. 3), provjerava se posebno
   birthDate: z.string().optional().or(z.literal("")),
   isClubMember: z.coerce.boolean().default(false),
-});
+  // Datum učlanjenja — bez njega se članstvo na dan ranijeg turnira ne može
+  // provjeriti (čl. 4). memberUntil je prazan dok je igrač član.
+  memberSince: z.string().optional().or(z.literal("")),
+  memberUntil: z.string().optional().or(z.literal("")),
+}).refine(
+  (v) =>
+    !v.memberSince ||
+    !v.memberUntil ||
+    new Date(v.memberUntil) >= new Date(v.memberSince),
+  { message: "Datum prestanka ne može biti prije datuma učlanjenja", path: ["memberUntil"] }
+);
 
 export type PlayerFormValues = z.infer<typeof playerSchema>;

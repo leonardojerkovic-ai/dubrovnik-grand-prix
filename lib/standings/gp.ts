@@ -107,7 +107,8 @@ export async function getGpStandings(
 
   for (const t of relevantTournaments) {
     for (const r of t.results) {
-      if (!r.player.isClubMember) continue; // čl. 4 — samo članovi na službenim ljestvicama
+      // čl. 4 — članstvo NA DAN TURNIRA, ne trenutno stanje.
+      if (!r.wasClubMember) continue;
       if (
         !playerBelongsToCategory(
           r.player,

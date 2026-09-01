@@ -15,6 +15,8 @@ type PlayerFormProps = {
     birthYear?: number;
     birthDate?: Date | null;
     isClubMember?: boolean;
+    memberSince?: Date | null;
+    memberUntil?: Date | null;
   };
 };
 
@@ -36,9 +38,10 @@ function SubmitButton() {
 export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
   const [state, formAction] = useFormState(action, initialState);
 
-  const birthDateValue = defaultValues.birthDate
-    ? defaultValues.birthDate.toISOString().slice(0, 10)
-    : "";
+  const toInputDate = (d?: Date | null) =>
+    d ? d.toISOString().slice(0, 10) : "";
+
+  const birthDateValue = toInputDate(defaultValues.birthDate);
 
   return (
     <form action={formAction} className="grid max-w-xl gap-4">
@@ -124,6 +127,35 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
         />
         Član ŠK Dubrovnik
       </label>
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field
+          label="Član od"
+          name="memberSince"
+          error={state.errors?.memberSince}
+          hint="Bez ovog datuma članstvo na ranijim turnirima nije provjerljivo (čl. 4)."
+        >
+          <input
+            type="date"
+            name="memberSince"
+            defaultValue={toInputDate(defaultValues.memberSince)}
+            className="input"
+          />
+        </Field>
+        <Field
+          label="Član do"
+          name="memberUntil"
+          error={state.errors?.memberUntil}
+          hint="Ostavi prazno dok je igrač član."
+        >
+          <input
+            type="date"
+            name="memberUntil"
+            defaultValue={toInputDate(defaultValues.memberUntil)}
+            className="input"
+          />
+        </Field>
+      </div>
 
       <SubmitButton />
     </form>
