@@ -13,8 +13,13 @@ import {
 import {
   calculateFinalPoints,
   calculateQualifierPoints,
-  isEligibleForPoints,
 } from "@/lib/scoring/akademija/formulas";
+import {
+  buildAkademijaSnapshot,
+  buildGpSnapshot,
+  type ScoringSnapshot,
+} from "@/lib/scoring/rulebook";
+import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
 
 export type ResultRow = {
   playerId: string;
@@ -61,9 +66,15 @@ export async function saveTournamentResults(
     // bodove" (npr. čl. 3 kod Akademije) — razlikuje se od "nije odigrao".
     const pointsByPlayer = new Map<
       string,
-      { points: number | null; ratingUsed: number | null }
+      {
+        points: number | null;
+        ratingUsed: number | null;
+        snapshot: ScoringSnapshot;
+      }
     >();
     const ineligiblePlayers: string[] = [];
+    const recomputedPlayers: string[] = [];
+    const ruleVersion = tournament.season.rulebookVersion;
 
     if (tournament.season.system === "GP") {
       if (!tournament.level) {
@@ -89,7 +100,21 @@ export async function saveTournamentResults(
           tempo: tournament.tempo as Tempo,
           averageRating,
         });
-        pointsByPlayer.set(row.playerId, { points, ratingUsed: row.rating });
+        const snapshot = buildGpSnapshot({
+          playerCount: N,
+          rank: row.rank,
+          level: tournament.level as TournamentLevel,
+          tempo: tournament.tempo as Tempo,
+          averageRating,
+          points,
+          ruleVersion,
+        });
+
+        pointsByPlayer.set(row.playerId, {
+          points,
+          ratingUsed: row.rating,
+          snapshot,
+        });
       }
     } else {
       // AKADEMIJA
@@ -111,33 +136,60 @@ export async function saveTournamentResults(
 
       for (const row of playedRows) {
         const player = playerById.get(row.playerId);
+        const label = player
+          ? `${player.lastName} ${player.firstName}`
+          : `nepoznat igrač (${row.playerId})`;
 
-        let eligible = false;
-        if (player?.birthDate) {
-          eligible = isEligibleForPoints({
-            birthDate: player.birthDate,
-            seasonStartYear,
-            // Rapid rejting unesen za ovaj turnir koristi se kao aproksimacija
-            // "rejtinga na dan prvog turnira Akademije u sezoni" (čl. 3) —
-            // preciznije bi zahtijevalo praćenje kroz cijelu sezonu.
-            rapidRatingAtFirstTournament: row.rating,
-          });
+        // Pravo na bodove veže se uz PRVI nastup u sezoni i zaključava se
+        // (čl. 3). Kasniji rast rejtinga preko 1600 ne ukida već stečeno
+        // pravo, niti pad ispod 1600 pravo naknadno stvara.
+        const { isEligible, status } = await resolveAcademyEligibility({
+          seasonId: tournament.seasonId,
+          seasonStartDate: tournament.season.startDate,
+          tournamentId: tournament.id,
+          tournamentDate: tournament.date,
+          playerId: row.playerId,
+          birthDate: player?.birthDate ?? null,
+          rapidRatingAtThisTournament: row.rating,
+        });
+
+        if (status === "recomputed") {
+          recomputedPlayers.push(label);
         }
 
-        if (!eligible) {
-          ineligiblePlayers.push(
-            player
-              ? `${player.lastName} ${player.firstName}`
-              : `nepoznat igrač (${row.playerId})`
-          );
-          pointsByPlayer.set(row.playerId, { points: null, ratingUsed: row.rating });
+        if (!isEligible) {
+          ineligiblePlayers.push(label);
+          pointsByPlayer.set(row.playerId, {
+            points: null,
+            ratingUsed: row.rating,
+            snapshot: buildAkademijaSnapshot({
+              playerCount: N,
+              rank: row.rank,
+              isFinal: tournament.isFinal,
+              eligible: false,
+              points: null,
+              ruleVersion,
+            }),
+          });
           continue;
         }
 
         const points = tournament.isFinal
           ? calculateFinalPoints({ playerCount: N, rank: row.rank })
           : calculateQualifierPoints({ playerCount: N, rank: row.rank });
-        pointsByPlayer.set(row.playerId, { points, ratingUsed: row.rating });
+
+        pointsByPlayer.set(row.playerId, {
+          points,
+          ratingUsed: row.rating,
+          snapshot: buildAkademijaSnapshot({
+            playerCount: N,
+            rank: row.rank,
+            isFinal: tournament.isFinal,
+            eligible: true,
+            points,
+            ruleVersion,
+          }),
+        });
       }
     }
 
@@ -160,12 +212,14 @@ export async function saveTournamentResults(
             ratingSnapshotUsed: calc.ratingUsed,
             ratingOverridden: true,
             gpPoints: calc.points,
+            scoringSnapshot: calc.snapshot,
           },
           update: {
             rank: row.rank,
             gamesPlayed: true,
             ratingSnapshotUsed: calc.ratingUsed,
             gpPoints: calc.points,
+            scoringSnapshot: calc.snapshot,
           },
         });
       })
@@ -177,6 +231,11 @@ export async function saveTournamentResults(
     let message = `Spremljeno — bodovi izračunati za ${eligibleCount} igrača.`;
     if (ineligiblePlayers.length > 0) {
       message += ` Bez prava na bodove (čl. 3 — dob/rejting ili nepostavljen točan datum rođenja): ${ineligiblePlayers.join(", ")}.`;
+    }
+    if (recomputedPlayers.length > 0) {
+      message +=
+        ` UPOZORENJE: ovaj turnir je raniji od dosad zabilježenog prvog nastupa za: ${recomputedPlayers.join(", ")}.` +
+        " Pravo na bodove preračunato je prema njemu — provjerite rezultate tih igrača na kasnijim turnirima sezone.";
     }
 
     return { message };

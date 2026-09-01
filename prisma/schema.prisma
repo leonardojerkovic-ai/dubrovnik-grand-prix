@@ -162,6 +162,7 @@ model Player {
   registrations    TournamentRegistration[]
   categoryHistory  PlayerCategoryMembership[]
   hallOfFameEntries HallOfFame[]
+  academyEligibility AcademyEligibility[]
 
   @@index([lastName, firstName])
   @@map("players")
@@ -212,7 +213,14 @@ model Season {
   isActive   Boolean    @default(false)
   createdAt  DateTime   @default(now())
 
+  /// Verzija pravilnika po kojoj se boduje ova sezona, npr. "GP-2.2" ili
+  /// "AKD-1.1". Odvojena numeracija po sustavu — vidi lib/scoring/rulebook.ts.
+  /// Kopira se u svaki scoringSnapshot da se vidi po kojoj je verziji
+  /// rezultat nastao i ako se sezoni kasnije promijeni oznaka (čl. 30 GP).
+  rulebookVersion String?
+
   tournaments    Tournament[]
+  academyEligibility AcademyEligibility[]
   hallOfFame     HallOfFame[]
   announcements  Announcement[]
   documents      Document[]
@@ -263,6 +271,7 @@ model Tournament {
   results       TournamentResult[]
   registrations TournamentRegistration[]
   announcements Announcement[]
+  academyEligibilityFirst AcademyEligibility[]
 
   @@index([seasonId, date])
   @@map("tournaments")
@@ -286,6 +295,13 @@ model TournamentResult {
   ratingOverridden   Boolean @default(false)
 
   gpPoints Int? // izračunati GP bodovi za ovaj rezultat (spremljeno radi audit traga)
+
+  /// Kako su bodovi nastali: svi faktori, N, R, omjer i verzija pravilnika.
+  /// Oblik se razlikuje po sustavu (GP ima FR/FC/FT, Akademija nema) — vidi
+  /// ScoringSnapshot u lib/scoring/rulebook.ts. Bez ovoga se izmjena
+  /// pravilnika ne može razlikovati od ispravka pogreške (čl. 30 GP / čl. 23
+  /// Akademije) niti se prigovor po čl. 29 može provjeriti.
+  scoringSnapshot Json?
 
   isLocked  Boolean  @default(false) // zaključano 7 dana nakon objave (čl. 29 GP / čl. 22 Akademija)
   lockedAt  DateTime?
@@ -342,6 +358,40 @@ model PlayerCategoryMembership {
 
   @@unique([playerId, tournamentId, categoryCode])
   @@map("player_category_memberships")
+}
+
+/// Zaključano pravo na bodove u GP-u Akademije — čl. 3.
+///
+/// Pravo se utvrđuje NA DAN PRVOG NASTUPA igrača u sezoni (dob ispod 14 na
+/// 1. siječnja godine u kojoj sezona počinje + rapid rejting ispod 1600 ili
+/// bez rejtinga) i vrijedi cijelu sezonu. Ako bi se računalo uživo, igrač
+/// koji tijekom sezone prijeđe 1600 retroaktivno bi izgubio već osvojene
+/// bodove, što pravilnik ne predviđa.
+model AcademyEligibility {
+  id       String @id @default(cuid())
+  seasonId String
+  season   Season @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  playerId String
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  isEligible Boolean
+
+  /// Turnir na kojemu je pravo zaključano — prvi nastup igrača u sezoni.
+  /// Ako se naknadno unese raniji turnir, zapis se preračunava prema njemu.
+  firstTournamentId   String?
+  firstTournament     Tournament? @relation(fields: [firstTournamentId], references: [id], onDelete: SetNull)
+  firstTournamentDate DateTime
+
+  /// Vrijednosti na kojima se odluka temeljila — radi provjere prigovora.
+  rapidRatingAtFirst Int?
+  birthDateUsed      DateTime?
+
+  lockedAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([seasonId, playerId])
+  @@index([playerId])
+  @@map("academy_eligibility")
 }
 
 // ----------------------------------------------------------------------------
