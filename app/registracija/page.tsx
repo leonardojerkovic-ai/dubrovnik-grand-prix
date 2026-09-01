@@ -68,6 +68,32 @@ export default function RegistracijaPage() {
           </Field>
         </div>
 
+        <p className="rounded-md bg-sky-light/60 px-3 py-2 text-xs text-navy">
+          Ako imaš manje od 16 godina, ovaj račun u tvoje ime treba kreirati
+          roditelj ili zakonski skrbnik.
+        </p>
+
+        <label className="flex items-start gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="gdprConsent"
+            required
+            className="mt-0.5 h-4 w-4 rounded border-navy/30"
+          />
+          <span>
+            Slažem se s{" "}
+            <Link href="/privatnost" className="text-navy underline" target="_blank">
+              Politikom privatnosti
+            </Link>{" "}
+            i obradom mojih podataka u svrhe navedene u njoj.
+          </span>
+        </label>
+        {state.errors?.gdprConsent && (
+          <span className="text-xs text-crimson -mt-2">
+            {state.errors.gdprConsent[0]}
+          </span>
+        )}
+
         <SubmitButton />
       </form>
 

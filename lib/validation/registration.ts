@@ -7,6 +7,9 @@ export const registrationSchema = z.object({
   password: z.string().min(8, "Lozinka mora imati barem 8 znakova"),
   gender: z.enum(["M", "F"]),
   birthYear: z.coerce.number().int().min(1900).max(new Date().getFullYear()),
+  gdprConsent: z.literal("on", {
+    errorMap: () => ({ message: "Moraš prihvatiti Politiku privatnosti za registraciju." }),
+  }),
 });
 
 export type RegistrationFormValues = z.infer<typeof registrationSchema>;

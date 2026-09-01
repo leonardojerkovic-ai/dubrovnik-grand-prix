@@ -24,6 +24,13 @@ export type RegistrationState = {
  * istim imenom i godištem), spajanje se preskače i kreira se nov profil —
  * sigurnije je imati privremeni duplikat nego pogrešno spojiti račun s
  * tuđim profilom. Admin to onda ručno riješi kroz Prisma Studio.
+ *
+ * GDPR: registracija zahtijeva potvrdu privole (gdprConsent), vremenski
+ * žig privole se sprema na User.gdprConsentAt kao dokaz. Vidi /privatnost
+ * za napomenu o maloljetnicima — ovaj obrazac ne provjerava dob unesenu
+ * korisnikom (samostalna prijava), pa je odgovornost kluba osigurati da
+ * mlađi igrači budu registrirani od strane roditelja/skrbnika ili unešeni
+ * ručno kroz admin panel bez User računa.
  */
 export async function registerPlayer(
   _prevState: RegistrationState,
@@ -36,6 +43,7 @@ export async function registerPlayer(
     password: formData.get("password"),
     gender: formData.get("gender"),
     birthYear: formData.get("birthYear"),
+    gdprConsent: formData.get("gdprConsent"),
   });
 
   if (!parsed.success) {
@@ -51,6 +59,7 @@ export async function registerPlayer(
   }
 
   const passwordHash = await bcrypt.hash(password, 10);
+  const gdprConsentAt = new Date();
 
   // Traži postojeći, još nepovezani Player zapis koji odgovara imenu i godištu.
   const candidates = await prisma.player.findMany({
@@ -70,6 +79,7 @@ export async function registerPlayer(
         email,
         passwordHash,
         role: "PLAYER",
+        gdprConsentAt,
         player: { connect: { id: player.id } },
       },
     });
@@ -80,6 +90,7 @@ export async function registerPlayer(
         email,
         passwordHash,
         role: "PLAYER",
+        gdprConsentAt,
         player: {
           create: {
             firstName,

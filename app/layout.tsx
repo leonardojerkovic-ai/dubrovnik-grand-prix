@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
+import { SiteFooter } from "@/components/site-footer";
 
 const display = Space_Grotesk({
   subsets: ["latin", "latin-ext"],
@@ -36,6 +37,7 @@ export default function RootLayout({
       <body>
         <SiteHeader />
         <main>{children}</main>
+        <SiteFooter />
       </body>
     </html>
   );
