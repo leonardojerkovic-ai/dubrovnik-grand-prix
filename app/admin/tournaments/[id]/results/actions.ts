@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import {
@@ -37,6 +39,7 @@ export async function saveTournamentResults(
   tournamentId: string,
   rows: ResultRow[]
 ): Promise<SaveResultsState> {
+  await requireAdmin();
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
     include: { season: true },

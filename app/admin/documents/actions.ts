@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -19,6 +21,7 @@ export async function createDocument(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = documentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -39,6 +42,7 @@ export async function createDocument(
 }
 
 export async function deleteDocument(documentId: string): Promise<void> {
+  await requireAdmin();
   await prisma.document.delete({ where: { id: documentId } });
   revalidatePath("/admin/documents");
   revalidatePath("/dokumenti");

@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +29,7 @@ export async function createPlayer(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
@@ -66,6 +69,7 @@ export async function updatePlayer(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
@@ -102,6 +106,7 @@ export async function updatePlayer(
 }
 
 export async function deletePlayer(playerId: string): Promise<void> {
+  await requireAdmin();
   try {
     await prisma.player.delete({ where: { id: playerId } });
   } catch (err: unknown) {

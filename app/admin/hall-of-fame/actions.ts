@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -10,6 +12,7 @@ export async function createHallOfFameEntry(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = hallOfFameSchema.safeParse({
     seasonId: formData.get("seasonId"),
     categoryCode: formData.get("categoryCode"),
@@ -45,6 +48,7 @@ export async function createHallOfFameEntry(
 }
 
 export async function deleteHallOfFameEntry(id: string): Promise<void> {
+  await requireAdmin();
   await prisma.hallOfFame.delete({ where: { id } });
   revalidatePath("/admin/hall-of-fame");
   revalidatePath("/hall-of-fame");

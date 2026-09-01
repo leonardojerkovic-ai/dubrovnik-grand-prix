@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
@@ -15,6 +17,7 @@ export async function adminAddRegistration(
   tournamentId: string,
   playerId: string
 ): Promise<AdminRegistrationState> {
+  await requireAdmin();
   if (!playerId) {
     return { error: "Odaberi igrača." };
   }
@@ -33,6 +36,7 @@ export async function adminRemoveRegistration(
   registrationId: string,
   tournamentId: string
 ): Promise<void> {
+  await requireAdmin();
   await prisma.tournamentRegistration.update({
     where: { id: registrationId },
     data: { status: "OTKAZAN" },

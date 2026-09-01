@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +29,7 @@ export async function createTournament(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = tournamentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -54,6 +57,7 @@ export async function updateTournament(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = tournamentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -79,6 +83,7 @@ export async function updateTournament(
 }
 
 export async function deleteTournament(tournamentId: string): Promise<void> {
+  await requireAdmin();
   await prisma.tournament.delete({ where: { id: tournamentId } });
   revalidatePath("/admin/tournaments");
 }

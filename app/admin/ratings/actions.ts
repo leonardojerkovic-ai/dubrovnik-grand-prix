@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -21,6 +23,7 @@ export type SaveRatingsState = { message?: string; error?: string };
  *      se nikad ne briše — potrebna za FR izračun po datumu turnira)
  */
 export async function saveBulkRatings(rows: RatingRow[]): Promise<SaveRatingsState> {
+  await requireAdmin();
   const relevant = rows.filter(
     (r) => r.standard != null || r.rapid != null || r.blitz != null
   );

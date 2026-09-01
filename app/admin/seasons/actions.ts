@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/require-admin";
+
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -32,6 +34,7 @@ export async function createSeason(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = seasonSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -78,6 +81,7 @@ export async function updateSeason(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
+  await requireAdmin();
   const parsed = seasonSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -122,6 +126,7 @@ export async function updateSeason(
 }
 
 export async function deleteSeason(seasonId: string): Promise<void> {
+  await requireAdmin();
   try {
     await prisma.season.delete({ where: { id: seasonId } });
   } catch (err: unknown) {
