@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Najave turnira",
+  description: "Najave i obavijesti o turnirima Šahovskog kluba Dubrovnik.",
+};
 
 export default async function NajavePage() {
   const announcements = await prisma.announcement.findMany({

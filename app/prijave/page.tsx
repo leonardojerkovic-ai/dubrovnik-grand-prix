@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getCurrentPlayer } from "@/lib/current-player";
 import { RegisterButton } from "./register-button";
+
+export const metadata: Metadata = {
+  title: "Prijave na turnire",
+  description: "Prijavi se na turnire Dubrovnik Grand Prixa i GP Akademije.",
+};
 
 export default async function PrijavePage() {
   const player = await getCurrentPlayer();

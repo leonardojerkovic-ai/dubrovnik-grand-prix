@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Postani član",
+  description: "Kako postati član Šahovskog kluba Dubrovnik.",
+};
 
 export default function PostaniClanPage() {
   return (

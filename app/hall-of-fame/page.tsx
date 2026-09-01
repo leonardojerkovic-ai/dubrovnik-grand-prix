@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Hall of Fame",
+  description: "Pobjednici i najbolji plasmani kroz povijest Dubrovnik Grand Prixa.",
+};
 
 export default async function HallOfFamePage() {
   const entries = await prisma.hallOfFame.findMany({

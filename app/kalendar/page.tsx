@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Kalendar",
+  description: "Kalendar turnira Dubrovnik Grand Prixa i GP Akademije.",
+};
 
 const STATUS_LABELS: Record<string, string> = {
   NAJAVA: "Najava",

@@ -22,9 +22,29 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Dubrovnik Grand Prix — ŠK Dubrovnik",
+  metadataBase: new URL(
+    process.env.NEXTAUTH_URL ?? "https://dubrovnik-grand-prix.vercel.app"
+  ),
+  title: {
+    default: "Dubrovnik Grand Prix — ŠK Dubrovnik",
+    template: "%s — Dubrovnik Grand Prix",
+  },
   description:
     "Službene ljestvice, turniri i rezultati šahovskog kluba ŠK Dubrovnik.",
+  openGraph: {
+    title: "Dubrovnik Grand Prix — ŠK Dubrovnik",
+    description:
+      "Službene ljestvice, turniri i rezultati šahovskog kluba ŠK Dubrovnik.",
+    siteName: "Dubrovnik Grand Prix",
+    locale: "hr_HR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary",
+    title: "Dubrovnik Grand Prix — ŠK Dubrovnik",
+    description:
+      "Službene ljestvice, turniri i rezultati šahovskog kluba ŠK Dubrovnik.",
+  },
 };
 
 export default function RootLayout({

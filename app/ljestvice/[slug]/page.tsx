@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { getGpStandings, type GpCategoryCode } from "@/lib/standings/gp";
 import { getAkademijaStandings } from "@/lib/standings/akademija";
@@ -16,6 +17,15 @@ const SLUG_MAP: Record<string, { system: "GP" | "AKADEMIJA"; category?: GpCatego
   u1800: { system: "GP", category: "U1800", title: "U1800" },
   akademija: { system: "AKADEMIJA", title: "GP Akademije" },
 };
+
+export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+  const config = SLUG_MAP[params.slug];
+  if (!config) return {};
+  return {
+    title: `Ljestvica — ${config.title}`,
+    description: `Trenutni poredak na ljestvici ${config.title} Dubrovnik Grand Prixa.`,
+  };
+}
 
 export default async function StandingsPage({
   params,

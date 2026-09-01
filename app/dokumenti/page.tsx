@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Dokumenti",
+  description: "Pravilnici i službeni dokumenti Šahovskog kluba Dubrovnik.",
+};
 
 const CATEGORY_LABELS: Record<string, string> = {
   PRAVILNIK: "Pravilnici",

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import {
   sortPlayersByRatingTitleSurname,
@@ -28,6 +29,22 @@ type PlayerEntry = SortablePlayerEntry & {
   rank: number | null;
   gpPoints: number | null;
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: params.id },
+    select: { name: true, date: true },
+  });
+  if (!tournament) return {};
+  return {
+    title: tournament.name,
+    description: `Detalji, prijavljeni igrači i rezultati turnira ${tournament.name} (${tournament.date.toLocaleDateString("hr-HR")}).`,
+  };
+}
 
 export default async function TournamentDetailPage({
   params,
