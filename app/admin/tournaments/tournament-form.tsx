@@ -192,16 +192,19 @@ export function TournamentForm({
 function Field({
   label,
   error,
+  hint,
   children,
 }: {
   label: string;
   error?: string[];
+  hint?: string;
   children: React.ReactNode;
 }) {
   return (
     <label className="grid gap-1 text-sm font-medium text-navy">
       {label}
       {children}
+      {hint && <span className="text-xs font-normal text-ink/60">{hint}</span>}
       {error && <span className="text-xs font-normal text-crimson">{error[0]}</span>}
     </label>
   );
