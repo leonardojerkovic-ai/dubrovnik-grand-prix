@@ -5,6 +5,13 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "./prisma";
 
+/**
+ * Koliko dugo se rola iz JWT-a smatra svježom prije ponovne provjere u bazi.
+ * Kompromis između brzine (bez upita pri svakom zahtjevu) i toga da
+ * promjena ovlasti proradi bez odjave korisnika.
+ */
+const ROLE_REFRESH_MS = 60_000;
+
 export const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
@@ -42,9 +49,31 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
+      // Prijava: rola dolazi izravno iz authorize()/adaptera.
       if (user) {
         token.role = (user as { role?: string }).role ?? "PLAYER";
+        token.roleCheckedAt = Date.now();
+        return token;
       }
+
+      // Sesija je JWT, pa bi rola upisana pri prijavi ostala zamrznuta do
+      // isteka tokena (zadano 30 dana). Oduzimanje admin prava tako ne bi
+      // odmah djelovalo. Zato se rola periodički osvježava iz baze —
+      // najviše jednom u ROLE_REFRESH_MS, da se ne radi upit pri svakom
+      // getServerSession().
+      const lastCheck =
+        typeof token.roleCheckedAt === "number" ? token.roleCheckedAt : 0;
+
+      if (token.email && Date.now() - lastCheck > ROLE_REFRESH_MS) {
+        const dbUser = await prisma.user.findUnique({
+          where: { email: token.email as string },
+          select: { role: true },
+        });
+        // Obrisan korisnik pada na PLAYER — nikad ne zadržava ovlasti.
+        token.role = dbUser?.role ?? "PLAYER";
+        token.roleCheckedAt = Date.now();
+      }
+
       return token;
     },
     async session({ session, token }) {
