@@ -10,8 +10,8 @@ type ValidationIssue = { row: number; message: string };
 function parseCsv(text: string): ResultRow[] {
   const lines = text.trim().split(/\r?\n/).filter(Boolean);
   if (!lines.length) return [];
-  const delimiter = lines[0].includes(";") ? ";" : ",";
-  const first = lines[0].toLowerCase();
+  const delimiter = lines[0]?.includes(";") ? ";" : ",";
+  const first = lines[0]?.toLowerCase() ?? "";
   const start = /player|igra|rank|mjesto/.test(first) ? 1 : 0;
   return lines.slice(start).map((line, index) => {
     const c = line.split(delimiter).map((x) => x.trim().replace(/^"|"$/g, ""));
