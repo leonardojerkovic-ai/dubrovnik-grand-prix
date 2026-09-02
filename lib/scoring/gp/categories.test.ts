@@ -85,3 +85,24 @@ describe("isInU1800Category", () => {
     expect(isInU1800Category(undefined)).toBe(true);
   });
 });
+
+describe("U1800 — rejting tempa turnira (čl. 22)", () => {
+  it("koristi rejting koji mu je predan, bez obzira na tempo", () => {
+    expect(isInU1800Category(1799)).toBe(true);
+    expect(isInU1800Category(1800)).toBe(false);
+    expect(isInU1800Category(1801)).toBe(false);
+  });
+
+  it("igrač bez rejtinga tog tempa računa se kao 1400 i pripada U1800", () => {
+    expect(isInU1800Category(null)).toBe(true);
+    expect(isInU1800Category(undefined)).toBe(true);
+  });
+
+  it("isti igrač može pripadati na jednom tempu, a ne na drugom", () => {
+    // standard 1850, rapid 1650 — namjerna posljedica pravila iz čl. 22
+    const standardRating = 1850;
+    const rapidRating = 1650;
+    expect(isInU1800Category(standardRating)).toBe(false);
+    expect(isInU1800Category(rapidRating)).toBe(true);
+  });
+});

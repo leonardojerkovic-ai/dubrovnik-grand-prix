@@ -13,11 +13,11 @@
  *   - rođen 2009. -> NIJE U12, NIJE U16, JEST U20 (2009>=2006)
  *   - rođen 2005. -> nijedna dobna kategorija (za sezonu 2026)
  *
- * Napomena: pripadnost kategoriji za pojedini turnir treba spremiti kao
- * snapshot na dan turnira (PlayerCategoryMembership u shemi), jer promjena
- * pripadnosti tijekom sezone ne djeluje retroaktivno (čl. 22 st. 3).
- * Ova funkcija samo računa "trenutnu" pripadnost za zadanu sezonu — poziva
- * se pri unosu rezultata turnira, ne naknadno.
+ * Napomena o retroaktivnosti (čl. 22 st. 3): dobne i veteranske kategorije
+ * ovise samo o godištu igrača i godini početka sezone. Oboje je nepromjenjivo
+ * tijekom sezone, pa izračun daje isti rezultat u siječnju i u prosincu i
+ * snapshot nije potreban. Rejtinška kategorija (U1800) jest promjenjiva, pa
+ * se za nju koristi rejting zabilježen uz rezultat turnira.
  */
 
 export type GpAgeCategory = "U12" | "U16" | "U20";
@@ -53,9 +53,8 @@ export function isInGpAgeCategory(
 
 /**
  * Veteranske kategorije — S50 i S65.
- * Nije definirano izvornim tekstom pravilnika (čl. 19 samo navodi
- * kategorije), pravilo potvrđeno naknadno: za sezonu s godinom početka G,
- * S50 obuhvaća sve rođene G−50 i ranije, S65 sve rođene G−65 i ranije.
+ * Čl. 22: za sezonu s godinom početka G, S50 obuhvaća sve rođene G−50 i
+ * ranije, S65 sve rođene G−65 i ranije.
  * Primjer za sezonu 2026: S50 = 1976. i ranije, S65 = 1961. i ranije.
  *
  * Kategorije su ugniježđene kao i dobne (U12/U16/U20): igrač koji
@@ -82,22 +81,28 @@ export function isInGpVeteranCategory(
 }
 
 /**
- * U1800 kategorija — izvodi se iz standardnog FIDE rejtinga.
- * Rejting koji se koristi je STANDARD (dosljedno s FR faktorom u čl. 7
- * koji za standard-tempo turnire koristi standardni rejting).
+ * U1800 kategorija — čl. 22.
  *
- * Potvrđeno: igrač BEZ standardnog rejtinga računa se kao 1400 za potrebe
- * bodovanja i kategorizacije (isto pravilo kao FR u čl. 7), pa automatski
- * pripada U1800. Napomena za UI sloj: na profilu igrača se takav rejting
- * PRIKAZUJE kao 0 (ne kao 1400) — to je čisto pitanje prikaza, ova funkcija
- * i cijeli bodovni engine i dalje interno koriste 1400.
+ * Koristi se FIDE rejting TEMPA TOG TURNIRA na dan njegova održavanja:
+ * standardni za standard, rapid za rapid, blitz za blitz. Dosljedno je to
+ * s faktorom FR iz čl. 7, koji uzima rejting istog tempa, i pravednije za
+ * natjecanje u kojemu većina turnira nije standardnog tempa — igrač se
+ * mjeri onom disciplinom u kojoj je toga dana igrao.
  *
- * @param standardRating standardni FIDE rejting igrača NA DAN TURNIRA
- *   (isti princip snapshot-a kao i za FR — ne trenutni rejting)
+ * Posljedica koju treba imati na umu: isti igrač može pripadati U1800 na
+ * rapid turniru, a ne pripadati na standardnom, ako mu se rejtinzi razlikuju
+ * preko granice. To NIJE greška nego namjera pravila.
+ *
+ * Igrač BEZ rejtinga tog tempa računa se kao 1400 (isto kao kod FR u čl. 7),
+ * pa automatski pripada U1800. Napomena za UI sloj: na profilu igrača takav
+ * se rejting PRIKAZUJE kao 0, ne kao 1400 — to je čisto pitanje prikaza.
+ *
+ * @param tempoRating FIDE rejting odgovarajućeg tempa NA DAN TURNIRA
+ *   (isti princip snapshota kao i za FR — ne trenutni rejting)
  */
 export function isInU1800Category(
-  standardRating: number | null | undefined
+  tempoRating: number | null | undefined
 ): boolean {
-  const effectiveRating = standardRating ?? 1400;
+  const effectiveRating = tempoRating ?? 1400;
   return effectiveRating < 1800;
 }
