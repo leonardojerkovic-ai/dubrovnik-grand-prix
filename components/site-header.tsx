@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { PRIMARY_NAV as NAV, SECONDARY_NAV } from "@/lib/nav";
 
 const LJESTVICE = [
   { href: "/ljestvice/opci-gp", label: "Opći GP" },
@@ -15,17 +16,6 @@ const LJESTVICE = [
   { href: "/ljestvice/akademija", label: "Akademija" },
 ];
 
-const NAV = [
-  { href: "/o-nama", label: "O nama" },
-  { href: "/faq", label: "FAQ" },
-  { href: "/igraci", label: "Igrači" },
-  { href: "/kalendar", label: "Kalendar" },
-  { href: "/najave", label: "Najave turnira" },
-  { href: "/prijave", label: "Prijave na turnire" },
-  { href: "/dokumenti", label: "Dokumenti" },
-  { href: "/postani-clan", label: "Postani član" },
-  { href: "/hall-of-fame", label: "Hall of Fame" },
-];
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -39,14 +29,13 @@ export function SiteHeader() {
           onClick={() => setMobileOpen(false)}
         >
           <span className="text-lg">ŠK Dubrovnik</span>
-          <span className="badge-title">Grand Prix</span>
         </Link>
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-5 text-sm font-medium text-navy">
           <div className="group relative">
             <button className="hover:text-crimson transition-colors">
-              Poredak po ljestvicama
+              Ljestvice
             </button>
             <div className="absolute left-0 top-full hidden group-hover:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]">
               {LJESTVICE.map((item) => (
@@ -117,7 +106,7 @@ export function SiteHeader() {
             Stranice
           </p>
           <div className="mb-4 grid gap-1">
-            {NAV.map((item) => (
+            {[...NAV, ...SECONDARY_NAV].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

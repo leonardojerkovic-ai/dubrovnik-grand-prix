@@ -1,13 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { prisma } from "@/lib/prisma";
-import { RankBadge } from "@/components/rank-badge";
 
 /**
  * Naslovnica: hero je stvarni, koristan sadržaj (nadolazeći turniri), ne
  * marketinški banner. Dohvaća SVE aktivne sezone (GP i/ili Akademija mogu
  * biti aktivne istovremeno) i kombinira njihove turnire kronološki.
  */
+const TEMPO_LABELS: Record<string, string> = {
+  STANDARD: "standard",
+  RAPID: "rapid",
+  BLITZ: "blitz",
+};
+
+const LEVEL_LABELS: Record<string, string> = {
+  KLUPSKA: "Klupska",
+  NATJECATELJSKA: "Natjecateljska",
+  VRHUNSKA: "Vrhunska",
+};
+
 export default async function HomePage() {
   const activeSeasons = await prisma.season.findMany({
     where: { isActive: true },
@@ -98,30 +109,54 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <h2 className="font-display text-2xl font-bold text-navy mb-6">
+        <h2 className="font-hero mb-4 text-2xl text-navy">
           Nadolazeći turniri
         </h2>
         {upcomingTournaments.length > 0 ? (
-          <ul className="divide-y divide-navy/10 rounded-lg border border-navy/10 bg-white">
-            {upcomingTournaments.map((t, i) => (
-              <li key={t.id} className="flex items-center gap-4 px-4 py-3">
-                <RankBadge place={i + 1} />
+          <ul className="border-t border-navy/20">
+            {upcomingTournaments.map((t) => (
+              <li
+                key={t.id}
+                className="flex items-center gap-4 border-b border-navy/[0.07] px-1 py-3.5"
+              >
+                {/*
+                  Datum je vodeći podatak, ne redni broj u popisu. Prije je
+                  ovdje stajala značka za mjesto na ljestvici, koja ovdje ima
+                  posve drugo značenje.
+                */}
+                <div className="w-12 flex-shrink-0 text-center">
+                  <div className="font-hero text-xl leading-none text-navy">
+                    {t.date.getDate()}
+                  </div>
+                  <div className="mt-1 text-[10px] uppercase tracking-widest text-ink/45">
+                    {t.date.toLocaleDateString("hr-HR", { month: "short" })}
+                  </div>
+                </div>
                 <div className="flex-1">
-                  <Link href={`/turniri/${t.id}`} className="font-semibold text-navy hover:underline">
+                  <Link
+                    href={`/turniri/${t.id}`}
+                    className="font-medium text-navy hover:text-crimson hover:underline"
+                  >
                     {t.name}
                   </Link>
-                  <p className="text-sm text-ink/60">
-                    {t.date.toLocaleDateString("hr-HR", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })}
+                  <p className="text-xs text-ink/50">
+                    {[
+                      TEMPO_LABELS[t.tempo] ?? t.tempo.toLowerCase(),
+                      t.rounds ? `${t.rounds} kola` : null,
+                      t.date.getFullYear() !== new Date().getFullYear()
+                        ? `${t.date.getFullYear()}.`
+                        : null,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
                   </p>
                 </div>
                 <span
-                  className={`badge-title ${t.seasonSystem === "AKADEMIJA" ? "bg-academy/20 text-academy" : ""}`}
+                  className={`badge-title ${t.seasonSystem === "AKADEMIJA" ? "bg-academy/10 text-academy" : ""}`}
                 >
-                  {t.seasonSystem === "AKADEMIJA" ? "Akademija" : t.level ?? t.tempo}
+                  {t.seasonSystem === "AKADEMIJA"
+                    ? "Akademija"
+                    : LEVEL_LABELS[t.level ?? ""] ?? t.level ?? t.tempo}
                 </span>
               </li>
             ))}
