@@ -18,6 +18,7 @@ const LJESTVICE = [
 const NAV = [
   { href: "/o-nama", label: "O nama" },
   { href: "/faq", label: "FAQ" },
+  { href: "/igraci", label: "Igrači" },
   { href: "/kalendar", label: "Kalendar" },
   { href: "/najave", label: "Najave turnira" },
   { href: "/prijave", label: "Prijave na turnire" },
