@@ -33,7 +33,12 @@ export async function saveBulkRatings(rows: RatingRow[]): Promise<SaveRatingsSta
     return { error: "Nema unesenih vrijednosti." };
   }
 
-  const snapshotDate = new Date();
+  // Ponoć tekućeg dana — snapshoti su jedinstveni po (igrač, tempo, dan),
+  // pa dva klika na "Spremi" ne stvaraju duplikat.
+  const now = new Date();
+  const snapshotDate = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate())
+  );
   const ops: Prisma.PrismaPromise<unknown>[] = [];
 
   for (const row of relevant) {
@@ -56,37 +61,61 @@ export async function saveBulkRatings(rows: RatingRow[]): Promise<SaveRatingsSta
 
     if (row.standard != null) {
       ops.push(
-        prisma.playerRatingSnapshot.create({
-          data: {
+        prisma.playerRatingSnapshot.upsert({
+          where: {
+            playerId_ratingType_snapshotDate: {
+              playerId: row.playerId,
+              ratingType: "STANDARD",
+              snapshotDate,
+            },
+          },
+          create: {
             playerId: row.playerId,
             ratingType: "STANDARD",
             ratingValue: row.standard,
             snapshotDate,
           },
+          update: { ratingValue: row.standard },
         })
       );
     }
     if (row.rapid != null) {
       ops.push(
-        prisma.playerRatingSnapshot.create({
-          data: {
+        prisma.playerRatingSnapshot.upsert({
+          where: {
+            playerId_ratingType_snapshotDate: {
+              playerId: row.playerId,
+              ratingType: "RAPID",
+              snapshotDate,
+            },
+          },
+          create: {
             playerId: row.playerId,
             ratingType: "RAPID",
             ratingValue: row.rapid,
             snapshotDate,
           },
+          update: { ratingValue: row.rapid },
         })
       );
     }
     if (row.blitz != null) {
       ops.push(
-        prisma.playerRatingSnapshot.create({
-          data: {
+        prisma.playerRatingSnapshot.upsert({
+          where: {
+            playerId_ratingType_snapshotDate: {
+              playerId: row.playerId,
+              ratingType: "BLITZ",
+              snapshotDate,
+            },
+          },
+          create: {
             playerId: row.playerId,
             ratingType: "BLITZ",
             ratingValue: row.blitz,
             snapshotDate,
           },
+          update: { ratingValue: row.blitz },
         })
       );
     }

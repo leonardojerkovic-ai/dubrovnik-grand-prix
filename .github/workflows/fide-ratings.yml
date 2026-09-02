@@ -1,0 +1,46 @@
+name: Uvoz FIDE rejtinga
+
+# Prvog u mjesecu u 06:00 UTC. FIDE liste objavljuje krajem prethodnog
+# mjeseca, pa je prvi dan siguran termin.
+#
+# workflow_dispatch omogućuje ručno pokretanje klikom u GitHub sučelju —
+# korisno za prvu provjeru i kad se lista objavi s kašnjenjem.
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Probni prolaz bez upisa u bazu"
+        type: boolean
+        default: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      - name: Uvoz rejtinga
+        env:
+          # Postavi u Settings -> Secrets and variables -> Actions.
+          # Koristi DIRECT_URL (session pooler), ne transaction pooler.
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            npm run fide:import -- --dry-run
+          else
+            npm run fide:import
+          fi

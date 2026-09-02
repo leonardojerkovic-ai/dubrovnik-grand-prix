@@ -220,6 +220,9 @@ model PlayerRatingSnapshot {
   snapshotDate DateTime // datum na koji je vrijednost bila važeća (npr. 1. u mjesecu)
   createdAt    DateTime   @default(now())
 
+  /// Jedan zapis po igraču, tempu i danu — uvoz mora biti ponovljiv bez
+  /// stvaranja duplikata. Datum se normalizira na ponoć.
+  @@unique([playerId, ratingType, snapshotDate])
   @@index([playerId, ratingType, snapshotDate])
   @@map("player_rating_snapshots")
 }
