@@ -28,7 +28,7 @@ export default async function HomePage() {
   return (
     <div>
       <section className="relative overflow-hidden bg-navy text-paper">
-        <div className="absolute inset-0 bg-checker-pattern bg-[length:40px_40px] opacity-[0.04]" />
+        <div className="absolute inset-0 bg-checker-pattern bg-[length:56px_56px] opacity-[0.055]" />
         <div className="relative mx-auto max-w-6xl px-4 py-16 md:py-24">
           <div className="mb-6 flex items-center gap-4">
             <Image
@@ -49,6 +49,9 @@ export default async function HomePage() {
               />
             )}
           </div>
+          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-gold">
+            Šahovski klub Dubrovnik · osnovan 1933.
+          </p>
           <div className="mb-4 flex flex-wrap gap-2">
             {gpSeason && (
               <span className="badge-title">Dubrovnik GP — sezona {gpSeason.yearLabel}</span>
@@ -62,10 +65,12 @@ export default async function HomePage() {
               <span className="badge-title">Dubrovnik Grand Prix</span>
             )}
           </div>
-          <h1 className="font-display text-4xl md:text-6xl font-bold max-w-2xl">
-            Cijela sezona. Jedna ljestvica. Svaki potez se broji.
+          <h1 className="font-hero text-4xl md:text-6xl max-w-2xl leading-[1.08]">
+            Cijela sezona. Jedna ljestvica.{" "}
+            <span className="italic text-gold-light">Svaki potez se broji.</span>
           </h1>
-          <p className="mt-4 max-w-xl text-sky-light">
+          <span className="mt-6 block h-0.5 w-10 bg-gold" />
+          <p className="mt-5 max-w-xl text-sky-light">
             Pratite poredak Općeg GP-a i svih kategorijskih ljestvica ŠK
             Dubrovnik kroz cijelu natjecateljsku sezonu.
           </p>
