@@ -207,14 +207,10 @@ export function TournamentForm({
         </label>
       </div>
 
-      <Field label="Status" error={state.errors?.status}>
       <Field
         label="Ograničenje prava nastupa"
-        name="restrictedCategory"
         error={state.errors?.restrictedCategory}
-        hint={
-          restrictedHint
-        }
+        hint={restrictedHint}
       >
         <select
           name="restrictedCategory"
@@ -230,6 +226,7 @@ export function TournamentForm({
         </select>
       </Field>
 
+      <Field label="Status" error={state.errors?.status}>
         <select name="status" defaultValue={defaultValues.status ?? "NAJAVA"} className="input">
           <option value="NAJAVA">Najava</option>
           <option value="PRIJAVE_OTVORENE">Prijave otvorene</option>
