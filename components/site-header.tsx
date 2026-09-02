@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PRIMARY_NAV as NAV, SECONDARY_NAV } from "@/lib/nav";
+import { JOIN_LINK, PRIMARY_NAV as NAV, SECONDARY_NAV } from "@/lib/nav";
 
 const LJESTVICE = [
   { href: "/ljestvice/opci-gp", label: "Opći GP" },
@@ -58,6 +58,12 @@ export function SiteHeader() {
 
         <div className="flex items-center gap-2">
           <Link
+            href={JOIN_LINK.href}
+            className="hidden rounded-md border border-gold px-3.5 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold/15 md:inline-block"
+          >
+            {JOIN_LINK.label}
+          </Link>
+          <Link
             href="/prijava"
             className="hidden sm:inline-block rounded-md bg-navy px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-light transition-colors"
           >
@@ -106,7 +112,7 @@ export function SiteHeader() {
             Stranice
           </p>
           <div className="mb-4 grid gap-1">
-            {[...NAV, ...SECONDARY_NAV].map((item) => (
+            {[...NAV, JOIN_LINK, ...SECONDARY_NAV].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
