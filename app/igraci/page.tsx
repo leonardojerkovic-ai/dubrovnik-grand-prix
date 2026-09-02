@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { PlayerName } from "@/components/player-name";
 
 export const metadata: Metadata = {
   title: "Igrači",
@@ -87,15 +88,12 @@ export default async function PlayersPage({
               {players.map((p) => (
                 <tr key={p.id}>
                   <td className="px-4 py-3 font-medium text-navy">
-                    {p.title !== "NONE" && (
-                      <span className="badge-title mr-2">{p.title}</span>
-                    )}
-                    <Link
-                      href={`/igraci/${p.id}`}
-                      className="hover:text-crimson hover:underline"
-                    >
-                      {p.lastName} {p.firstName}
-                    </Link>
+                    <PlayerName
+                      id={p.id}
+                      firstName={p.firstName}
+                      lastName={p.lastName}
+                      title={p.title}
+                    />
                   </td>
                   <td className="px-4 py-3 text-right font-mono tabular-nums text-ink/70">
                     {p.ratingsCurrent?.standard ?? "—"}

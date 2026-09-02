@@ -1,8 +1,14 @@
-import Link from "next/link";
 import { RankBadge } from "@/components/rank-badge";
+import { PlayerName } from "@/components/player-name";
 
 type Row = {
-  player: { id: string; firstName: string; lastName: string; title: string };
+  player: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    title: string;
+    isClubMember: boolean;
+  };
   total: number;
   countedResults: { gpPoints: number }[];
   allResults: { gpPoints: number }[];
@@ -35,15 +41,7 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
                 <RankBadge place={i + 1} />
               </td>
               <td className="px-4 py-3 font-medium text-navy">
-                {row.player.title !== "NONE" && (
-                  <span className="badge-title mr-2">{row.player.title}</span>
-                )}
-                <Link
-                  href={`/igraci/${row.player.id}`}
-                  className="hover:text-crimson hover:underline"
-                >
-                  {row.player.lastName} {row.player.firstName}
-                </Link>
+                <PlayerName {...row.player} />
               </td>
               <td className="px-4 py-3 text-right text-ink/60 font-mono tabular-nums">
                 {row.allResults.length}

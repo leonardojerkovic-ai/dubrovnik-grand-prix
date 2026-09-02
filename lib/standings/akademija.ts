@@ -11,6 +11,7 @@ export type AkademijaStandingRow = {
     firstName: string;
     lastName: string;
     title: string;
+    isClubMember: boolean;
   };
   total: number;
   countedResults: AkademijaTournamentResult[];
@@ -60,6 +61,7 @@ export async function getAkademijaStandings(
 
       const entry = playerMap.get(r.playerId) ?? {
         player: {
+          isClubMember: r.player.isClubMember,
           id: r.player.id,
           firstName: r.player.firstName,
           lastName: r.player.lastName,

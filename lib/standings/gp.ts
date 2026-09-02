@@ -27,6 +27,8 @@ export type GpStandingRow = {
     firstName: string;
     lastName: string;
     title: string;
+    /** Trenutno članstvo — određuje je li ime poveznica na profil. */
+    isClubMember: boolean;
   };
   total: number;
   countedResults: PlayerTournamentResult[];
@@ -124,6 +126,7 @@ export async function getGpStandings(
           firstName: r.player.firstName,
           lastName: r.player.lastName,
           title: r.player.title,
+          isClubMember: r.player.isClubMember,
         },
         results: [],
       };

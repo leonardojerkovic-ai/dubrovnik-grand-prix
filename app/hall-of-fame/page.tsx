@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
+import { PlayerName } from "@/components/player-name";
 
 export const metadata: Metadata = {
   title: "Hall of Fame",
@@ -50,7 +51,12 @@ export default async function HallOfFamePage() {
                     {e.place}
                   </span>
                   <span className="font-medium text-navy">
-                    {e.player.lastName} {e.player.firstName}
+                    <PlayerName
+                      id={e.player.id}
+                      firstName={e.player.firstName}
+                      lastName={e.player.lastName}
+                      isClubMember={e.player.isClubMember}
+                    />
                   </span>
                   <span className="ml-auto font-mono text-sm text-ink/50">
                     {e.pointsTotal}

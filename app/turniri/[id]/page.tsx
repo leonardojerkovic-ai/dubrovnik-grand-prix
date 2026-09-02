@@ -5,6 +5,7 @@ import {
   sortPlayersByRatingTitleSurname,
   type SortablePlayerEntry,
 } from "@/lib/players/sort";
+import { PlayerName } from "@/components/player-name";
 
 const LEVEL_LABELS: Record<string, string> = {
   KLUPSKA: "Klupska",
@@ -26,6 +27,7 @@ function formatTimeControl(baseMinutes: number | null, incrementSeconds: number 
 
 type PlayerEntry = SortablePlayerEntry & {
   id: string;
+  isClubMember: boolean;
   rank: number | null;
   gpPoints: number | null;
 };
@@ -87,6 +89,7 @@ export default async function TournamentDetailPage({
       firstName: r.player.firstName,
       lastName: r.player.lastName,
       title: r.player.title,
+      isClubMember: r.player.isClubMember,
       rating: r.player.ratingsCurrent?.[ratingField] ?? null,
       rank: null,
       gpPoints: null,
@@ -100,6 +103,7 @@ export default async function TournamentDetailPage({
       firstName: res.player.firstName,
       lastName: res.player.lastName,
       title: res.player.title,
+      isClubMember: res.player.isClubMember,
       rating: existing?.rating ?? res.player.ratingsCurrent?.[ratingField] ?? null,
       rank: res.rank,
       gpPoints: res.gpPoints,
@@ -197,10 +201,7 @@ export default async function TournamentDetailPage({
                     {p.rank ?? i + 1}.
                   </td>
                   <td className="px-4 py-2 font-medium text-navy">
-                    {p.title !== "NONE" && (
-                      <span className="badge-title mr-2">{p.title}</span>
-                    )}
-                    {p.lastName} {p.firstName}
+                    <PlayerName {...p} />
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums">
                     {p.rating ?? 0}
