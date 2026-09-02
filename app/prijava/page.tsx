@@ -33,9 +33,20 @@ function PrijavaForm() {
     window.location.href = res?.url ?? callbackUrl;
   }
 
+  const justRegistered = params.get("registered") === "1";
+  const linkPending = params.get("pending") === "1";
+
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center px-4 py-12">
       <h1 className="font-display text-2xl font-bold text-navy mb-6">Prijava</h1>
+
+      {justRegistered && (
+        <p className="mb-4 rounded-md bg-gold/10 px-3 py-2 text-sm text-navy">
+          {linkPending
+            ? "Račun je stvoren. Klub već ima igrački profil s tvojim imenom, pa ga administrator mora povezati s ovim računom prije nego vidiš svoje rezultate. Prijaviti se možeš odmah."
+            : "Račun je stvoren. Sad se možeš prijaviti."}
+        </p>
+      )}
 
       <form onSubmit={handleCredentialsSubmit} className="grid gap-4">
         {error && (

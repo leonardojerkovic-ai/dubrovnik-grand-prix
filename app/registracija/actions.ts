@@ -11,19 +11,18 @@ export type RegistrationState = {
 };
 
 /**
- * Samostalna registracija novog korisnika/igrača.
+ * Samostalna registracija novog korisnika.
  *
- * SPAJANJE S POSTOJEĆIM PROFILOM: ako klub već ima Player zapis (unesen kroz
- * admin panel) koji odgovara imenu/prezimenu/godištu koje osoba upiše i taj
- * zapis još nema povezan User račun, novi User se spaja s TIM postojećim
- * Player zapisom umjesto da se kreira duplikat. Podudaranje je namjerno
- * strogo (ime + prezime, case-insensitive, TE godište) da se izbjegne
- * pogrešno spajanje dvoje različitih ljudi istog imena.
+ * NE SPAJA automatski s postojećim igračkim profilom. Ime, prezime i godište
+ * javno su dostupni na FIDE stranicama, pa bi automatsko spajanje značilo da
+ * se bilo tko može registrirati kao postojeći član kluba i preuzeti njegove
+ * prijave i rezultate. Umjesto toga:
  *
- * Ako se pronađe VIŠE od jednog mogućeg podudaranja (npr. dva igrača s
- * istim imenom i godištem), spajanje se preskače i kreira se nov profil —
- * sigurnije je imati privremeni duplikat nego pogrešno spojiti račun s
- * tuđim profilom. Admin to onda ručno riješi kroz Prisma Studio.
+ *  - postoji li podudarni profil (jedan ili više), račun se stvara BEZ
+ *    povezanog profila i označava kao zahtjev koji administrator odobrava
+ *    u Admin -> Korisnici;
+ *  - ne postoji li nijedan, stvara se nov profil i odmah povezuje — nema
+ *    tuđe povijesti koju bi se moglo preuzeti.
  *
  * GDPR: registracija zahtijeva potvrdu privole (gdprConsent), vremenski
  * žig privole se sprema na User.gdprConsentAt kao dokaz. Vidi /privatnost
@@ -71,39 +70,44 @@ export async function registerPlayer(
     },
   });
 
-  if (candidates.length === 1) {
-    // Točno jedno podudaranje — spoji novi račun s postojećim profilom.
-    // candidates.length === 1 je provjeren iznad, ali TS to ne zna
-    const player = candidates[0]!;
+  if (candidates.length > 0) {
+    // Postoji podudarni profil — račun se stvara BEZ veze na njega.
+    // Povezivanje odobrava administrator (vidi napomenu iznad).
     await prisma.user.create({
       data: {
         email,
         passwordHash,
         role: "PLAYER",
         gdprConsentAt,
-        player: { connect: { id: player.id } },
+        needsPlayerLink: true,
+        // Kod više podudaranja ne nagađamo koji je pravi.
+        pendingPlayerId: candidates.length === 1 ? candidates[0]!.id : null,
+        claimedName: `${lastName} ${firstName}`,
+        claimedBirthYear: birthYear,
       },
     });
-  } else {
-    // Nema podudaranja ili ih je više (dvosmisleno) — kreiraj nov profil.
-    await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        role: "PLAYER",
-        gdprConsentAt,
-        player: {
-          create: {
-            firstName,
-            lastName,
-            gender,
-            birthYear,
-            isClubMember: false, // admin ručno potvrđuje članstvo (čl. 4)
-          },
+    redirect("/prijava?registered=1&pending=1");
+  }
+
+  // Nema podudarnog profila — nova osoba, nema tuđe povijesti koju bi se
+  // moglo preuzeti, pa se profil stvara i povezuje odmah.
+  await prisma.user.create({
+    data: {
+      email,
+      passwordHash,
+      role: "PLAYER",
+      gdprConsentAt,
+      player: {
+        create: {
+          firstName,
+          lastName,
+          gender,
+          birthYear,
+          isClubMember: false, // admin ručno potvrđuje članstvo (čl. 4)
         },
       },
-    });
-  }
+    },
+  });
 
   redirect("/prijava?registered=1");
 }

@@ -121,6 +121,21 @@ model User {
   passwordResetTokens PasswordResetToken[]
   gdprConsentAt DateTime? // vremenski žig privole s Politikom privatnosti pri registraciji — dokaz privole
 
+  /// Zahtjev za povezivanje s postojećim igračkim profilom, na čekanju.
+  ///
+  /// Samostalna registracija NIKAD ne spaja račun s postojećim profilom
+  /// automatski: ime, prezime i godište javno su dostupni na FIDE stranicama,
+  /// pa bi bilo tko mogao preuzeti tuđi profil, a s njim prijave i rezultate.
+  /// Umjesto toga se bilježi zahtjev, a povezuje ga administrator.
+  needsPlayerLink  Boolean @default(false)
+  /// Profil za koji sustav pretpostavlja da je traženi (jedno podudaranje).
+  /// Prazno kad podudaranja nema ili ih je više — admin tada bira sam.
+  pendingPlayerId  String?
+  /// Ime i godište kako ih je osoba upisala — podloga adminu za odluku.
+  claimedName      String?
+  claimedBirthYear Int?
+
+  @@index([needsPlayerLink])
   @@map("users")
 }
 

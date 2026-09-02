@@ -2,15 +2,26 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { RoleSelect } from "./role-select";
+import { PlayerLinkRequest } from "./player-link-request";
 
 export default async function AdminUsersPage() {
   const session = await getServerSession(authOptions);
   const currentRole = (session?.user as { role?: string } | undefined)?.role;
 
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "asc" },
-    include: { player: true },
-  });
+  const [users, unlinkedPlayers] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { createdAt: "asc" },
+      include: { player: true },
+    }),
+    // Samo profili bez vlasnika — veza je 1:1.
+    prisma.player.findMany({
+      where: { userId: null },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: { id: true, firstName: true, lastName: true, birthYear: true },
+    }),
+  ]);
+
+  const pending = users.filter((u) => u.needsPlayerLink);
 
   return (
     <div>
@@ -22,6 +33,33 @@ export default async function AdminUsersPage() {
           Samo administratori mogu mijenjati uloge — možeš pregledati listu,
           ali izmjene su onemogućene za tvoj račun.
         </p>
+      )}
+
+      {pending.length > 0 && (
+        <div className="mb-6">
+          <h3 className="mb-2 text-sm font-semibold text-navy">
+            Zahtjevi za povezivanje s igračkim profilom ({pending.length})
+          </h3>
+          <p className="mb-3 text-xs text-ink/60">
+            Samostalna registracija ne povezuje račun s postojećim profilom
+            automatski — ime i godište su javni podaci, pa bi se tuđi profil
+            mogao preuzeti. Potvrdi tek kad si siguran tko je osoba.
+          </p>
+          <div className="grid gap-3">
+            {pending.map((u) => (
+              <div key={u.id}>
+                <p className="mb-1 text-sm font-medium text-navy">{u.email}</p>
+                <PlayerLinkRequest
+                  userId={u.id}
+                  claimedName={u.claimedName}
+                  claimedBirthYear={u.claimedBirthYear}
+                  suggestedPlayerId={u.pendingPlayerId}
+                  players={unlinkedPlayers}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
@@ -38,7 +76,11 @@ export default async function AdminUsersPage() {
               <tr key={u.id}>
                 <td className="px-4 py-3 font-medium text-navy">{u.email}</td>
                 <td className="px-4 py-3 text-ink/60">
-                  {u.player ? `${u.player.lastName} ${u.player.firstName}` : "—"}
+                  {u.player
+                    ? `${u.player.lastName} ${u.player.firstName}`
+                    : u.needsPlayerLink
+                      ? "čeka povezivanje"
+                      : "—"}
                 </td>
                 <td className="px-4 py-3">
                   <RoleSelect
