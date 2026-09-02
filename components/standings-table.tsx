@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { RankBadge } from "@/components/rank-badge";
 
 type Row = {
@@ -37,7 +38,12 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
                 {row.player.title !== "NONE" && (
                   <span className="badge-title mr-2">{row.player.title}</span>
                 )}
-                {row.player.lastName} {row.player.firstName}
+                <Link
+                  href={`/igraci/${row.player.id}`}
+                  className="hover:text-crimson hover:underline"
+                >
+                  {row.player.lastName} {row.player.firstName}
+                </Link>
               </td>
               <td className="px-4 py-3 text-right text-ink/60 font-mono tabular-nums">
                 {row.allResults.length}
