@@ -27,7 +27,6 @@ export default async function EditPlayerPage({
           title: player.title,
           gender: player.gender,
           birthYear: player.birthYear,
-          birthDate: player.birthDate,
           isClubMember: player.isClubMember,
           memberSince: player.memberSince,
           memberUntil: player.memberUntil,

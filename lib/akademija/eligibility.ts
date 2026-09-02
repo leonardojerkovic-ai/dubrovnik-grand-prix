@@ -18,7 +18,7 @@ export async function resolveAcademyEligibility(input: {
   tournamentId: string;
   tournamentDate: Date;
   playerId: string;
-  birthDate: Date | null;
+  birthYear: number;
   rapidRatingAtThisTournament: number | null;
 }): Promise<{ isEligible: boolean; status: "locked" | "new" | "recomputed" }> {
   const existing = await prisma.academyEligibility.findUnique({
@@ -37,13 +37,11 @@ export async function resolveAcademyEligibility(input: {
 
   const seasonStartYear = input.seasonStartDate.getFullYear();
 
-  const isEligible = input.birthDate
-    ? isEligibleForPoints({
-        birthDate: input.birthDate,
-        seasonStartYear,
-        rapidRatingAtFirstTournament: input.rapidRatingAtThisTournament,
-      })
-    : false;
+  const isEligible = isEligibleForPoints({
+    birthYear: input.birthYear,
+    seasonStartYear,
+    rapidRatingAtFirstTournament: input.rapidRatingAtThisTournament,
+  });
 
   await prisma.academyEligibility.upsert({
     where: {
@@ -59,14 +57,14 @@ export async function resolveAcademyEligibility(input: {
       firstTournamentId: input.tournamentId,
       firstTournamentDate: input.tournamentDate,
       rapidRatingAtFirst: input.rapidRatingAtThisTournament,
-      birthDateUsed: input.birthDate,
+      birthYearUsed: input.birthYear,
     },
     update: {
       isEligible,
       firstTournamentId: input.tournamentId,
       firstTournamentDate: input.tournamentDate,
       rapidRatingAtFirst: input.rapidRatingAtThisTournament,
-      birthDateUsed: input.birthDate,
+      birthYearUsed: input.birthYear,
     },
   });
 

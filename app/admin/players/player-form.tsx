@@ -13,7 +13,6 @@ type PlayerFormProps = {
     title?: string;
     gender?: string;
     birthYear?: number;
-    birthDate?: Date | null;
     isClubMember?: boolean;
     memberSince?: Date | null;
     memberUntil?: Date | null;
@@ -41,7 +40,6 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
   const toInputDate = (d?: Date | null) =>
     d ? d.toISOString().slice(0, 10) : "";
 
-  const birthDateValue = toInputDate(defaultValues.birthDate);
 
   return (
     <form action={formAction} className="grid max-w-xl gap-4">
@@ -108,15 +106,6 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
           />
         </Field>
       </div>
-
-      <Field
-        label="Točan datum rođenja"
-        name="birthDate"
-        error={state.errors?.birthDate}
-        hint="Obavezno za igrače GP Akademije (čl. 3 pravilnika) — koristi se za precizan prag od 14 godina. Za ostale igrače nije nužno."
-      >
-        <input type="date" name="birthDate" defaultValue={birthDateValue} className="input" />
-      </Field>
 
       <label className="flex items-center gap-2 text-sm text-ink">
         <input

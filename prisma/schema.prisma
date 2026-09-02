@@ -164,7 +164,6 @@ model Player {
   title         Title    @default(NONE)
   gender        Gender
   birthYear     Int       // godište — koristi se za GP dobne kategorije (U12/U16/U20), čl. 22 GP: "prema godištu"
-  birthDate     DateTime? // točan datum rođenja — potreban za Akademiju čl. 3 ("nije navršio 14 godina" = točan datum, ne godište)
   /// TRENUTNO stanje članstva. Za ljestvice se NE koristi — čl. 4 traži
   /// članstvo na dan početka turnira, pa se ono zapisuje po rezultatu
   /// (TournamentResult.wasClubMember). Ovo polje služi za prikaz profila i
@@ -405,7 +404,7 @@ model AcademyEligibility {
 
   /// Vrijednosti na kojima se odluka temeljila — radi provjere prigovora.
   rapidRatingAtFirst Int?
-  birthDateUsed      DateTime?
+  birthYearUsed      Int?
 
   lockedAt  DateTime @default(now())
   updatedAt DateTime @updatedAt

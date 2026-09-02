@@ -80,52 +80,29 @@ export function isEligibleQualifier(playerCount: number): boolean {
 
 /**
  * Provjera prava na GP bodove za pojedinog igrača — čl. 3.
- * Igrač mora: (a) do 1. siječnja godine početka sezone NIJE navršio 14
- * godina, i (b) na dan svog prvog turnira Akademije u sezoni imati FIDE
- * rapid rejting < 1600 ili ga uopće nemati.
  *
- * Čl. 3 govori o točnoj navršenoj dobi ("nije navršio 14 godina"), ne o
- * godištu — zato je potreban TOČAN datum rođenja (birthDate), ne samo
- * godina rođenja. Igrač rođen npr. 15.12.2012. na dan 1.1.2026. još nema
- * navršenih 14 godina (navršava ih 15.12.2026), pa i dalje ima pravo na
- * bodove za cijelu sezonu 2026/27 — provjera samo po godištu bi ga
- * pogrešno isključila.
+ * Igrač mora: (a) pripadati godištu G−14 ili mlađem, gdje je G godina u
+ * kojoj sezona počinje, i (b) na dan svog prvog turnira Akademije u sezoni
+ * imati FIDE rapid rejting niži od 1600 ili ga uopće nemati.
  *
- * Funkcija namjerno baca grešku ako birthDate nedostaje, umjesto da
- * "nagađa" iz godine rođenja — za GP Akademije igrače (svi < 14 god.)
- * točan datum rođenja treba biti obavezno polje pri upisu u Klub.
+ * Dob se veže uz GODIŠTE, ne uz točan datum rođenja. Time Akademija koristi
+ * isto načelo kao GP (čl. 22), a klub ne mora čuvati točne datume rođenja
+ * djece — godište je dovoljno za sve odluke koje sustav donosi.
+ *
+ * Za sezonu 2026/27 (G = 2026) pravo imaju godišta 2012. i mlađa.
  */
 export function isEligibleForPoints(input: {
-  birthDate: Date;
+  birthYear: number;
   seasonStartYear: number;
   rapidRatingAtFirstTournament: number | null | undefined;
 }): boolean {
-  const { birthDate, seasonStartYear, rapidRatingAtFirstTournament } = input;
+  const { birthYear, seasonStartYear, rapidRatingAtFirstTournament } = input;
 
-  if (!birthDate) {
-    throw new Error(
-      "Točan datum rođenja (birthDate) je obavezan za provjeru prava na bodove GP Akademije (čl. 3) — provjera po godištu nije dovoljno precizna."
-    );
-  }
-
-  // 1. siječnja godine u kojoj sezona počinje
-  const cutoff = new Date(Date.UTC(seasonStartYear, 0, 1));
-
-  const turns14On = new Date(
-    Date.UTC(
-      birthDate.getUTCFullYear() + 14,
-      birthDate.getUTCMonth(),
-      birthDate.getUTCDate()
-    )
-  );
-
-  // Igrač NIJE navršio 14 samo ako 14. rođendan pada STROGO NAKON graničnog
-  // datuma — ako rođendan padne baš na 1. siječnja, tog dana je već navršio 14.
-  const under14 = turns14On > cutoff;
+  const ageOk = birthYear >= seasonStartYear - 14;
 
   const ratingOk =
     rapidRatingAtFirstTournament == null ||
     rapidRatingAtFirstTournament < 1600;
 
-  return under14 && ratingOk;
+  return ageOk && ratingOk;
 }

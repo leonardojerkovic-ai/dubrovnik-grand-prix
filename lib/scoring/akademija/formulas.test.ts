@@ -80,64 +80,73 @@ describe("Akademija rubni slučajevi", () => {
 });
 
 describe("isEligibleForPoints (čl. 3)", () => {
-  it("igrač mlađi od 14 (na 1.1.) s niskim/bez rapid rejtinga ima pravo na bodove", () => {
+  it("godište G−14 i mlađe ima pravo na bodove", () => {
+    // sezona 2026/27 -> godišta 2012. i mlađa
+    for (const birthYear of [2012, 2013, 2015, 2019]) {
+      expect(
+        isEligibleForPoints({
+          birthYear,
+          seasonStartYear: 2026,
+          rapidRatingAtFirstTournament: null,
+        })
+      ).toBe(true);
+    }
+  });
+
+  it("starije godište nema pravo, bez obzira na rejting", () => {
+    for (const birthYear of [2011, 2008, 1990]) {
+      expect(
+        isEligibleForPoints({
+          birthYear,
+          seasonStartYear: 2026,
+          rapidRatingAtFirstTournament: null,
+        })
+      ).toBe(false);
+    }
+  });
+
+  it("granica se pomiče sa sezonom", () => {
+    // godište 2012. ima pravo u sezoni 2026/27, ali ne i u 2027/28
     expect(
       isEligibleForPoints({
-        birthDate: new Date(Date.UTC(2015, 5, 10)),
+        birthYear: 2012,
         seasonStartYear: 2026,
         rapidRatingAtFirstTournament: null,
       })
     ).toBe(true);
-  });
-
-  it("igrač koji je već navršio 14 do 1.1. NEMA pravo, bez obzira na rejting", () => {
     expect(
       isEligibleForPoints({
-        birthDate: new Date(Date.UTC(2012, 5, 10)), // 14. rođendan 10.6.2026, prije toga već bio 14 iz prošle sezone
+        birthYear: 2012,
         seasonStartYear: 2027,
         rapidRatingAtFirstTournament: null,
       })
     ).toBe(false);
   });
 
-  it("mlađi igrač s rapid rejtingom 1600+ NEMA pravo na bodove", () => {
+  it("rapid rejting 1600 ili viši ukida pravo i mlađem igraču", () => {
     expect(
       isEligibleForPoints({
-        birthDate: new Date(Date.UTC(2015, 5, 10)),
+        birthYear: 2015,
         seasonStartYear: 2026,
-        rapidRatingAtFirstTournament: 1650,
+        rapidRatingAtFirstTournament: 1600,
       })
     ).toBe(false);
-  });
-
-  it("rubni slučaj: 14. rođendan pada TOČNO 1.1. sezone -> igrač je već navršio 14, NEMA pravo", () => {
     expect(
       isEligibleForPoints({
-        birthDate: new Date(Date.UTC(2012, 0, 1)),
+        birthYear: 2015,
         seasonStartYear: 2026,
-        rapidRatingAtFirstTournament: null,
-      })
-    ).toBe(false);
-  });
-
-  it("rubni slučaj: 14. rođendan pada dan NAKON 1.1. sezone -> igrač još nije navršio 14, IMA pravo", () => {
-    expect(
-      isEligibleForPoints({
-        birthDate: new Date(Date.UTC(2012, 0, 2)),
-        seasonStartYear: 2026,
-        rapidRatingAtFirstTournament: null,
+        rapidRatingAtFirstTournament: 1599,
       })
     ).toBe(true);
   });
 
-  it("baca grešku ako birthDate nedostaje", () => {
-    expect(() =>
+  it("igrač bez rapid rejtinga zadovoljava rejtinški uvjet", () => {
+    expect(
       isEligibleForPoints({
-        // @ts-expect-error namjerno testiramo nedostajući obavezan podatak
-        birthDate: undefined,
+        birthYear: 2015,
         seasonStartYear: 2026,
-        rapidRatingAtFirstTournament: null,
+        rapidRatingAtFirstTournament: undefined,
       })
-    ).toThrow();
+    ).toBe(true);
   });
 });

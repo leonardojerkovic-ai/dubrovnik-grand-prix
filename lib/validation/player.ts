@@ -34,7 +34,6 @@ export const playerSchema = z.object({
     .min(1900)
     .max(new Date().getFullYear()),
   // Opcionalan — obavezan tek za Akademiju igrače (čl. 3), provjerava se posebno
-  birthDate: z.string().optional().or(z.literal("")),
   isClubMember: z.coerce.boolean().default(false),
   // Datum učlanjenja — bez njega se članstvo na dan ranijeg turnira ne može
   // provjeriti (čl. 4). memberUntil je prazan dok je igrač član.

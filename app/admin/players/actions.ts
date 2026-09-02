@@ -21,7 +21,6 @@ function parseFormData(formData: FormData) {
     title: formData.get("title"),
     gender: formData.get("gender"),
     birthYear: formData.get("birthYear"),
-    birthDate: formData.get("birthDate"),
     isClubMember: formData.get("isClubMember") === "on",
     memberSince: formData.get("memberSince"),
     memberUntil: formData.get("memberUntil"),
@@ -39,7 +38,7 @@ export async function createPlayer(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { fideId, birthDate, memberSince, memberUntil, ...rest } = parsed.data;
+  const { fideId, memberSince, memberUntil, ...rest } = parsed.data;
   const toDate = (v: string | undefined) =>
     v && v.length > 0 ? new Date(v) : null;
 
@@ -48,7 +47,6 @@ export async function createPlayer(
       data: {
         ...rest,
         fideId: fideId && fideId.length > 0 ? fideId : null,
-        birthDate: birthDate && birthDate.length > 0 ? new Date(birthDate) : null,
         memberSince: toDate(memberSince),
         memberUntil: toDate(memberUntil),
       },
@@ -92,7 +90,7 @@ export async function updatePlayer(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { fideId, birthDate, memberSince, memberUntil, ...rest } = parsed.data;
+  const { fideId, memberSince, memberUntil, ...rest } = parsed.data;
   const toDate = (v: string | undefined) =>
     v && v.length > 0 ? new Date(v) : null;
 
@@ -104,7 +102,6 @@ export async function updatePlayer(
       data: {
         ...rest,
         fideId: fideId && fideId.length > 0 ? fideId : null,
-        birthDate: birthDate && birthDate.length > 0 ? new Date(birthDate) : null,
         memberSince: toDate(memberSince),
         memberUntil: toDate(memberUntil),
       },

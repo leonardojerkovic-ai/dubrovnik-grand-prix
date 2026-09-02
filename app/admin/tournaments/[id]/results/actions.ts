@@ -157,11 +157,11 @@ export async function saveTournamentResults(
         };
       }
 
-      // Dohvati birthDate za provjeru prava na bodove (čl. 3) — točan datum
-      // rođenja, ne godište (vidi napomenu u isEligibleForPoints).
+      // Godište za provjeru prava na bodove (čl. 3) — pravo imaju godišta
+      // G−14 i mlađa, gdje je G godina početka sezone.
       const players = await prisma.player.findMany({
         where: { id: { in: playedRows.map((r) => r.playerId) } },
-        select: { id: true, birthDate: true, lastName: true, firstName: true },
+        select: { id: true, birthYear: true, lastName: true, firstName: true },
       });
       const playerById = new Map(players.map((p) => [p.id, p]));
       const seasonStartYear = tournament.season.startDate.getFullYear();
@@ -181,7 +181,7 @@ export async function saveTournamentResults(
           tournamentId: tournament.id,
           tournamentDate: tournament.date,
           playerId: row.playerId,
-          birthDate: player?.birthDate ?? null,
+          birthYear: player?.birthYear ?? 0,
           rapidRatingAtThisTournament: row.rating,
         });
 
@@ -291,7 +291,7 @@ export async function saveTournamentResults(
     const eligibleCount = N - ineligiblePlayers.length;
     let message = `Spremljeno — bodovi izračunati za ${eligibleCount} igrača.`;
     if (ineligiblePlayers.length > 0) {
-      message += ` Bez prava na bodove (čl. 3 — dob/rejting ili nepostavljen točan datum rođenja): ${ineligiblePlayers.join(", ")}.`;
+      message += ` Bez prava na bodove (čl. 3 — godište ili rapid rejting): ${ineligiblePlayers.join(", ")}.`;
     }
     if (recomputedPlayers.length > 0) {
       message +=
