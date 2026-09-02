@@ -2,6 +2,24 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
+import {
+  GP_RESTRICTION_CODES,
+  GP_RESTRICTION_LABELS,
+  parseRestrictions,
+  standingsForTournament,
+  type GpStandingCode,
+} from "@/lib/scoring/gp/tournament-scope";
+
+const ALL_GP_STANDINGS: GpStandingCode[] = [
+  "OPCI",
+  "ZENE",
+  "U20",
+  "U16",
+  "U12",
+  "S50",
+  "S65",
+  "U1800",
+];
 
 type Season = { id: string; yearLabel: string; system: string };
 
@@ -21,6 +39,7 @@ type TournamentFormProps = {
     status?: string;
     baseMinutes?: number | null;
     incrementSeconds?: number | null;
+    restrictedCategories?: unknown;
   };
 };
 
@@ -51,6 +70,26 @@ export function TournamentForm({
     : "";
 
   const selectedSeason = seasons.find((s) => s.id === defaultValues.seasonId);
+
+  const currentRestriction = parseRestrictions(
+    defaultValues.restrictedCategories
+  )[0] ?? "";
+
+  // Prikaz u koje ljestvice turnir ulazi, da se pogrešan odabir vidi odmah,
+  // a ne tek kad ljestvica ispadne kraća nego što treba (čl. 20 st. 2).
+  const enteredStandings = standingsForTournament(
+    {
+      restrictedCategories: currentRestriction ? [currentRestriction] : null,
+      isFinal: defaultValues.isFinal ?? false,
+      isJuniorFinal: defaultValues.isJuniorFinal ?? false,
+    },
+    ALL_GP_STANDINGS
+  );
+
+  const restrictedHint =
+    enteredStandings.length === 0
+      ? "Upozorenje: ovakav turnir ne ulazi ni u jednu ljestvicu."
+      : `Trenutno ulazi u: ${enteredStandings.join(", ")}. Spremi da se osvježi.`;
   const defaultSystem = selectedSeason?.system;
 
   return (
@@ -169,6 +208,28 @@ export function TournamentForm({
       </div>
 
       <Field label="Status" error={state.errors?.status}>
+      <Field
+        label="Ograničenje prava nastupa"
+        name="restrictedCategory"
+        error={state.errors?.restrictedCategory}
+        hint={
+          restrictedHint
+        }
+      >
+        <select
+          name="restrictedCategory"
+          defaultValue={currentRestriction}
+          className="input"
+        >
+          <option value="">Otvoren svima</option>
+          {GP_RESTRICTION_CODES.map((code) => (
+            <option key={code} value={code}>
+              {GP_RESTRICTION_LABELS[code]}
+            </option>
+          ))}
+        </select>
+      </Field>
+
         <select name="status" defaultValue={defaultValues.status ?? "NAJAVA"} className="input">
           <option value="NAJAVA">Najava</option>
           <option value="PRIJAVE_OTVORENE">Prijave otvorene</option>

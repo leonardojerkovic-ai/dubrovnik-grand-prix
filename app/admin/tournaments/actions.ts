@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { tournamentSchema } from "@/lib/validation/tournament";
@@ -23,6 +24,7 @@ function parseFormData(formData: FormData) {
     isFinal: formData.get("isFinal") === "on",
     isJuniorFinal: formData.get("isJuniorFinal") === "on",
     status: formData.get("status"),
+    restrictedCategory: formData.get("restrictedCategory"),
   };
 }
 
@@ -36,11 +38,16 @@ export async function createTournament(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { level, baseMinutes, incrementSeconds, ...rest } = parsed.data;
+  const { level, baseMinutes, incrementSeconds, restrictedCategory, ...rest } =
+    parsed.data;
 
   const tournament = await prisma.tournament.create({
     data: {
       ...rest,
+      restrictedCategories:
+        restrictedCategory && restrictedCategory.length > 0
+          ? [restrictedCategory]
+          : undefined,
       date: new Date(rest.date),
       level: level && level.length > 0 ? level : null,
       baseMinutes: baseMinutes === "" || baseMinutes == null ? null : baseMinutes,
@@ -73,13 +80,18 @@ export async function updateTournament(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { level, baseMinutes, incrementSeconds, ...rest } = parsed.data;
+  const { level, baseMinutes, incrementSeconds, restrictedCategory, ...rest } =
+    parsed.data;
   const before = await prisma.tournament.findUnique({ where: { id: tournamentId } });
 
   const updated = await prisma.tournament.update({
     where: { id: tournamentId },
     data: {
       ...rest,
+      restrictedCategories:
+        restrictedCategory && restrictedCategory.length > 0
+          ? [restrictedCategory]
+          : Prisma.DbNull,
       date: new Date(rest.date),
       level: level && level.length > 0 ? level : null,
       baseMinutes: baseMinutes === "" || baseMinutes == null ? null : baseMinutes,

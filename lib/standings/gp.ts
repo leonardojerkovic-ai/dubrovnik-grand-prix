@@ -12,6 +12,7 @@ import {
   type GpAgeCategory,
   type GpVeteranCategory,
 } from "@/lib/scoring/gp/categories";
+import { tournamentEntersStanding } from "@/lib/scoring/gp/tournament-scope";
 
 export type GpCategoryCode =
   | "OPCI"
@@ -91,15 +92,11 @@ export async function getGpStandings(
 
   const seasonStartYear = season.startDate.getFullYear();
 
-  // čl. 20 st. 2 (pojednostavljeno): kategorijska ljestvica uključuje otvorene
-  // turnire + turnire eksplicitno ograničene na tu kategoriju. Opći GP
-  // isključuje sve turnire s ograničenjem prava nastupa (čl. 15).
-  const relevantTournaments = season.tournaments.filter((t) => {
-    const restricted = t.restrictedCategories as string[] | null;
-    if (category === "OPCI") return !restricted || restricted.length === 0;
-    if (!restricted || restricted.length === 0) return true; // otvoren svima -> ulazi i u kategorijsku
-    return restricted.includes(category);
-  });
+  // čl. 20 st. 2 uz ugniježđivanje kategorija i posebna pravila za završne
+  // turnire (st. 4 i 5) — vidi lib/scoring/gp/tournament-scope.ts.
+  const relevantTournaments = season.tournaments.filter((t) =>
+    tournamentEntersStanding(t, category)
+  );
 
   const playerMap = new Map<
     string,

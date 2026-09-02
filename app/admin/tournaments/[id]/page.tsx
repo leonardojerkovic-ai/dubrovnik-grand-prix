@@ -50,6 +50,7 @@ export default async function EditTournamentPage({
           status: tournament.status,
           baseMinutes: tournament.baseMinutes,
           incrementSeconds: tournament.incrementSeconds,
+          restrictedCategories: tournament.restrictedCategories,
         }}
       />
     </div>
