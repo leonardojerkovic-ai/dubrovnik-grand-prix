@@ -216,3 +216,52 @@ describe("otpornost na pomak stupaca", () => {
     expect(() => parseLine(STD_ROWS[0]!, badLayout)).toThrow(/izvan je raspona/);
   });
 });
+
+describe("zasebne liste s mjesečnom oznakom stupca", () => {
+  // Stvarno zaglavlje iz standard_rating_list.txt, rujan 2026.
+  const REAL_COLS: Col[] = [
+    { title: "ID Number", width: 15 },
+    { title: "Name", width: 58 },
+    { title: "Fed", width: 4 },
+    { title: "Sex", width: 4 },
+    { title: "Tit", width: 5 },
+    { title: "WTit", width: 5 },
+    { title: "OTit", width: 12 },
+    { title: "FOA", width: 4 },
+    { title: "SEP26", width: 6 },
+    { title: "Gms", width: 4 },
+    { title: "K", width: 3 },
+    { title: "B-day", width: 6 },
+    { title: "Flag", width: 5 },
+  ];
+
+  const real = buildFixture(REAL_COLS, [
+    ["14512033", "Maric, Ivan", "CRO", "M", "IM", "", "", "", "2287", "12", "10", "1994", ""],
+    ["14599123", "Novak, Petar", "CRO", "M", "", "", "", "", "0", "0", "40", "2015", ""],
+  ]);
+
+  it("prepoznaje stupac imenovan po mjesecu liste", () => {
+    const layout = parseHeader(real.header, "STANDARD");
+    expect(parseLine(real.lines[0]!, layout)).toEqual({
+      fideId: "14512033",
+      rating: 2287,
+    });
+  });
+
+  it("radi jednako za rapid i blitz listu", () => {
+    for (const type of ["RAPID", "BLITZ"] as const) {
+      const layout = parseHeader(real.header, type);
+      expect(parseLine(real.lines[0]!, layout)?.rating).toBe(2287);
+    }
+  });
+
+  it("neocijenjeni igrač i dalje daje null", () => {
+    const layout = parseHeader(real.header, "STANDARD");
+    expect(parseLine(real.lines[1]!, layout)?.rating).toBeNull();
+  });
+
+  it("radi i za drugi mjesec", () => {
+    const jan = real.header.replace("SEP26", "JAN27");
+    expect(() => parseHeader(jan, "STANDARD")).not.toThrow();
+  });
+});

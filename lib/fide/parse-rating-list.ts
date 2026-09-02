@@ -11,14 +11,25 @@
 
 export type FideRatingType = "STANDARD" | "RAPID" | "BLITZ";
 
+/**
+ * U zasebnim listama (standard/rapid/blitz) stupac s rejtingom nosi oznaku
+ * mjeseca liste, npr. "SEP26" ili "JAN27" — mijenja se svakog mjeseca, pa se
+ * traži uzorkom, a ne imenom.
+ */
+const MONTH_COLUMN =
+  /\b(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\d{2}\b/i;
+
 /** Nazivi stupca s rejtingom u pojedinoj listi, redom kako ih FIDE piše. */
-const RATING_COLUMN_ALIASES: Record<FideRatingType, string[]> = {
-  STANDARD: ["SRtng", "SRTNG", "Rtng", "RTNG"],
-  RAPID: ["RRtng", "RRTNG", "Rtng", "RTNG"],
-  BLITZ: ["BRtng", "BRTNG", "Rtng", "RTNG"],
+const RATING_COLUMN_MATCHERS: Record<FideRatingType, (string | RegExp)[]> = {
+  // Kombinirana lista ima sva tri stupca imenovana; zasebne liste imaju
+  // jedan stupac s oznakom mjeseca. Imenovani se traže prvi.
+  STANDARD: ["SRtng", "SRTNG", MONTH_COLUMN, "Rtng", "RTNG"],
+  RAPID: ["RRtng", "RRTNG", MONTH_COLUMN, "Rtng", "RTNG"],
+  BLITZ: ["BRtng", "BRTNG", MONTH_COLUMN, "Rtng", "RTNG"],
 };
 
 const ID_COLUMN_ALIASES = ["ID Number", "IDNumber", "ID_NUMBER", "ID"];
+
 
 export interface ColumnLayout {
   idStart: number;
@@ -38,10 +49,21 @@ export interface FideRecord {
  */
 function findColumn(
   header: string,
-  aliases: string[]
+  matchers: (string | RegExp)[]
 ): { start: number; end: number } | null {
-  for (const alias of aliases) {
-    const start = header.indexOf(alias);
+  for (const matcher of matchers) {
+    let start: number;
+    let alias: string;
+
+    if (typeof matcher === "string") {
+      start = header.indexOf(matcher);
+      alias = matcher;
+    } else {
+      const m = header.match(matcher);
+      start = m?.index ?? -1;
+      alias = m?.[0] ?? "";
+    }
+
     if (start === -1) continue;
 
     // Kraj = početak sljedeće riječi nakon razmaka, ili kraj retka.
@@ -65,13 +87,13 @@ export function parseHeader(
   type: FideRatingType
 ): ColumnLayout {
   const id = findColumn(header, ID_COLUMN_ALIASES);
-  const rating = findColumn(header, RATING_COLUMN_ALIASES[type]);
+  const rating = findColumn(header, RATING_COLUMN_MATCHERS[type]);
 
   if (!id || !rating) {
     throw new Error(
       `Zaglavlje FIDE liste nije prepoznato (traženo: ID i rejting za ${type}). ` +
         `Format se vjerojatno promijenio — provjerite ratings.fide.com prije nego nastavite. ` +
-        `Zaglavlje: "${header.slice(0, 120)}"`
+        `Zaglavlje: "${header.slice(0, 200)}"`
     );
   }
 
