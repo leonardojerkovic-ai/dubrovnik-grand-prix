@@ -9,10 +9,13 @@ export function ResultsForm({
   tournamentId,
   players,
   initialRows,
+  editable = true,
 }: {
   tournamentId: string;
   players: PlayerOption[];
   initialRows: ResultRow[];
+  /** Kad su rezultati konačni (čl. 29), obrazac je samo za čitanje. */
+  editable?: boolean;
 }) {
   const [rows, setRows] = useState<ResultRow[]>(
     initialRows.length > 0
@@ -152,7 +155,12 @@ export function ResultsForm({
         </button>
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || !editable}
+          title={
+            editable
+              ? undefined
+              : "Rezultati su konačni — otključajte ih da biste spremili izmjene."
+          }
           className="rounded-md bg-navy px-5 py-2.5 text-sm font-semibold text-paper hover:bg-navy-light disabled:opacity-50"
         >
           {isPending ? "Računam bodove…" : "Izračunaj i spremi bodove"}

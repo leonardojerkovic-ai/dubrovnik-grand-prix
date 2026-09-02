@@ -289,6 +289,18 @@ model Tournament {
 
   minPlayersMet Boolean @default(false) // izračunato nakon unosa rezultata (N>=6 za GP / N>=7 za Akademiju + odigran predviđen broj kola)
 
+  /// Trenutak prve objave rezultata. Od njega teče rok od 7 dana za prigovor
+  /// (čl. 29 GP / čl. 22 Akademije); nakon isteka rezultati su konačni.
+  /// Zaključavanje se ne sprema kao zastavica nego izvodi iz ovog datuma —
+  /// zastavica bi se mogla razići sa stvarnim protekom vremena.
+  resultsPublishedAt DateTime?
+
+  /// Privremeno otključavanje već konačnih rezultata. Postavlja ga admin uz
+  /// obrazloženje; zapisuje se u audit log. Vidi lib/scoring/results-lock.ts.
+  unlockedUntil  DateTime?
+  unlockReason   String?
+  unlockedByEmail String?
+
   registrationOpensAt  DateTime?
   registrationClosesAt DateTime?
 
@@ -337,9 +349,6 @@ model TournamentResult {
   /// pravilnika ne može razlikovati od ispravka pogreške (čl. 30 GP / čl. 23
   /// Akademije) niti se prigovor po čl. 29 može provjeriti.
   scoringSnapshot Json?
-
-  isLocked  Boolean  @default(false) // zaključano 7 dana nakon objave (čl. 29 GP / čl. 22 Akademija)
-  lockedAt  DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

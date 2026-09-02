@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ResultsForm } from "./results-form";
+import { LockBanner } from "./lock-banner";
+import { getLockStatus } from "@/lib/scoring/results-lock";
 
 export default async function TournamentResultsPage({
   params,
@@ -33,6 +35,8 @@ export default async function TournamentResultsPage({
     gamesPlayed: r.gamesPlayed,
   }));
 
+  const lock = getLockStatus(tournament);
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -54,10 +58,18 @@ export default async function TournamentResultsPage({
         </Link>
       </div>
 
+      <LockBanner
+        tournamentId={tournament.id}
+        status={lock}
+        unlockReason={tournament.unlockReason}
+        unlockedByEmail={tournament.unlockedByEmail}
+      />
+
       <ResultsForm
         tournamentId={tournament.id}
         players={playerOptions}
         initialRows={initialRows}
+        editable={lock.editable}
       />
     </div>
   );

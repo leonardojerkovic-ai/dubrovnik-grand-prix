@@ -24,6 +24,11 @@ import {
 import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
 import { wasClubMemberOn } from "@/lib/membership";
 import { validateRanks } from "@/lib/scoring/ranks";
+import {
+  getLockStatus,
+  lockedMessage,
+  unlockExpiry,
+} from "@/lib/scoring/results-lock";
 
 export type ResultRow = {
   playerId: string;
@@ -57,6 +62,13 @@ export async function saveTournamentResults(
 
   if (!tournament) {
     return { error: "Turnir nije pronađen." };
+  }
+
+  // Čl. 29: nakon isteka roka za prigovor rezultat je konačan. Izmjena tada
+  // traži izričito otključavanje uz obrazloženje.
+  const lock = getLockStatus(tournament);
+  if (!lock.editable) {
+    return { error: lockedMessage(lock.objectionDeadline) };
   }
 
   const playedRows = rows.filter((r) => r.gamesPlayed);
@@ -267,6 +279,15 @@ export async function saveTournamentResults(
       })
     );
 
+    // Prva objava pokreće rok za prigovor (čl. 29). Kasnije izmjene unutar
+    // roka ne pomiču ga — inače bi se rok mogao produljivati unedogled.
+    if (!tournament.resultsPublishedAt) {
+      await prisma.tournament.update({
+        where: { id: tournamentId },
+        data: { resultsPublishedAt: new Date() },
+      });
+    }
+
     // Najvažniji zapis u cijelom tragu: rezultati određuju bodove, a čl. 29
     // daje pravo prigovora. Snimaju se svi plasmani i izračunati bodovi.
     await logAudit({
@@ -308,3 +329,69 @@ export async function saveTournamentResults(
   }
 }
 
+
+/**
+ * Privremeno otključava konačne rezultate radi ispravka (čl. 29).
+ *
+ * Ne briše datum objave — rok za prigovor ostaje onaj izvorni. Otvara samo
+ * prozor od dva sata, uz obavezno obrazloženje koje ide u audit log. Time
+ * ispravak ostaje moguć, ali nikad neprimijećen.
+ */
+export async function unlockTournamentResults(
+  tournamentId: string,
+  reason: string
+): Promise<{ error?: string; message?: string }> {
+  const actor = await requireAdmin();
+
+  const trimmed = reason.trim();
+  if (trimmed.length < 10) {
+    return {
+      error: "Obrazloženje je obavezno i mora imati najmanje 10 znakova.",
+    };
+  }
+
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: {
+      name: true,
+      resultsPublishedAt: true,
+      unlockedUntil: true,
+    },
+  });
+
+  if (!tournament) {
+    return { error: "Turnir nije pronađen." };
+  }
+
+  const lock = getLockStatus(tournament);
+  if (lock.editable) {
+    return { error: "Rezultati nisu zaključani — otključavanje nije potrebno." };
+  }
+
+  const until = unlockExpiry(new Date());
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: {
+      unlockedUntil: until,
+      unlockReason: trimmed,
+      unlockedByEmail: actor.email,
+    },
+  });
+
+  await logAudit({
+    actor,
+    action: "UPDATE",
+    entity: "Tournament",
+    entityId: tournamentId,
+    summary: `Otključani konačni rezultati turnira "${tournament.name}": ${trimmed}`,
+    after: { unlockedUntil: until.toISOString(), reason: trimmed },
+  });
+
+  revalidatePath(`/admin/tournaments/${tournamentId}/results`);
+  return {
+    message: `Rezultati su otključani do ${new Intl.DateTimeFormat("hr-HR", {
+      timeStyle: "short",
+    }).format(until)}.`,
+  };
+}
