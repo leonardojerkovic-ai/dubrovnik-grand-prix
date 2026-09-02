@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ export async function createHallOfFameEntry(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = hallOfFameSchema.safeParse({
     seasonId: formData.get("seasonId"),
     categoryCode: formData.get("categoryCode"),
@@ -26,7 +27,15 @@ export async function createHallOfFameEntry(
   }
 
   try {
-    await prisma.hallOfFame.create({ data: parsed.data });
+    const created = await prisma.hallOfFame.create({ data: parsed.data });
+    await logAudit({
+      actor,
+      action: "CREATE",
+      entity: "HallOfFame",
+      entityId: created.id,
+      summary: `Hall of Fame: dodano ${created.place}. mjesto (${created.categoryCode})`,
+      after: created,
+    });
   } catch (err: unknown) {
     if (
       typeof err === "object" &&
@@ -48,8 +57,17 @@ export async function createHallOfFameEntry(
 }
 
 export async function deleteHallOfFameEntry(id: string): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
+  const before = await prisma.hallOfFame.findUnique({ where: { id } });
   await prisma.hallOfFame.delete({ where: { id } });
+  await logAudit({
+    actor,
+    action: "DELETE",
+    entity: "HallOfFame",
+    entityId: id,
+    summary: `Hall of Fame: obrisano ${before?.place ?? "?"}. mjesto (${before?.categoryCode ?? "?"})`,
+    before,
+  });
   revalidatePath("/admin/hall-of-fame");
   revalidatePath("/hall-of-fame");
 }

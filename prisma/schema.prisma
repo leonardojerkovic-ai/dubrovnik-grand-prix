@@ -412,6 +412,38 @@ model AcademyEligibility {
   @@map("academy_eligibility")
 }
 
+/// Trag o izmjenama u adminu.
+///
+/// Čl. 29 daje igraču pravo prigovora na izračun u roku od 7 dana. Bez
+/// zapisa tko je, kada i što promijenio, prigovor se svodi na sjećanje.
+/// Zapisi se samo dodaju — nikad se ne mijenjaju ni brišu iz aplikacije.
+model AuditLog {
+  id String @id @default(cuid())
+  at DateTime @default(now())
+
+  /// Tko je izveo radnju. Email umjesto veze na User jer trag mora ostati
+  /// čitljiv i nakon što se korisnički račun obriše.
+  actorEmail String
+  actorRole  String
+
+  action   String  // CREATE | UPDATE | DELETE | RECALCULATE
+  entity   String  // Player, Tournament, Season, TournamentResult, ...
+  entityId String?
+
+  /// Ljudski čitljiv opis na hrvatskom — ono što se vidi u pregledu.
+  summary String
+
+  /// Stanje prije i poslije, gdje ima smisla. Kod brisanja se puni samo
+  /// "before", jer je to jedini preostali zapis o obrisanom podatku.
+  before Json?
+  after  Json?
+
+  @@index([at])
+  @@index([entity, entityId])
+  @@index([actorEmail])
+  @@map("audit_log")
+}
+
 // ----------------------------------------------------------------------------
 // SADRŽAJ: DOKUMENTI, NAJAVE, HALL OF FAME
 // ----------------------------------------------------------------------------

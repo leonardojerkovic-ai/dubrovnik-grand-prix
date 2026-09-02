@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -29,7 +30,7 @@ export async function createTournament(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = tournamentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -48,6 +49,15 @@ export async function createTournament(
     },
   });
 
+  await logAudit({
+    actor,
+    action: "CREATE",
+    entity: "Tournament",
+    entityId: tournament.id,
+    summary: `Stvoren turnir "${tournament.name}"`,
+    after: tournament,
+  });
+
   revalidatePath("/admin/tournaments");
   redirect(`/admin/tournaments/${tournament.id}`);
 }
@@ -57,15 +67,16 @@ export async function updateTournament(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = tournamentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
   const { level, baseMinutes, incrementSeconds, ...rest } = parsed.data;
+  const before = await prisma.tournament.findUnique({ where: { id: tournamentId } });
 
-  await prisma.tournament.update({
+  const updated = await prisma.tournament.update({
     where: { id: tournamentId },
     data: {
       ...rest,
@@ -77,13 +88,39 @@ export async function updateTournament(
     },
   });
 
+  // Razina i tempo ulaze u izračun bodova (čl. 5), pa je izmjena turnira
+  // nakon unesenih rezultata zahvat koji mora ostaviti trag.
+  await logAudit({
+    actor,
+    action: "UPDATE",
+    entity: "Tournament",
+    entityId: tournamentId,
+    summary: `Izmijenjen turnir "${updated.name}"`,
+    before,
+    after: updated,
+  });
+
   revalidatePath("/admin/tournaments");
   revalidatePath(`/admin/tournaments/${tournamentId}`);
   return { message: "Spremljeno." };
 }
 
 export async function deleteTournament(tournamentId: string): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
+  const before = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    include: { _count: { select: { results: true } } },
+  });
   await prisma.tournament.delete({ where: { id: tournamentId } });
+  await logAudit({
+    actor,
+    action: "DELETE",
+    entity: "Tournament",
+    entityId: tournamentId,
+    summary:
+      `Obrisan turnir "${before?.name ?? tournamentId}"` +
+      (before?._count.results ? ` s ${before._count.results} rezultata` : ""),
+    before,
+  });
   revalidatePath("/admin/tournaments");
 }

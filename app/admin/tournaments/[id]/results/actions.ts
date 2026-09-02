@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
@@ -47,7 +48,8 @@ export async function saveTournamentResults(
   tournamentId: string,
   rows: ResultRow[]
 ): Promise<SaveResultsState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
+
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
     include: { season: true },
@@ -264,6 +266,25 @@ export async function saveTournamentResults(
         });
       })
     );
+
+    // Najvažniji zapis u cijelom tragu: rezultati određuju bodove, a čl. 29
+    // daje pravo prigovora. Snimaju se svi plasmani i izračunati bodovi.
+    await logAudit({
+      actor,
+      action: "RECALCULATE",
+      entity: "TournamentResult",
+      entityId: tournamentId,
+      summary: `Spremljeni rezultati turnira "${tournament.name}" (${N} igrača)`,
+      after: {
+        tournamentName: tournament.name,
+        playerCount: N,
+        results: playedRows.map((row) => ({
+          playerId: row.playerId,
+          rank: row.rank,
+          gpPoints: pointsByPlayer.get(row.playerId)?.points ?? null,
+        })),
+      },
+    });
 
     revalidatePath(`/admin/tournaments/${tournamentId}/results`);
 

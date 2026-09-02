@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -12,7 +13,7 @@ export async function createAnnouncement(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = announcementSchema.safeParse({
     title: formData.get("title"),
     body: formData.get("body"),
@@ -26,12 +27,21 @@ export async function createAnnouncement(
 
   const { tournamentId, seasonId, ...rest } = parsed.data;
 
-  await prisma.announcement.create({
+  const created = await prisma.announcement.create({
     data: {
       ...rest,
       tournamentId: tournamentId && tournamentId.length > 0 ? tournamentId : null,
       seasonId: seasonId && seasonId.length > 0 ? seasonId : null,
     },
+  });
+
+  await logAudit({
+    actor,
+    action: "CREATE",
+    entity: "Announcement",
+    entityId: created.id,
+    summary: `Objavljena najava "${created.title}"`,
+    after: created,
   });
 
   revalidatePath("/admin/announcements");
@@ -40,8 +50,17 @@ export async function createAnnouncement(
 }
 
 export async function deleteAnnouncement(id: string): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
+  const before = await prisma.announcement.findUnique({ where: { id } });
   await prisma.announcement.delete({ where: { id } });
+  await logAudit({
+    actor,
+    action: "DELETE",
+    entity: "Announcement",
+    entityId: id,
+    summary: `Obrisana najava "${before?.title ?? id}"`,
+    before,
+  });
   revalidatePath("/admin/announcements");
   revalidatePath("/najave");
 }

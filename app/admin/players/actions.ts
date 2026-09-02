@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -31,7 +32,7 @@ export async function createPlayer(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
@@ -43,7 +44,7 @@ export async function createPlayer(
     v && v.length > 0 ? new Date(v) : null;
 
   try {
-    await prisma.player.create({
+    const created = await prisma.player.create({
       data: {
         ...rest,
         fideId: fideId && fideId.length > 0 ? fideId : null,
@@ -51,6 +52,15 @@ export async function createPlayer(
         memberSince: toDate(memberSince),
         memberUntil: toDate(memberUntil),
       },
+    });
+
+    await logAudit({
+      actor,
+      action: "CREATE",
+      entity: "Player",
+      entityId: created.id,
+      summary: `Dodan igrač ${created.lastName} ${created.firstName}`,
+      after: created,
     });
   } catch (err: unknown) {
     if (
@@ -75,7 +85,7 @@ export async function updatePlayer(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
@@ -86,8 +96,10 @@ export async function updatePlayer(
   const toDate = (v: string | undefined) =>
     v && v.length > 0 ? new Date(v) : null;
 
+  const before = await prisma.player.findUnique({ where: { id: playerId } });
+
   try {
-    await prisma.player.update({
+    const updated = await prisma.player.update({
       where: { id: playerId },
       data: {
         ...rest,
@@ -96,6 +108,16 @@ export async function updatePlayer(
         memberSince: toDate(memberSince),
         memberUntil: toDate(memberUntil),
       },
+    });
+
+    await logAudit({
+      actor,
+      action: "UPDATE",
+      entity: "Player",
+      entityId: playerId,
+      summary: `Izmijenjen igrač ${updated.lastName} ${updated.firstName}`,
+      before,
+      after: updated,
     });
   } catch (err: unknown) {
     if (
@@ -116,9 +138,19 @@ export async function updatePlayer(
 }
 
 export async function deletePlayer(playerId: string): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
+  // Dohvat prije brisanja — nakon njega je audit trag jedini preostali zapis.
+  const before = await prisma.player.findUnique({ where: { id: playerId } });
   try {
     await prisma.player.delete({ where: { id: playerId } });
+    await logAudit({
+      actor,
+      action: "DELETE",
+      entity: "Player",
+      entityId: playerId,
+      summary: `Obrisan igrač ${before ? `${before.lastName} ${before.firstName}` : playerId}`,
+      before,
+    });
   } catch (err: unknown) {
     if (
       typeof err === "object" &&

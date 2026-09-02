@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { Prisma } from "@prisma/client";
@@ -23,7 +24,7 @@ export type SaveRatingsState = { message?: string; error?: string };
  *      se nikad ne briše — potrebna za FR izračun po datumu turnira)
  */
 export async function saveBulkRatings(rows: RatingRow[]): Promise<SaveRatingsState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const relevant = rows.filter(
     (r) => r.standard != null || r.rapid != null || r.blitz != null
   );
@@ -93,6 +94,15 @@ export async function saveBulkRatings(rows: RatingRow[]): Promise<SaveRatingsSta
 
   try {
     await prisma.$transaction(ops);
+
+    await logAudit({
+      actor,
+      action: "UPDATE",
+      entity: "PlayerRating",
+      summary: `Ažurirani rejtinzi za ${relevant.length} igrača`,
+      after: { snapshotDate, playerIds: relevant.map((r) => r.playerId) },
+    });
+
     revalidatePath("/admin/ratings");
     revalidatePath("/admin/players");
     return { message: `Ažurirano ${relevant.length} igrača.` };

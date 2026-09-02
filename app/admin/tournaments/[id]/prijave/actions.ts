@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -17,7 +18,7 @@ export async function adminAddRegistration(
   tournamentId: string,
   playerId: string
 ): Promise<AdminRegistrationState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   if (!playerId) {
     return { error: "Odaberi igrača." };
   }
@@ -28,6 +29,15 @@ export async function adminAddRegistration(
     update: { status: "PRIJAVLJEN" },
   });
 
+  await logAudit({
+    actor,
+    action: "CREATE",
+    entity: "TournamentRegistration",
+    entityId: `${tournamentId}:${playerId}`,
+    summary: "Igrač ručno dodan na popis prijavljenih",
+    after: { tournamentId, playerId, status: "PRIJAVLJEN" },
+  });
+
   revalidatePath(`/admin/tournaments/${tournamentId}/prijave`);
   return { message: "Igrač dodan na popis prijavljenih." };
 }
@@ -36,10 +46,21 @@ export async function adminRemoveRegistration(
   registrationId: string,
   tournamentId: string
 ): Promise<void> {
-  await requireAdmin();
-  await prisma.tournamentRegistration.update({
+  const actor = await requireAdmin();
+  const updated = await prisma.tournamentRegistration.update({
     where: { id: registrationId },
     data: { status: "OTKAZAN" },
+    include: { player: { select: { firstName: true, lastName: true } } },
   });
+
+  await logAudit({
+    actor,
+    action: "UPDATE",
+    entity: "TournamentRegistration",
+    entityId: registrationId,
+    summary: `Otkazana prijava: ${updated.player.lastName} ${updated.player.firstName}`,
+    after: { status: "OTKAZAN" },
+  });
+
   revalidatePath(`/admin/tournaments/${tournamentId}/prijave`);
 }

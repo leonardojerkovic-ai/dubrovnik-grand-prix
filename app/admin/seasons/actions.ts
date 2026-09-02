@@ -1,6 +1,7 @@
 "use server";
 
 import { requireAdmin } from "@/lib/require-admin";
+import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -34,7 +35,7 @@ export async function createSeason(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = seasonSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
@@ -56,6 +57,15 @@ export async function createSeason(
     if (isActive) {
       await deactivateOtherSeasons(system, season.id);
     }
+
+    await logAudit({
+      actor,
+      action: "CREATE",
+      entity: "Season",
+      entityId: season.id,
+      summary: `Stvorena sezona ${season.yearLabel} (${season.system})`,
+      after: season,
+    });
   } catch (err: unknown) {
     if (
       typeof err === "object" &&
@@ -81,16 +91,17 @@ export async function updateSeason(
   _prevState: ActionState,
   formData: FormData
 ): Promise<ActionState> {
-  await requireAdmin();
+  const actor = await requireAdmin();
   const parsed = seasonSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
   const { system, yearLabel, startDate, endDate, isActive } = parsed.data;
+  const before = await prisma.season.findUnique({ where: { id: seasonId } });
 
   try {
-    await prisma.season.update({
+    const updated = await prisma.season.update({
       where: { id: seasonId },
       data: {
         system,
@@ -104,6 +115,16 @@ export async function updateSeason(
     if (isActive) {
       await deactivateOtherSeasons(system, seasonId);
     }
+
+    await logAudit({
+      actor,
+      action: "UPDATE",
+      entity: "Season",
+      entityId: seasonId,
+      summary: `Izmijenjena sezona ${updated.yearLabel} (${updated.system})`,
+      before,
+      after: updated,
+    });
   } catch (err: unknown) {
     if (
       typeof err === "object" &&
@@ -126,9 +147,18 @@ export async function updateSeason(
 }
 
 export async function deleteSeason(seasonId: string): Promise<void> {
-  await requireAdmin();
+  const actor = await requireAdmin();
+  const before = await prisma.season.findUnique({ where: { id: seasonId } });
   try {
     await prisma.season.delete({ where: { id: seasonId } });
+    await logAudit({
+      actor,
+      action: "DELETE",
+      entity: "Season",
+      entityId: seasonId,
+      summary: `Obrisana sezona ${before?.yearLabel ?? seasonId}`,
+      before,
+    });
   } catch (err: unknown) {
     if (
       typeof err === "object" &&
