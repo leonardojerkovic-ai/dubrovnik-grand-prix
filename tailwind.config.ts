@@ -29,6 +29,8 @@ const config: Config = {
       },
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
+        // Serif, samo za naslov na naslovnici.
+        hero: ["var(--font-hero)", "Georgia", "serif"],
         body: ["var(--font-body)", "sans-serif"],
         mono: ["var(--font-mono)", "monospace"],
       },

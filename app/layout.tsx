@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import {
+  Inter,
+  Space_Grotesk,
+  Fraunces,
+  JetBrains_Mono,
+} from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
@@ -8,6 +13,18 @@ const display = Space_Grotesk({
   subsets: ["latin", "latin-ext"],
   variable: "--font-display",
   weight: ["500", "700"],
+});
+
+/**
+ * Serif SAMO za naslov na naslovnici. Namjerno se ne koristi drugdje —
+ * jedan istaknuti natpis nosi identitet, a serif kroz cijelu stranicu
+ * učinio bi je težom za čitanje i manje dosljednom s ostatkom sučelja.
+ */
+const hero = Fraunces({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-hero",
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
 });
 
 const body = Inter({
@@ -53,7 +70,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="hr" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+    <html lang="hr" className={`${display.variable} ${hero.variable} ${body.variable} ${mono.variable}`}>
       <body>
         <SiteHeader />
         <main>{children}</main>
