@@ -129,7 +129,10 @@ model PasswordResetToken {
   id        String    @id @default(cuid())
   userId    String
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  token     String    @unique
+  /// SHA-256 hash tokena, nikad sam token. Poveznica koja stiže emailom
+  /// sadrži izvorni token; u bazi stoji samo njegov otisak, pa procurjeli
+  /// redak ne omogućuje preuzimanje računa.
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
   createdAt DateTime  @default(now())
@@ -168,7 +171,6 @@ model Player {
   ratingsHistory   PlayerRatingSnapshot[]
   results          TournamentResult[]
   registrations    TournamentRegistration[]
-  categoryHistory  PlayerCategoryMembership[]
   hallOfFameEntries HallOfFame[]
   academyEligibility AcademyEligibility[]
 
@@ -274,6 +276,8 @@ model Tournament {
   registrationClosesAt DateTime?
 
   createdAt DateTime @default(now())
+
+  @@index([seasonId])
   updatedAt DateTime @updatedAt
 
   results       TournamentResult[]
@@ -343,6 +347,7 @@ model TournamentRegistration {
   registeredAt DateTime            @default(now())
 
   @@unique([tournamentId, playerId])
+  @@index([playerId])
   @@map("tournament_registrations")
 }
 
@@ -350,33 +355,16 @@ model TournamentRegistration {
 // KATEGORIJE
 // ----------------------------------------------------------------------------
 
-/// Referentni popis ljestvica po sustavu.
-/// GP: OPCI, ZENE, U20, U16, U12, S50, S65, U1800
-/// Akademija: UKUPNO, U08, U10, U12, ZENE
-model StandingsCategory {
-  id     String     @id @default(cuid())
-  system SystemType
-  code   String // npr. "U16", "S65", "OPCI"
-  name   String
-
-  @@unique([system, code])
-  @@map("standings_categories")
-}
-
-/// Snapshot pripadnosti kategoriji NA DAN turnira — čl. 22 GP izričito kaže
-/// da promjena pripadnosti tijekom sezone ne djeluje retroaktivno, pa se
-/// pripadnost ne smije izvoditi "live" iz birthYear/rating u trenutku upita,
-/// nego mora biti zabilježena po turniru.
-model PlayerCategoryMembership {
-  id           String @id @default(cuid())
-  playerId     String
-  player       Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  tournamentId String
-  categoryCode String // referencira StandingsCategory.code
-
-  @@unique([playerId, tournamentId, categoryCode])
-  @@map("player_category_memberships")
-}
+// Popis ljestvica živi u kodu (lib/scoring/gp/categories.ts i
+// lib/standings/*), ne u bazi — kategorije su fiksne i propisane
+// pravilnikom, pa referentna tablica ne bi ništa dodala.
+//
+// Nekadašnja tablica PlayerCategoryMembership uklonjena je jer nije bila
+// potrebna: dobne i veteranske kategorije ovise samo o godištu igrača i
+// godini početka sezone, a oboje je nepromjenjivo tijekom sezone. Rejtinška
+// kategorija (U1800) ovisi o rejtingu zabilježenom uz rezultat turnira
+// (TournamentResult.ratingSnapshotUsed). Ni u jednom slučaju nema
+// retroaktivnosti koju bi zaseban snapshot spriječio.
 
 /// Zaključano pravo na bodove u GP-u Akademije — čl. 3.
 ///
@@ -409,6 +397,7 @@ model AcademyEligibility {
 
   @@unique([seasonId, playerId])
   @@index([playerId])
+  @@index([firstTournamentId])
   @@map("academy_eligibility")
 }
 
@@ -472,6 +461,8 @@ model Announcement {
   seasonId     String?
   season       Season?     @relation(fields: [seasonId], references: [id], onDelete: SetNull)
 
+  @@index([tournamentId])
+  @@index([seasonId])
   @@map("announcements")
 }
 
@@ -488,5 +479,6 @@ model HallOfFame {
   pointsTotal  Int
 
   @@unique([seasonId, categoryCode, place])
+  @@index([playerId])
   @@map("hall_of_fame")
 }

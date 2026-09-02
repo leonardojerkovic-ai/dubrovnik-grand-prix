@@ -1,9 +1,9 @@
 "use server";
 
-import crypto from "crypto";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
+import { generateResetToken, hashResetToken } from "@/lib/tokens";
 
 export type ForgotPasswordState = { message?: string; error?: string };
 export type ResetPasswordState = { message?: string; error?: string };
@@ -30,11 +30,12 @@ export async function requestPasswordReset(
     return { message: genericMessage };
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
+  // Token ide korisniku u poveznici, u bazu ide samo njegov hash.
+  const token = generateResetToken();
   await prisma.passwordResetToken.create({
     data: {
       userId: user.id,
-      token,
+      tokenHash: hashResetToken(token),
       expiresAt: new Date(Date.now() + TOKEN_TTL_MS),
     },
   });
@@ -62,7 +63,7 @@ export async function resetPassword(
   }
 
   const resetToken = await prisma.passwordResetToken.findUnique({
-    where: { token },
+    where: { tokenHash: hashResetToken(token) },
   });
 
   if (!resetToken || resetToken.usedAt || resetToken.expiresAt < new Date()) {

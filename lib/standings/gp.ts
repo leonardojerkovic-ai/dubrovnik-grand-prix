@@ -36,13 +36,14 @@ export type GpStandingRow = {
  * Pripada li igrač zadanoj kategoriji — koristi bodovni engine
  * (lib/scoring/gp/categories.ts) za dobne/veteranske/U1800 provjere.
  *
- * NAPOMENA / POJEDNOSTAVLJENJE: čl. 22 st. 3 zahtijeva da se pripadnost
- * kategoriji odredi NA DAN TURNIRA (snapshot), ne prema trenutnom stanju
- * igrača. Shema ima PlayerCategoryMembership tablicu za to, ali admin UI za
- * unos rezultata je trenutno ne popunjava. Ova funkcija zato računa
- * pripadnost "live" iz trenutnog birthYear/gender igrača — ispravno je
- * SVE DOK se igračeva kategorija ne promijeni usred sezone (rijedak
- * slučaj), ali nije 100% vjerno pravilniku. Vidi TODO za sljedeću fazu.
+ * O retroaktivnosti (čl. 22 st. 3): dobne i veteranske kategorije ovise samo
+ * o godištu igrača i godini početka sezone. Oboje je nepromjenjivo tijekom
+ * sezone, pa izračun daje isti rezultat u siječnju i u prosincu — snapshot
+ * nije potreban. Ženska ljestvica je jednako stabilna.
+ *
+ * Jedina promjenjiva kategorija je U1800, i za nju se NE koristi trenutni
+ * rejting nego ratingUsedOnTournament — rejting tempa tog turnira zabilježen
+ * uz rezultat (čl. 22). Time je zahtjev iz st. 3 zadovoljen.
  */
 function playerBelongsToCategory(
   player: { birthYear: number; gender: string },
