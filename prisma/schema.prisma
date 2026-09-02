@@ -324,6 +324,10 @@ model TournamentResult {
   updatedAt DateTime @updatedAt
 
   @@unique([tournamentId, playerId])
+  /// Plasman je jedinstven unutar turnira (čl. 10 Akademije). Zaštita na
+  /// razini baze, uz provjeru pri unosu — dvostruki plasman tiho iskrivi
+  /// cijelu ljestvicu i teško se otkriva naknadno.
+  @@unique([tournamentId, rank])
   @@index([playerId])
   @@map("tournament_results")
 }

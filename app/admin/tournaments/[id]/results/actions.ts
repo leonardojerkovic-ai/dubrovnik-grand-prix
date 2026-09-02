@@ -22,6 +22,7 @@ import {
 } from "@/lib/scoring/rulebook";
 import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
 import { wasClubMemberOn } from "@/lib/membership";
+import { validateRanks } from "@/lib/scoring/ranks";
 
 export type ResultRow = {
   playerId: string;
@@ -61,6 +62,16 @@ export async function saveTournamentResults(
 
   if (N === 0) {
     return { error: "Nema unesenih igrača koji su odigrali partiju." };
+  }
+
+  // Plasman mora biti jedinstven (čl. 10 Akademije: "Konačni plasman (R)
+  // uvijek je jedinstven") i mora činiti niz 1..N — formula iz čl. 5 računa
+  // (N − R + 1) / N, pa R izvan tog raspona daje besmislen omjer.
+  // Ravnopravnost se razrješava pomoćnim kriterijima turnira, ne dijeljenim
+  // mjestom u unosu.
+  const rankError = validateRanks(playedRows);
+  if (rankError) {
+    return { error: rankError };
   }
 
   try {
@@ -212,6 +223,14 @@ export async function saveTournamentResults(
       }
     }
 
+    // Igrači koji su maknuti s popisa ili prebačeni u "nije odigrao" ne smiju
+    // ostati u bazi sa starim plasmanom — inače bi iskrivili ljestvicu i
+    // sudarili se s jedinstvenim indeksom na (tournamentId, rank).
+    const keepPlayerIds = playedRows.map((r) => r.playerId);
+    await prisma.tournamentResult.deleteMany({
+      where: { tournamentId, playerId: { notIn: keepPlayerIds } },
+    });
+
     // Upsert svakog rezultata (omogućava naknadnu korekciju prije zaključavanja)
     await prisma.$transaction(
       playedRows.map((row) => {
@@ -267,3 +286,4 @@ export async function saveTournamentResults(
     return { error: "Došlo je do neočekivane greške pri izračunu bodova." };
   }
 }
+
