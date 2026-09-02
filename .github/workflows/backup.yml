@@ -1,0 +1,86 @@
+name: Sigurnosna kopija baze
+
+# Nedjeljom u 03:00 UTC. Besplatni Supabase plan nema pouzdane automatske
+# kopije, a sam Supabase preporučuje da projekti na tom planu redovito
+# izvoze podatke i drže ih izvan platforme.
+#
+# Kopija se ŠIFRIRA prije spremanja jer sadrži imena, adrese e-pošte i
+# otiske lozinki članova. Sprema se u zaseban PRIVATNI repozitorij —
+# glavni repozitorij je javan, kao i artefakti njegovih zadataka.
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Izradi dump
+        env:
+          PGURL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          # pg_dump iz kontejnera, da se verzija klijenta poklapa s
+          # poslužiteljem. Sustavski pg_dump na runneru zna biti stariji i
+          # tada odbija raditi.
+          docker run --rm -e PGURL postgres:17 \
+            pg_dump "$PGURL" --no-owner --no-privileges --clean --if-exists \
+            > dump.sql
+          echo "Veličina dumpa: $(du -h dump.sql | cut -f1)"
+
+      - name: Provjeri sadržaj
+        run: |
+          set -euo pipefail
+          # Kopija koja se ne provjeri obično ne radi. Poznat je slučaj da
+          # dump sadrži samo Supabaseove sheme, bez ijedne tablice projekta.
+          missing=0
+          for t in players tournaments tournament_results seasons users; do
+            if ! grep -q "CREATE TABLE public.$t" dump.sql; then
+              echo "NEDOSTAJE tablica: $t"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            echo "Dump ne sadrži očekivane tablice — kopija se ne sprema."
+            exit 1
+          fi
+          echo "Sve očekivane tablice su prisutne."
+          grep -c "^INSERT INTO\|^COPY public" dump.sql || true
+
+      - name: Šifriraj
+        env:
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -in dump.sql -out dump.sql.enc -pass env:PASSPHRASE
+          rm -f dump.sql
+          ls -lh dump.sql.enc
+
+      - name: Spremi u privatni repozitorij
+        env:
+          TOKEN: ${{ secrets.BACKUP_REPO_TOKEN }}
+          REPO: ${{ secrets.BACKUP_REPO }}
+        run: |
+          set -euo pipefail
+          git clone --quiet --depth 1 \
+            "https://x-access-token:${TOKEN}@github.com/${REPO}.git" store
+          mkdir -p store/backups
+          stamp="$(date -u +%Y-%m-%d)"
+          mv dump.sql.enc "store/backups/${stamp}.sql.enc"
+
+          cd store
+          # U stablu se drži zadnjih 12 kopija; starije ostaju u povijesti.
+          ls -1 backups/*.sql.enc | sort | head -n -12 | xargs -r git rm --quiet
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add backups
+          git commit --quiet -m "Kopija baze ${stamp}" || {
+            echo "Nema promjena za spremiti."
+            exit 0
+          }
+          git push --quiet
+          echo "Spremljeno: backups/${stamp}.sql.enc"

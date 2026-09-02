@@ -1,0 +1,25 @@
+name: Održavanje projekta budnim
+
+# Besplatni Supabase plan pauzira projekt nakon tjedan dana neaktivnosti, a
+# pauziran projekt nije dostupan dok se ručno ne obnovi — stranica bi pala.
+# Kroz zimu je sasvim moguće da tjedan dana nitko ne posjeti stranicu, a
+# uvoz rejtinga radi tek jednom mjesečno.
+#
+# Svaka tri dana, dakle s dovoljno zalihe prije praga od sedam.
+on:
+  schedule:
+    - cron: "30 4 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Dodirni bazu
+        env:
+          PGURL: ${{ secrets.DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          docker run --rm -e PGURL postgres:17 \
+            psql "$PGURL" -Atc "select count(*) from public.players"
