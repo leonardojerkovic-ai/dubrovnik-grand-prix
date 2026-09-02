@@ -37,7 +37,7 @@ export default async function HallOfFamePage() {
               <span className={group.season.system === "AKADEMIJA" ? "text-academy" : "text-navy"}>
                 {group.season.system === "GP" ? "Dubrovnik GP" : "Akademija"}
               </span>{" "}
-              {group.season.yearLabel} · {group.items[0].categoryCode}
+              {group.season.yearLabel} · {group.items[0]?.categoryCode}
             </p>
             <ol className="grid gap-2">
               {group.items.map((e) => (

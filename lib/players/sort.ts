@@ -7,6 +7,9 @@
  * Ovo je prikaz za javnost (tko je prijavljen), NE utječe na GP bodovanje.
  */
 
+/** Rang za igrače bez titule ili s nepoznatom oznakom. */
+const TITLE_UNRANKED = 14;
+
 const TITLE_RANK: Record<string, number> = {
   GM: 1,
   IM: 2,
@@ -40,8 +43,8 @@ export function compareByRatingTitleSurname(
   const ratingB = b.rating ?? 0;
   if (ratingA !== ratingB) return ratingB - ratingA; // viši rejting prvo
 
-  const rankA = TITLE_RANK[a.title] ?? TITLE_RANK.NONE;
-  const rankB = TITLE_RANK[b.title] ?? TITLE_RANK.NONE;
+  const rankA = TITLE_RANK[a.title] ?? TITLE_UNRANKED;
+  const rankB = TITLE_RANK[b.title] ?? TITLE_UNRANKED;
   if (rankA !== rankB) return rankA - rankB; // niži rank broj = viša titula prvo
 
   return a.lastName.localeCompare(b.lastName, "hr");

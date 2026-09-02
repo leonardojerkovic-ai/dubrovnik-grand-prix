@@ -3,6 +3,7 @@
 import { requireAdmin } from "@/lib/require-admin";
 
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   calculateAverageRating,
@@ -231,7 +232,7 @@ export async function saveTournamentResults(
             ratingSnapshotUsed: calc.ratingUsed,
             ratingOverridden: true,
             gpPoints: calc.points,
-            scoringSnapshot: calc.snapshot,
+            scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
           },
           update: {
             rank: row.rank,
@@ -239,7 +240,7 @@ export async function saveTournamentResults(
             wasClubMember: memberOnDate(row.playerId),
             ratingSnapshotUsed: calc.ratingUsed,
             gpPoints: calc.points,
-            scoringSnapshot: calc.snapshot,
+            scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
           },
         });
       })

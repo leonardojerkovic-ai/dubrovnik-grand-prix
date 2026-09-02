@@ -5,16 +5,13 @@ const nextConfig = {
       bodySizeLimit: "2mb",
     },
   },
-  // Type-checking i ESLint se za sada preskaču tijekom Vercel builda (jedan
-  // od tih koraka je zapinjao bez jasnog uzroka). Nastavi pokretati
-  // `npx tsc --noEmit` i `npm run lint` lokalno prije pusha da ne izgube
-  // vrijednost — ovo samo sprječava da build na Vercelu blokira deploy.
-  typescript: {
-    ignoreBuildErrors: true,
-  },
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
+  // Type-checking i ESLint namjerno NISU isključeni. Ranije su se
+  // preskakali jer je build zapinjao, ali uzrok su bile stvarne greške
+  // tipova (8 njih u 6 datoteka) koje su u međuvremenu popravljene.
+  // Ako build ovdje padne, to je signal da nešto stvarno ne valja —
+  // popravi grešku umjesto da vratiš ignoriranje.
+  //
+  // Prije pusha lokalno: `npm run typecheck` i `npm run test`.
 };
 
 export default nextConfig;

@@ -86,7 +86,16 @@ export function buildPlayerStanding(
  * Rezultati u `countedResults` MORAJU već biti sortirani od najboljeg prema najlošijem
  * (buildPlayerStanding to osigurava).
  */
-export function compareStandings(a: StandingEntry, b: StandingEntry): number {
+/**
+ * Komparator treba samo zbroj i rezultate koji ulaze u njega, pa prima
+ * i objekte bez playerId (npr. redak ljestvice koji igrača nosi ugniježđeno).
+ */
+export type ComparableStanding = Pick<StandingEntry, "total" | "countedResults">;
+
+export function compareStandings(
+  a: ComparableStanding,
+  b: ComparableStanding
+): number {
   if (a.total !== b.total) return b.total - a.total;
 
   const len = Math.max(a.countedResults.length, b.countedResults.length);

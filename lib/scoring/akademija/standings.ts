@@ -77,13 +77,18 @@ export function isEligibleForFinal(input: {
  * (uparivanje turnira koje su OBA igrača odigrala treba raditi izvan ove
  * funkcije, na razini servisa koji ima pristup punom kalendaru).
  */
+export type ComparableAkademijaStanding = Pick<
+  AkademijaStandingEntry,
+  "total" | "allResults"
+>;
+
 export function compareStandings(
-  a: AkademijaStandingEntry,
-  b: AkademijaStandingEntry
+  a: ComparableAkademijaStanding,
+  b: ComparableAkademijaStanding
 ): number {
   if (a.total !== b.total) return b.total - a.total;
 
-  const sumAll = (e: AkademijaStandingEntry) =>
+  const sumAll = (e: ComparableAkademijaStanding) =>
     e.allResults.reduce((s, r) => s + r.gpPoints, 0);
   const allA = sumAll(a);
   const allB = sumAll(b);

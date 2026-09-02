@@ -73,7 +73,8 @@ export async function registerPlayer(
 
   if (candidates.length === 1) {
     // Točno jedno podudaranje — spoji novi račun s postojećim profilom.
-    const player = candidates[0];
+    // candidates.length === 1 je provjeren iznad, ali TS to ne zna
+    const player = candidates[0]!;
     await prisma.user.create({
       data: {
         email,
