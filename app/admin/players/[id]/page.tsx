@@ -8,16 +8,29 @@ export default async function EditPlayerPage({
 }: {
   params: { id: string };
 }) {
-  const player = await prisma.player.findUnique({ where: { id: params.id } });
+  const player = await prisma.player.findUnique({
+    where: { id: params.id },
+    include: { user: { select: { email: true } } },
+  });
   if (!player) notFound();
 
   const boundUpdatePlayer = updatePlayer.bind(null, player.id);
 
   return (
     <div>
-      <h2 className="font-display text-lg font-bold text-navy mb-4">
+      <h2 className="font-display text-lg font-bold text-navy mb-1">
         Uredi igrača — {player.firstName} {player.lastName}
       </h2>
+
+      {/* Druga strana veze računa i profila; upravlja se u Admin → Korisnici. */}
+      <p className="mb-4 text-xs text-ink/55">
+        {player.user
+          ? `Povezan korisnički račun: ${player.user.email}`
+          : "Nema povezanog korisničkog računa."}{" "}
+        <a href="/admin/users" className="text-navy underline hover:text-crimson">
+          Upravljanje vezama
+        </a>
+      </p>
       <PlayerForm
         action={boundUpdatePlayer}
         defaultValues={{

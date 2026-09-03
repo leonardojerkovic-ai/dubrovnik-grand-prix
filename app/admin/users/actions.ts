@@ -101,3 +101,38 @@ export async function dismissPlayerLink(userId: string) {
 
   revalidatePath("/admin/users");
 }
+
+/** Uklanja vezu između korisničkog računa i igračkog profila. */
+export async function unlinkUserFromPlayer(userId: string) {
+  const actor = await requireAdmin();
+
+  const player = await prisma.player.findFirst({
+    where: { userId },
+    select: { id: true, firstName: true, lastName: true },
+  });
+
+  if (!player) {
+    throw new Error("Taj račun nije povezan ni s jednim igračem.");
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true },
+  });
+
+  await prisma.player.update({
+    where: { id: player.id },
+    data: { userId: null },
+  });
+
+  await logAudit({
+    actor,
+    action: "UPDATE",
+    entity: "User",
+    entityId: userId,
+    summary: `Uklonjena veza računa ${user?.email ?? userId} s igračem ${player.lastName} ${player.firstName}`,
+    before: { userId, playerId: player.id },
+  });
+
+  revalidatePath("/admin/users");
+}
