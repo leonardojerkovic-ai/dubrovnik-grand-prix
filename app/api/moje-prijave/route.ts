@@ -1,36 +1,48 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getCurrentPlayer } from "@/lib/current-player";
+import { getManagedPlayers } from "@/lib/guardian";
 
 /**
- * Turniri na koje je prijavljen trenutni korisnik.
+ * Igrači kojima korisnik upravlja i njihove prijave na turnire.
  *
  * Postoji zato što su javne stranice u predmemoriji (revalidate = 60).
  * Kad bi se stanje prijave prikazivalo iz poslužiteljskog prikaza, prvi
- * posjetitelj bi svoje stanje "zamrznuo" za sve ostale — netko bi vidio
- * "Odjavi se" na turniru na koji se nikad nije prijavio.
- *
- * Zato stranice ostaju statične, a ovaj odgovor je uvijek svjež i vezan uz
- * prijavljenog korisnika.
+ * posjetitelj bi svoje stanje "zamrznuo" za sve ostale.
  */
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const player = await getCurrentPlayer();
-  if (!player) {
+  const players = await getManagedPlayers();
+
+  if (players.length === 0) {
     return NextResponse.json(
-      { tournamentIds: [] },
+      { players: [], registrations: {} },
       { headers: { "Cache-Control": "no-store" } }
     );
   }
 
-  const registrations = await prisma.tournamentRegistration.findMany({
-    where: { playerId: player.id, status: "PRIJAVLJEN" },
-    select: { tournamentId: true },
+  const rows = await prisma.tournamentRegistration.findMany({
+    where: {
+      playerId: { in: players.map((p) => p.id) },
+      status: "PRIJAVLJEN",
+    },
+    select: { tournamentId: true, playerId: true },
   });
 
+  const registrations: Record<string, string[]> = {};
+  for (const r of rows) {
+    (registrations[r.tournamentId] ??= []).push(r.playerId);
+  }
+
   return NextResponse.json(
-    { tournamentIds: registrations.map((r) => r.tournamentId) },
+    {
+      players: players.map((p) => ({
+        id: p.id,
+        name: `${p.firstName} ${p.lastName}`,
+        isSelf: p.isSelf,
+      })),
+      registrations,
+    },
     { headers: { "Cache-Control": "no-store" } }
   );
 }

@@ -9,21 +9,31 @@ import {
 } from "react";
 import { useSession } from "next-auth/react";
 
+export type ManagedPlayer = { id: string; name: string; isSelf: boolean };
+
 /**
- * Stanje vlastitih prijava, dohvaćeno jednom za cijelu stranicu.
+ * Igrači kojima korisnik upravlja i njihove prijave, dohvaćeni jednom za
+ * cijelu stranicu.
  *
  * Bez ovoga bi svaki gumb radio vlastiti upit, a na kalendaru ih zna biti
- * dvadesetak. Ovako je jedan zahtjev po učitavanju stranice.
+ * dvadesetak.
  */
 type Ctx = {
   ready: boolean;
-  isRegistered: (tournamentId: string) => boolean;
-  setRegistered: (tournamentId: string, value: boolean) => void;
+  players: ManagedPlayer[];
+  /** Igrači koji su prijavljeni na zadani turnir. */
+  registeredFor: (tournamentId: string) => string[];
+  setRegistered: (
+    tournamentId: string,
+    playerId: string,
+    value: boolean
+  ) => void;
 };
 
 const RegistrationsContext = createContext<Ctx>({
   ready: false,
-  isRegistered: () => false,
+  players: [],
+  registeredFor: () => [],
   setRegistered: () => {},
 });
 
@@ -33,22 +43,28 @@ export function RegistrationsProvider({
   children: React.ReactNode;
 }) {
   const { status } = useSession();
-  const [ids, setIds] = useState<Set<string> | null>(null);
+  const [players, setPlayers] = useState<ManagedPlayer[]>([]);
+  const [map, setMap] = useState<Record<string, string[]> | null>(null);
 
   useEffect(() => {
     if (status !== "authenticated") {
-      setIds(status === "unauthenticated" ? new Set() : null);
+      if (status === "unauthenticated") {
+        setPlayers([]);
+        setMap({});
+      }
       return;
     }
 
     let cancelled = false;
     fetch("/api/moje-prijave")
-      .then((r) => (r.ok ? r.json() : { tournamentIds: [] }))
-      .then((data: { tournamentIds: string[] }) => {
-        if (!cancelled) setIds(new Set(data.tournamentIds));
+      .then((r) => (r.ok ? r.json() : { players: [], registrations: {} }))
+      .then((data) => {
+        if (cancelled) return;
+        setPlayers(data.players ?? []);
+        setMap(data.registrations ?? {});
       })
       .catch(() => {
-        if (!cancelled) setIds(new Set());
+        if (!cancelled) setMap({});
       });
 
     return () => {
@@ -56,23 +72,28 @@ export function RegistrationsProvider({
     };
   }, [status]);
 
-  const isRegistered = useCallback(
-    (id: string) => ids?.has(id) ?? false,
-    [ids]
+  const registeredFor = useCallback(
+    (tournamentId: string) => map?.[tournamentId] ?? [],
+    [map]
   );
 
-  const setRegistered = useCallback((id: string, value: boolean) => {
-    setIds((prev) => {
-      const next = new Set(prev ?? []);
-      if (value) next.add(id);
-      else next.delete(id);
-      return next;
-    });
-  }, []);
+  const setRegistered = useCallback(
+    (tournamentId: string, playerId: string, value: boolean) => {
+      setMap((prev) => {
+        const next = { ...(prev ?? {}) };
+        const list = new Set(next[tournamentId] ?? []);
+        if (value) list.add(playerId);
+        else list.delete(playerId);
+        next[tournamentId] = [...list];
+        return next;
+      });
+    },
+    []
+  );
 
   return (
     <RegistrationsContext.Provider
-      value={{ ready: ids !== null, isRegistered, setRegistered }}
+      value={{ ready: map !== null, players, registeredFor, setRegistered }}
     >
       {children}
     </RegistrationsContext.Provider>

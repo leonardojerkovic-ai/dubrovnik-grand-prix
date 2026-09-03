@@ -9,8 +9,8 @@ import { useRegistrations } from "./registrations-provider";
 /**
  * Gumb za prijavu na turnir, isti na svim mjestima gdje se turnir pojavljuje.
  *
- * Stanje ne dolazi iz poslužiteljskog prikaza nego iz konteksta, jer su
- * javne stranice u predmemoriji — vidi RegistrationsProvider.
+ * Roditelj može voditi više djece, pa se tada za svako prikazuje zaseban
+ * redak. Tko upravlja samo jednim profilom vidi običan gumb, bez izbora.
  */
 export function RegisterButton({
   tournamentId,
@@ -19,8 +19,8 @@ export function RegisterButton({
   tournamentId: string;
   size?: "sm" | "md";
 }) {
-  const { status, data: session } = useSession();
-  const { ready, isRegistered, setRegistered } = useRegistrations();
+  const { status } = useSession();
+  const { ready, players, registeredFor, setRegistered } = useRegistrations();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -41,49 +41,65 @@ export function RegisterButton({
     );
   }
 
-  const playerId = (session?.user as { playerId?: string | null } | undefined)
-    ?.playerId;
+  if (!ready) return null;
 
-  // Račun bez povezanog igračkog profila ne može nastupiti — povezivanje
-  // odobrava administrator (vidi Admin → Korisnici).
-  if (!playerId) {
+  if (players.length === 0) {
     return (
-      <span
-        className={`inline-block rounded-md border border-navy/15 font-medium text-ink/50 ${pad}`}
-        title="Račun još nije povezan s igračkim profilom. Administrator to potvrđuje."
+      <Link
+        href="/moji-igraci"
+        className={`inline-block rounded-md border border-navy/15 font-medium text-ink/60 hover:bg-navy/5 ${pad}`}
+        title="Račun još nije povezan s igračkim profilom."
       >
-        Čeka povezivanje
-      </span>
+        Poveži profil
+      </Link>
     );
   }
 
-  if (!ready) return null;
+  const registered = registeredFor(tournamentId);
 
-  const registered = isRegistered(tournamentId);
+  const toggle = (playerId: string, isRegistered: boolean) => {
+    setError(null);
+    startTransition(async () => {
+      const result = isRegistered
+        ? await cancelRegistration(tournamentId, playerId)
+        : await registerForTournament(tournamentId, playerId);
+      if (result.error) setError(result.error);
+      else setRegistered(tournamentId, playerId, !isRegistered);
+    });
+  };
 
-  return (
-    <div className="text-right">
+  const button = (playerId: string, label: string | null) => {
+    const isRegistered = registered.includes(playerId);
+    return (
       <button
+        key={playerId}
         type="button"
         disabled={isPending}
-        onClick={() => {
-          setError(null);
-          startTransition(async () => {
-            const result = registered
-              ? await cancelRegistration(tournamentId)
-              : await registerForTournament(tournamentId);
-            if (result.error) setError(result.error);
-            else setRegistered(tournamentId, !registered);
-          });
-        }}
+        onClick={() => toggle(playerId, isRegistered)}
         className={
-          registered
+          isRegistered
             ? `rounded-md border border-crimson/40 font-semibold text-crimson hover:bg-crimson/5 disabled:opacity-50 ${pad}`
             : `rounded-md bg-gold font-semibold text-navy hover:bg-gold-light disabled:opacity-50 ${pad}`
         }
       >
-        {isPending ? "…" : registered ? "Odjavi se" : "Prijavi se"}
+        {isPending
+          ? "…"
+          : `${isRegistered ? "Odjavi" : "Prijavi"}${label ? ` ${label}` : " se"}`}
       </button>
+    );
+  };
+
+  return (
+    <div className="text-right">
+      {players.length === 1 ? (
+        button(players[0]!.id, null)
+      ) : (
+        <div className="flex flex-col items-end gap-1.5">
+          {players.map((p) =>
+            button(p.id, p.isSelf ? "sebe" : p.name.split(" ")[0]!)
+          )}
+        </div>
+      )}
       {error && <p className="mt-1 text-xs text-crimson">{error}</p>}
     </div>
   );

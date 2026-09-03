@@ -117,7 +117,11 @@ model User {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  player Player? // 1:1 — korisnički račun povezan s profilom igrača
+  player Player? // 1:1 — vlastiti igrački profil vlasnika računa
+  /// Djeca kojima ovaj račun upravlja. Roditelj s troje djece ne treba tri
+  /// adrese e-pošte; vlastiti profil (player) i skrbništvo su odvojeni, pa
+  /// roditelj može i sam igrati, i ne mora.
+  guardianOf GuardianLink[]
   passwordResetTokens PasswordResetToken[]
   gdprConsentAt DateTime? // vremenski žig privole s Politikom privatnosti pri registraciji — dokaz privole
 
@@ -203,6 +207,7 @@ model Player {
   registrations    TournamentRegistration[]
   hallOfFameEntries HallOfFame[]
   academyEligibility AcademyEligibility[]
+  guardians          GuardianLink[]
 
   @@index([lastName, firstName])
   @@map("players")
@@ -448,6 +453,30 @@ model AcademyEligibility {
   @@index([playerId])
   @@index([firstTournamentId])
   @@map("academy_eligibility")
+}
+
+/// Skrbništvo nad maloljetnim igračem.
+///
+/// Postoji zato što jedan roditelj često vodi dvoje ili troje djece, a
+/// tražiti tri odvojene adrese e-pošte bilo bi besmisleno. Odvojeno je od
+/// User.player, koji je vlastiti profil vlasnika računa — roditelj može
+/// imati i jedno i drugo, ili samo skrbništvo.
+///
+/// Uspostavlja se samo za igrače mlađe od 18 godina. Kad dijete postane
+/// punoljetno, veza NE prestaje sama od sebe — prekid usred sezone zatekao
+/// bi ga bez pristupa. Umjesto toga se pojavljuje na popisu u adminu, gdje
+/// se razrješava od slučaja do slučaja.
+model GuardianLink {
+  id              String   @id @default(cuid())
+  guardianUserId  String
+  guardian        User     @relation(fields: [guardianUserId], references: [id], onDelete: Cascade)
+  playerId        String
+  player          Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdAt       DateTime @default(now())
+
+  @@unique([guardianUserId, playerId])
+  @@index([playerId])
+  @@map("guardian_links")
 }
 
 /// Trag o izmjenama u adminu.

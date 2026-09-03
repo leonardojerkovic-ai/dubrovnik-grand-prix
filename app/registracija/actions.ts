@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
+import { isMinorByBirthYear } from "@/lib/guardian-rules";
 import { registrationSchema } from "@/lib/validation/registration";
 
 export type RegistrationState = {
@@ -74,6 +75,9 @@ export async function registerPlayer(
   // Pristupni kod, ako je unesen, dokazuje identitet i povezuje račun
   // odmah — bez čekanja na odobrenje administratora.
   const rawCode = String(formData.get("linkCode") ?? "").trim();
+  // Roditelj koji sam ne igra ne treba prazan igrački profil koji nikad
+  // neće nastupiti — račun mu služi samo za upravljanje djecom.
+  const asGuardian = formData.get("asGuardian") === "on";
 
   if (rawCode.length > 0) {
     if (!looksLikeLinkCode(rawCode)) {
@@ -82,7 +86,7 @@ export async function registerPlayer(
 
     const target = await prisma.player.findUnique({
       where: { linkCodeHash: hashLinkCode(rawCode) },
-      select: { id: true, userId: true, linkCodeUsedAt: true },
+      select: { id: true, userId: true, linkCodeUsedAt: true, birthYear: true },
     });
 
     // Ista poruka za nepostojeći, iskorišten i već zauzet kod — inače bi se
@@ -93,24 +97,31 @@ export async function registerPlayer(
       };
     }
 
-    await prisma.$transaction([
-      prisma.user.create({
-        data: { email, passwordHash, role: "PLAYER", gdprConsentAt },
-      }),
-      prisma.player.update({
-        where: { id: target.id },
-        data: { linkCodeUsedAt: new Date() },
-      }),
-    ]);
-
-    const created = await prisma.user.findUniqueOrThrow({
-      where: { email },
+    const created = await prisma.user.create({
+      data: { email, passwordHash, role: "PLAYER", gdprConsentAt },
       select: { id: true },
     });
-    await prisma.player.update({
-      where: { id: target.id },
-      data: { userId: created.id },
-    });
+
+    const minor = isMinorByBirthYear(target.birthYear);
+
+    // Skrbništvo za dijete, vlastiti profil za sve ostalo. Punoljetnog
+    // igrača nitko drugi ne vodi.
+    if (asGuardian && minor) {
+      await prisma.$transaction([
+        prisma.guardianLink.create({
+          data: { guardianUserId: created.id, playerId: target.id },
+        }),
+        prisma.player.update({
+          where: { id: target.id },
+          data: { linkCodeUsedAt: new Date() },
+        }),
+      ]);
+    } else {
+      await prisma.player.update({
+        where: { id: target.id },
+        data: { userId: created.id, linkCodeUsedAt: new Date() },
+      });
+    }
 
     redirect("/prijava?registered=1&linked=1");
   }

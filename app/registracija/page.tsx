@@ -61,6 +61,21 @@ export default function RegistracijaPage() {
           />
         </Field>
 
+        <label className="flex items-start gap-2 rounded-md border border-navy/10 bg-paper/60 px-3 py-2.5 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="asGuardian"
+            className="mt-0.5 h-4 w-4 rounded border-navy/30"
+          />
+          <span>
+            Registriram se kao roditelj ili skrbnik
+            <span className="mt-0.5 block text-xs text-ink/55">
+              Kod koji upisuješ pripada djetetu. Tvoj račun neće imati vlastiti
+              igrački profil, a djecu možeš dodati i kasnije u „Moji igrači“.
+            </span>
+          </span>
+        </label>
+
         <Field label="Email" error={state.errors?.email}>
           <input type="email" name="email" required className="input" />
         </Field>

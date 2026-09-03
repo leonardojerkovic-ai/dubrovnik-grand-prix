@@ -80,22 +80,13 @@ export function SiteHeader() {
                   Admin
                 </Link>
               )}
-              {user?.playerId ? (
-                <Link
-                  href={`/igraci/${user.playerId}`}
-                  className="max-w-[14rem] truncate text-sm font-medium text-navy hover:text-crimson"
-                  title={label}
-                >
-                  {label}
-                </Link>
-              ) : (
-                <span
-                  className="max-w-[14rem] truncate text-sm text-ink/60"
-                  title={label}
-                >
-                  {label}
-                </span>
-              )}
+              <Link
+                href="/moji-igraci"
+                className="max-w-[14rem] truncate text-sm font-medium text-navy hover:text-crimson"
+                title={label}
+              >
+                {label}
+              </Link>
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/" })}
@@ -179,15 +170,13 @@ export function SiteHeader() {
             <div className="grid gap-2 border-t border-navy/10 pt-3">
               <p className="px-2 text-xs text-ink/50">Prijavljeni ste kao</p>
               <p className="truncate px-2 text-sm font-medium text-navy">{label}</p>
-              {user?.playerId && (
-                <Link
-                  href={`/igraci/${user.playerId}`}
-                  onClick={() => setMobileOpen(false)}
-                  className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light"
-                >
-                  Moj profil
-                </Link>
-              )}
+              <Link
+                href="/moji-igraci"
+                onClick={() => setMobileOpen(false)}
+                className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light"
+              >
+                Moji igrači
+              </Link>
               {isAdmin && (
                 <Link
                   href="/admin"
