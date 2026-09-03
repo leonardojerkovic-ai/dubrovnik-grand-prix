@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePlayers } from "@/lib/revalidate";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
@@ -133,6 +134,7 @@ export async function saveBulkRatings(rows: RatingRow[]): Promise<SaveRatingsSta
     });
 
     revalidatePath("/admin/ratings");
+    revalidatePlayers();
     revalidatePath("/admin/players");
     return { message: `Ažurirano ${relevant.length} igrača.` };
   } catch {

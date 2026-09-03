@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
+import { revalidateStandings } from "@/lib/revalidate";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
@@ -308,6 +309,7 @@ export async function saveTournamentResults(
     });
 
     revalidatePath(`/admin/tournaments/${tournamentId}/results`);
+    revalidateStandings(tournamentId);
 
     const eligibleCount = N - ineligiblePlayers.length;
     let message = `Spremljeno — bodovi izračunati za ${eligibleCount} igrača.`;

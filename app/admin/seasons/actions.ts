@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSchedule, revalidateStandings } from "@/lib/revalidate";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { seasonSchema } from "@/lib/validation/season";
@@ -83,6 +84,8 @@ export async function createSeason(
   }
 
   revalidatePath("/admin/seasons");
+  revalidateSchedule();
+  revalidateStandings();
   redirect("/admin/seasons");
 }
 
@@ -143,6 +146,9 @@ export async function updateSeason(
 
   revalidatePath("/admin/seasons");
   revalidatePath(`/admin/seasons/${seasonId}`);
+  // Oznaka aktivne sezone određuje što se prikazuje na naslovnici.
+  revalidateSchedule();
+  revalidateStandings();
   return { message: "Spremljeno." };
 }
 
@@ -173,4 +179,6 @@ export async function deleteSeason(seasonId: string): Promise<void> {
     throw err;
   }
   revalidatePath("/admin/seasons");
+  revalidateSchedule();
+  revalidateStandings();
 }

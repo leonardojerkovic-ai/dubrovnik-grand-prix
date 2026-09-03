@@ -3,6 +3,14 @@ import Image from "next/image";
 import { prisma } from "@/lib/prisma";
 
 /**
+ * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
+ * preko GitHub Actionsa), pa se stranica osvježava i vremenski, ne samo
+ * pozivom iz akcije. Minuta je dovoljno kratko da nitko ne primijeti
+ * zastoj, a dovoljno dugo da se ne gubi smisao predmemorije.
+ */
+export const revalidate = 60;
+
+/**
  * Naslovnica: hero je stvarni, koristan sadržaj (nadolazeći turniri), ne
  * marketinški banner. Dohvaća SVE aktivne sezone (GP i/ili Akademija mogu
  * biti aktivne istovremeno) i kombinira njihove turnire kronološki.

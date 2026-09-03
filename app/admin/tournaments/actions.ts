@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
+import { revalidateSchedule, revalidateStandings } from "@/lib/revalidate";
 import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
@@ -66,6 +67,7 @@ export async function createTournament(
   });
 
   revalidatePath("/admin/tournaments");
+  revalidateSchedule(tournament.id);
   redirect(`/admin/tournaments/${tournament.id}`);
 }
 
@@ -114,6 +116,9 @@ export async function updateTournament(
 
   revalidatePath("/admin/tournaments");
   revalidatePath(`/admin/tournaments/${tournamentId}`);
+  // Razina i tempo ulaze u izračun, pa se mijenjaju i ljestvice.
+  revalidateSchedule(tournamentId);
+  revalidateStandings(tournamentId);
   return { message: "Spremljeno." };
 }
 
@@ -135,4 +140,6 @@ export async function deleteTournament(tournamentId: string): Promise<void> {
     before,
   });
   revalidatePath("/admin/tournaments");
+  revalidateSchedule(tournamentId);
+  revalidateStandings();
 }

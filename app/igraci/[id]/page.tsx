@@ -4,6 +4,14 @@ import { getPlayerProfile } from "@/lib/players/profile";
 import { RatingChart } from "@/components/rating-chart";
 import { PlayerSeasonResults } from "@/components/player-season-results";
 
+/**
+ * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
+ * preko GitHub Actionsa), pa se stranica osvježava i vremenski, ne samo
+ * pozivom iz akcije. Minuta je dovoljno kratko da nitko ne primijeti
+ * zastoj, a dovoljno dugo da se ne gubi smisao predmemorije.
+ */
+export const revalidate = 60;
+
 export async function generateMetadata({
   params,
 }: {

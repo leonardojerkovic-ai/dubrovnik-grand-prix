@@ -4,6 +4,7 @@ import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePlayers } from "@/lib/revalidate";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { playerSchema } from "@/lib/validation/player";
@@ -77,6 +78,7 @@ export async function createPlayer(
   }
 
   revalidatePath("/admin/players");
+  revalidatePlayers();
   redirect("/admin/players");
 }
 
@@ -180,4 +182,5 @@ export async function deletePlayer(playerId: string): Promise<void> {
     throw err;
   }
   revalidatePath("/admin/players");
+  revalidatePlayers(playerId);
 }

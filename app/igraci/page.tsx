@@ -3,6 +3,14 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PlayerName } from "@/components/player-name";
 
+/**
+ * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
+ * preko GitHub Actionsa), pa se stranica osvježava i vremenski, ne samo
+ * pozivom iz akcije. Minuta je dovoljno kratko da nitko ne primijeti
+ * zastoj, a dovoljno dugo da se ne gubi smisao predmemorije.
+ */
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Igrači",
   description:

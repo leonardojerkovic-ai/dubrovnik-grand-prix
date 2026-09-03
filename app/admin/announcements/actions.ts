@@ -46,6 +46,8 @@ export async function createAnnouncement(
 
   revalidatePath("/admin/announcements");
   revalidatePath("/najave");
+  revalidatePath("/");
+  revalidatePath("/najave");
   redirect("/admin/announcements");
 }
 

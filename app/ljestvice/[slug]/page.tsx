@@ -6,6 +6,14 @@ import { getGpStandings, type GpCategoryCode } from "@/lib/standings/gp";
 import { getAkademijaStandings } from "@/lib/standings/akademija";
 import { StandingsTable } from "@/components/standings-table";
 
+/**
+ * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
+ * preko GitHub Actionsa), pa se stranica osvježava i vremenski, ne samo
+ * pozivom iz akcije. Minuta je dovoljno kratko da nitko ne primijeti
+ * zastoj, a dovoljno dugo da se ne gubi smisao predmemorije.
+ */
+export const revalidate = 60;
+
 const SLUG_MAP: Record<string, { system: "GP" | "AKADEMIJA"; category?: GpCategoryCode; title: string }> = {
   "opci-gp": { system: "GP", category: "OPCI", title: "Opći GP" },
   "zene": { system: "GP", category: "ZENE", title: "Žene" },
