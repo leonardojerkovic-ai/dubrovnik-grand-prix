@@ -55,8 +55,16 @@ export default async function PlayerProfilePage({
 
         <p className="mt-1 text-xs leading-relaxed text-sky-light">
           {player.fideId ? `FIDE ID ${player.fideId} · ` : ""}
-          godište {player.birthYear}
+          {player.deceased
+            ? `${player.birthYear}. – ${player.deceasedYear ?? ""}`.trim()
+            : `godište ${player.birthYear}`}
         </p>
+
+        {player.deceased && (
+          <p className="mt-2 text-xs italic text-sky-light/80">
+            U spomen. Rezultati ostaju dio povijesti kluba.
+          </p>
+        )}
 
         {player.isClubMember && (
           <p className="mt-2">

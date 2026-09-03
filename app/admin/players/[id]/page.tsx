@@ -30,6 +30,8 @@ export default async function EditPlayerPage({
           isClubMember: player.isClubMember,
           memberSince: player.memberSince,
           memberUntil: player.memberUntil,
+          deceased: player.deceased,
+          deceasedYear: player.deceasedYear,
         }}
       />
     </div>

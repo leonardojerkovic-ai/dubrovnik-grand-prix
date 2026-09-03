@@ -174,6 +174,14 @@ model Player {
   /// iz kluba ne može zabilježiti, pa bi bivši član trajno ostajao "član"
   /// za sve buduće turnire.
   memberUntil   DateTime?
+
+  /// Igrač je preminuo. Uklanja ga s popisa igrača i iz odabira za buduće
+  /// turnire, ali NE dira njegove rezultate, ljestvice na kojima se već
+  /// nalazi ni Hall of Fame — to je dio povijesti kluba i ostaje.
+  /// Razlikuje se od memberUntil, koji označava odlazak iz kluba.
+  deceased      Boolean  @default(false)
+  /// Godina smrti, ako je poznata. Na profilu se prikazuje uz godište.
+  deceasedYear  Int?
   photoUrl      String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -214,7 +222,14 @@ model PlayerRatingCurrent {
 model PlayerRatingSnapshot {
   id           String     @id @default(cuid())
   playerId     String
-  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  /// Restrict, a NE Cascade: rezultat je povijesni podatak turnira, ne
+  /// igrača. Brisanjem igrača nestao bi njegov redak, ali on je bio dio
+  /// broja igrača (N) iz kojega su računati bodovi SVIMA ostalima i
+  /// njegovo mjesto određivalo je njihove plasmane. U bazi bi ostao turnir
+  /// s rupom u poretku i bodovima koji se više ne mogu provjeriti.
+  /// Igrača koji je nastupao ne briše se — vidi polje `deceased` i
+  /// `memberUntil` za način da nestane s popisa uz zadržanu povijest.
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Restrict)
   ratingType   RatingType
   ratingValue  Int
   snapshotDate DateTime // datum na koji je vrijednost bila važeća (npr. 1. u mjesecu)

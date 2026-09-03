@@ -43,6 +43,9 @@ export default async function PlayersPage({
       // ljestvicama (čl. 4). Nečlanovi mogu nastupati na turnirima, ali
       // njihovi se profili ne objavljuju.
       isClubMember: true,
+      // Preminuli igrači ne stoje na popisu, ali im profil i rezultati
+      // ostaju dostupni preko turnira i ljestvica.
+      deceased: false,
       ...(q
         ? {
             OR: [

@@ -61,6 +61,8 @@ export interface PlayerProfile {
   title: string;
   fideId: string | null;
   birthYear: number;
+  deceased: boolean;
+  deceasedYear: number | null;
   isClubMember: boolean;
   memberSince: Date | null;
   current: { standard: number | null; rapid: number | null; blitz: number | null };
@@ -125,6 +127,8 @@ export async function getPlayerProfile(
     title: player.title,
     fideId: player.fideId,
     birthYear: player.birthYear,
+    deceased: player.deceased,
+    deceasedYear: player.deceasedYear,
     isClubMember: player.isClubMember,
     memberSince: player.memberSince,
     current: {

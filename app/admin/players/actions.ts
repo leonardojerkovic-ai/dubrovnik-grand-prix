@@ -22,6 +22,8 @@ function parseFormData(formData: FormData) {
     gender: formData.get("gender"),
     birthYear: formData.get("birthYear"),
     isClubMember: formData.get("isClubMember") === "on",
+    deceased: formData.get("deceased") === "on",
+    deceasedYear: formData.get("deceasedYear"),
     memberSince: formData.get("memberSince"),
     memberUntil: formData.get("memberUntil"),
   };
@@ -137,7 +139,23 @@ export async function updatePlayer(
 export async function deletePlayer(playerId: string): Promise<void> {
   const actor = await requireAdmin();
   // Dohvat prije brisanja — nakon njega je audit trag jedini preostali zapis.
-  const before = await prisma.player.findUnique({ where: { id: playerId } });
+  const before = await prisma.player.findUnique({
+    where: { id: playerId },
+    include: { _count: { select: { results: true, hallOfFameEntries: true } } },
+  });
+
+  // Igrač koji je nastupao ne briše se: njegovi rezultati određuju N i
+  // plasmane svih ostalih na tim turnirima. Poruka nudi ono što se stvarno
+  // želi postići.
+  if (before && before._count.results > 0) {
+    throw new Error(
+      `Igrač ima ${before._count.results} unesenih rezultata i ne može se obrisati — ` +
+        "njegovi nastupi određuju broj igrača i plasmane ostalih na tim turnirima. " +
+        "Ako je napustio klub, upiši mu datum u polje „Član do\u201c. " +
+        "Ako je preminuo, označi „Preminuo\u201c — u oba slučaja nestaje s popisa, a povijest ostaje."
+    );
+  }
+
   try {
     await prisma.player.delete({ where: { id: playerId } });
     await logAudit({

@@ -16,6 +16,8 @@ type PlayerFormProps = {
     isClubMember?: boolean;
     memberSince?: Date | null;
     memberUntil?: Date | null;
+    deceased?: boolean;
+    deceasedYear?: number | null;
   };
 };
 
@@ -105,6 +107,33 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
             className="input"
           />
         </Field>
+      </div>
+
+      <div className="rounded-md border border-navy/10 bg-paper/60 px-3 py-3">
+        <label className="flex items-center gap-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="deceased"
+            defaultChecked={defaultValues.deceased}
+            className="h-4 w-4 rounded border-navy/30"
+          />
+          Preminuo
+        </label>
+        <p className="mt-1 text-xs text-ink/55">
+          Igrač nestaje s javnog popisa igrača i iz odabira za buduće turnire.
+          Rezultati, ljestvice i Hall of Fame ostaju netaknuti.
+        </p>
+        <div className="mt-2 max-w-[10rem]">
+          <input
+            type="number"
+            name="deceasedYear"
+            min={1900}
+            max={new Date().getFullYear()}
+            placeholder="Godina smrti"
+            defaultValue={defaultValues.deceasedYear ?? ""}
+            className="input"
+          />
+        </div>
       </div>
 
       <label className="flex items-center gap-2 text-sm text-ink">
