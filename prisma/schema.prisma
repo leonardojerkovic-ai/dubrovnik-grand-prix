@@ -179,6 +179,14 @@ model Player {
   /// turnire, ali NE dira njegove rezultate, ljestvice na kojima se već
   /// nalazi ni Hall of Fame — to je dio povijesti kluba i ostaje.
   /// Razlikuje se od memberUntil, koji označava odlazak iz kluba.
+  /// Otisak pristupnog koda kojim igrač sam poveže svoj račun s ovim
+  /// profilom. Sam kod se NE sprema — prikazuje se jednom, pri generiranju.
+  /// Vidi lib/link-code.ts.
+  linkCodeHash    String?   @unique
+  linkCodeIssuedAt DateTime?
+  /// Kad je kod iskorišten. Popunjeno = kod više ne vrijedi.
+  linkCodeUsedAt  DateTime?
+
   deceased      Boolean  @default(false)
   /// Godina smrti, ako je poznata. Na profilu se prikazuje uz godište.
   deceasedYear  Int?

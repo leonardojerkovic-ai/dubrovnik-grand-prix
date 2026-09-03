@@ -35,6 +35,7 @@ function PrijavaForm() {
 
   const justRegistered = params.get("registered") === "1";
   const linkPending = params.get("pending") === "1";
+  const linked = params.get("linked") === "1";
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center px-4 py-12">
@@ -42,7 +43,9 @@ function PrijavaForm() {
 
       {justRegistered && (
         <p className="mb-4 rounded-md bg-gold/10 px-3 py-2 text-sm text-navy">
-          {linkPending
+          {linked
+            ? "Račun je stvoren i povezan s tvojim igračkim profilom. Prijavi se i vidjet ćeš svoje rezultate."
+            : linkPending
             ? "Račun je stvoren. Klub već ima igrački profil s tvojim imenom, pa ga administrator mora povezati s ovim računom prije nego vidiš svoje rezultate. Prijaviti se možeš odmah."
             : "Račun je stvoren. Sad se možeš prijaviti."}
         </p>

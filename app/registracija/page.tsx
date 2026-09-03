@@ -47,6 +47,20 @@ export default function RegistracijaPage() {
           </Field>
         </div>
 
+        <Field
+          label="Pristupni kod (nije obavezno)"
+          error={state.errors?.linkCode}
+          hint="Ako si od kluba dobio/la kod, upiši ga — račun se odmah povezuje s tvojim igračkim profilom i rezultatima."
+        >
+          <input
+            type="text"
+            name="linkCode"
+            autoComplete="off"
+            placeholder="ABCD-EFGH-JKMN"
+            className="input font-mono tracking-widest uppercase"
+          />
+        </Field>
+
         <Field label="Email" error={state.errors?.email}>
           <input type="email" name="email" required className="input" />
         </Field>

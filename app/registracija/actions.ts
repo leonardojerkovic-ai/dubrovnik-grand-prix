@@ -3,6 +3,7 @@
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
 import { registrationSchema } from "@/lib/validation/registration";
 
 export type RegistrationState = {
@@ -69,6 +70,50 @@ export async function registerPlayer(
       lastName: { equals: lastName, mode: "insensitive" },
     },
   });
+
+  // Pristupni kod, ako je unesen, dokazuje identitet i povezuje račun
+  // odmah — bez čekanja na odobrenje administratora.
+  const rawCode = String(formData.get("linkCode") ?? "").trim();
+
+  if (rawCode.length > 0) {
+    if (!looksLikeLinkCode(rawCode)) {
+      return { errors: { linkCode: ["Kod nije ispravnog oblika."] } };
+    }
+
+    const target = await prisma.player.findUnique({
+      where: { linkCodeHash: hashLinkCode(rawCode) },
+      select: { id: true, userId: true, linkCodeUsedAt: true },
+    });
+
+    // Ista poruka za nepostojeći, iskorišten i već zauzet kod — inače bi se
+    // pogađanjem moglo doznati koji kodovi postoje.
+    if (!target || target.userId || target.linkCodeUsedAt) {
+      return {
+        errors: { linkCode: ["Kod nije valjan ili je već iskorišten."] },
+      };
+    }
+
+    await prisma.$transaction([
+      prisma.user.create({
+        data: { email, passwordHash, role: "PLAYER", gdprConsentAt },
+      }),
+      prisma.player.update({
+        where: { id: target.id },
+        data: { linkCodeUsedAt: new Date() },
+      }),
+    ]);
+
+    const created = await prisma.user.findUniqueOrThrow({
+      where: { email },
+      select: { id: true },
+    });
+    await prisma.player.update({
+      where: { id: target.id },
+      data: { userId: created.id },
+    });
+
+    redirect("/prijava?registered=1&linked=1");
+  }
 
   if (candidates.length > 0) {
     // Postoji podudarni profil — račun se stvara BEZ veze na njega.

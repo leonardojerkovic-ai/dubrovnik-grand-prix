@@ -48,6 +48,9 @@ export default async function AdminLayout({
           <a href="/admin/users" className="hover:text-crimson">
             Korisnici
           </a>
+          <a href="/admin/pristupni-kodovi" className="hover:text-crimson">
+            Pristupni kodovi
+          </a>
           <a href="/admin/audit" className="hover:text-crimson">
             Trag izmjena
           </a>
