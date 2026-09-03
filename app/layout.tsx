@@ -7,6 +7,7 @@ import {
 } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/site-header";
+import { Providers } from "@/components/providers";
 import { SiteFooter } from "@/components/site-footer";
 
 const display = Space_Grotesk({
@@ -72,9 +73,11 @@ export default function RootLayout({
   return (
     <html lang="hr" className={`${display.variable} ${hero.variable} ${body.variable} ${mono.variable}`}>
       <body>
+        <Providers>
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />
+      </Providers>
       </body>
     </html>
   );

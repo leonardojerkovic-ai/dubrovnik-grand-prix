@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { JOIN_LINK, PRIMARY_NAV as NAV, SECONDARY_NAV } from "@/lib/nav";
 
@@ -19,6 +20,16 @@ const LJESTVICE = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const { data: session, status } = useSession();
+  const user = session?.user as
+    | { email?: string | null; role?: string; playerId?: string | null; displayName?: string | null }
+    | undefined;
+  const signedIn = status === "authenticated";
+  const isAdmin = user?.role === "ADMIN" || user?.role === "GP_MANAGER";
+  // Ime dolazi iz povezanog igračkog profila; dok veza ne postoji, email je
+  // jedino čime se korisnik može predstaviti.
+  const label = user?.displayName ?? user?.email ?? "";
 
   return (
     <header className="border-b border-navy/10 bg-paper/95 backdrop-blur sticky top-0 z-40">
@@ -57,18 +68,58 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-2">
-          <Link
-            href={JOIN_LINK.href}
-            className="hidden rounded-md border border-gold px-3.5 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold/15 md:inline-block"
-          >
-            {JOIN_LINK.label}
-          </Link>
-          <Link
-            href="/prijava"
-            className="hidden sm:inline-block rounded-md bg-navy px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-light transition-colors"
-          >
-            Prijava
-          </Link>
+          {/* Dok se sesija učitava ne prikazuje se ništa — treptanje između
+              "Prijava" i imena korisnika djelovalo bi kao greška. */}
+          {status === "loading" ? null : signedIn ? (
+            <div className="hidden items-center gap-3 sm:flex">
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  className="rounded-md border border-navy/20 px-3 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+                >
+                  Admin
+                </Link>
+              )}
+              {user?.playerId ? (
+                <Link
+                  href={`/igraci/${user.playerId}`}
+                  className="max-w-[14rem] truncate text-sm font-medium text-navy hover:text-crimson"
+                  title={label}
+                >
+                  {label}
+                </Link>
+              ) : (
+                <span
+                  className="max-w-[14rem] truncate text-sm text-ink/60"
+                  title={label}
+                >
+                  {label}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="text-sm text-ink/60 hover:text-crimson"
+              >
+                Odjava
+              </button>
+            </div>
+          ) : (
+            <>
+              <Link
+                href={JOIN_LINK.href}
+                className="hidden rounded-md border border-gold px-3.5 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold/15 md:inline-block"
+              >
+                {JOIN_LINK.label}
+              </Link>
+              <Link
+                href="/prijava"
+                className="hidden sm:inline-block rounded-md bg-navy px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-light transition-colors"
+              >
+                Prijava
+              </Link>
+            </>
+          )}
 
           {/* Hamburger — samo ispod lg breakpointa */}
           <button
@@ -124,13 +175,48 @@ export function SiteHeader() {
             ))}
           </div>
 
-          <Link
-            href="/prijava"
-            onClick={() => setMobileOpen(false)}
-            className="block rounded-md bg-navy px-4 py-2 text-center text-sm font-semibold text-paper hover:bg-navy-light"
-          >
-            Prijava
-          </Link>
+          {signedIn ? (
+            <div className="grid gap-2 border-t border-navy/10 pt-3">
+              <p className="px-2 text-xs text-ink/50">Prijavljeni ste kao</p>
+              <p className="truncate px-2 text-sm font-medium text-navy">{label}</p>
+              {user?.playerId && (
+                <Link
+                  href={`/igraci/${user.playerId}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light"
+                >
+                  Moj profil
+                </Link>
+              )}
+              {isAdmin && (
+                <Link
+                  href="/admin"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light"
+                >
+                  Admin panel
+                </Link>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="rounded px-2 py-2.5 text-left text-sm text-crimson hover:bg-crimson/5"
+              >
+                Odjava
+              </button>
+            </div>
+          ) : (
+            <Link
+              href="/prijava"
+              onClick={() => setMobileOpen(false)}
+              className="block rounded-md bg-navy px-4 py-2 text-center text-sm font-semibold text-paper hover:bg-navy-light"
+            >
+              Prijava
+            </Link>
+          )}
         </div>
       )}
     </header>

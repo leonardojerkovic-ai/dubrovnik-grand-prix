@@ -52,7 +52,8 @@ export const authOptions: AuthOptions = {
       // Prijava: rola dolazi izravno iz authorize()/adaptera.
       if (user) {
         token.role = (user as { role?: string }).role ?? "PLAYER";
-        token.roleCheckedAt = Date.now();
+        // Namjerno se NE postavlja roleCheckedAt: ime i profil dohvaćaju se
+        // pri prvom sljedećem osvježavanju tokena, odmah nakon prijave.
         return token;
       }
 
@@ -67,10 +68,19 @@ export const authOptions: AuthOptions = {
       if (token.email && Date.now() - lastCheck > ROLE_REFRESH_MS) {
         const dbUser = await prisma.user.findUnique({
           where: { email: token.email as string },
-          select: { role: true },
+          select: {
+            role: true,
+            // Ime i profil se dohvaćaju u istom upitu — zaglavlju trebaju,
+            // a zaseban upit bi bio čisti trošak.
+            player: { select: { id: true, firstName: true, lastName: true } },
+          },
         });
         // Obrisan korisnik pada na PLAYER — nikad ne zadržava ovlasti.
         token.role = dbUser?.role ?? "PLAYER";
+        token.playerId = dbUser?.player?.id ?? null;
+        token.displayName = dbUser?.player
+          ? `${dbUser.player.firstName} ${dbUser.player.lastName}`
+          : null;
         token.roleCheckedAt = Date.now();
       }
 
@@ -78,8 +88,14 @@ export const authOptions: AuthOptions = {
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as { role?: string }).role =
-          (token.role as string) ?? "PLAYER";
+        const u = session.user as {
+          role?: string;
+          playerId?: string | null;
+          displayName?: string | null;
+        };
+        u.role = (token.role as string) ?? "PLAYER";
+        u.playerId = (token.playerId as string | null) ?? null;
+        u.displayName = (token.displayName as string | null) ?? null;
       }
       return session;
     },
