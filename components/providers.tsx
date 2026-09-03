@@ -1,6 +1,7 @@
 "use client";
 
 import { SessionProvider } from "next-auth/react";
+import { RegistrationsProvider } from "./registrations-provider";
 
 /**
  * Sesija se čita na klijentu, a ne u korijenskom layoutu.
@@ -11,5 +12,9 @@ import { SessionProvider } from "next-auth/react";
  * prijavljenom korisniku čim se sesija učita.
  */
 export function Providers({ children }: { children: React.ReactNode }) {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider>
+      <RegistrationsProvider>{children}</RegistrationsProvider>
+    </SessionProvider>
+  );
 }

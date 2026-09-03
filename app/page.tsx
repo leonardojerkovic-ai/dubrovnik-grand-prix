@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { RegisterButton } from "@/components/register-button";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -166,6 +167,9 @@ export default async function HomePage() {
                     ? "Akademija"
                     : LEVEL_LABELS[t.level ?? ""] ?? t.level ?? t.tempo}
                 </span>
+                {t.status === "PRIJAVE_OTVORENE" && (
+                  <RegisterButton tournamentId={t.id} size="sm" />
+                )}
               </li>
             ))}
           </ul>

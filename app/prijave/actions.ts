@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getCurrentPlayer } from "@/lib/current-player";
 
+/** Gumb za prijavu stoji na više stranica, pa se sve moraju osvježiti. */
+function revalidateRegistrations(tournamentId: string) {
+  revalidatePath("/prijave");
+  revalidatePath("/kalendar");
+  revalidatePath("/");
+  revalidatePath(`/turniri/${tournamentId}`);
+}
+
 export type RegisterActionState = { error?: string; message?: string };
 
 export async function registerForTournament(
@@ -30,7 +38,7 @@ export async function registerForTournament(
     update: { status: "PRIJAVLJEN" },
   });
 
-  revalidatePath("/prijave");
+  revalidateRegistrations(tournamentId);
   return { message: "Prijavljen/a si na turnir." };
 }
 
@@ -47,6 +55,6 @@ export async function cancelRegistration(
     data: { status: "OTKAZAN" },
   });
 
-  revalidatePath("/prijave");
+  revalidateRegistrations(tournamentId);
   return { message: "Prijava otkazana." };
 }

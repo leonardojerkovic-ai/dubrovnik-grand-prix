@@ -6,6 +6,7 @@ import {
   type SortablePlayerEntry,
 } from "@/lib/players/sort";
 import { PlayerName } from "@/components/player-name";
+import { RegisterButton } from "@/components/register-button";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -146,9 +147,14 @@ export default async function TournamentDetailPage({
         </span>
         {tournament.isFinal && <span className="badge-title ml-2">Finale</span>}
       </div>
-      <h1 className="font-display text-2xl font-bold text-navy mb-4">
-        {tournament.name}
-      </h1>
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="font-display text-2xl font-bold text-navy">
+          {tournament.name}
+        </h1>
+        {tournament.status === "PRIJAVE_OTVORENE" && (
+          <RegisterButton tournamentId={tournament.id} />
+        )}
+      </div>
 
       <dl className="mb-8 grid grid-cols-2 gap-4 rounded-lg border border-navy/10 bg-white p-4 text-sm md:grid-cols-4">
         <div>

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { getCurrentPlayer } from "@/lib/current-player";
-import { RegisterButton } from "./register-button";
+import { RegisterButton } from "@/components/register-button";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -17,17 +16,10 @@ export const metadata: Metadata = {
 };
 
 export default async function PrijavePage() {
-  const player = await getCurrentPlayer();
-
   const tournaments = await prisma.tournament.findMany({
     where: { status: "PRIJAVE_OTVORENE" },
     orderBy: { date: "asc" },
-    include: {
-      season: true,
-      registrations: player
-        ? { where: { playerId: player.id, status: "PRIJAVLJEN" } }
-        : false,
-    },
+    include: { season: true },
   });
 
   return (
@@ -63,13 +55,7 @@ export default async function PrijavePage() {
                 {t.season.yearLabel}
               </p>
             </div>
-            <RegisterButton
-              tournamentId={t.id}
-              isLoggedIn={Boolean(player)}
-              isRegistered={
-                Array.isArray(t.registrations) && t.registrations.length > 0
-              }
-            />
+            <RegisterButton tournamentId={t.id} />
           </div>
         ))}
       </div>

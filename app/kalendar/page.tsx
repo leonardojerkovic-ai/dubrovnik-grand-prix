@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { RegisterButton } from "@/components/register-button";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -65,6 +66,7 @@ export default async function KalendarPage() {
                       <th className="px-4 py-2">Datum</th>
                       <th className="px-4 py-2">Razina / tempo</th>
                       <th className="px-4 py-2">Status</th>
+                      <th className="px-4 py-2 text-right">Prijava</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-navy/10">
@@ -92,6 +94,11 @@ export default async function KalendarPage() {
                               : "blitz"}
                         </td>
                         <td className="px-4 py-3">{STATUS_LABELS[t.status]}</td>
+                        <td className="px-4 py-3 text-right">
+                          {t.status === "PRIJAVE_OTVORENE" && (
+                            <RegisterButton tournamentId={t.id} size="sm" />
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
