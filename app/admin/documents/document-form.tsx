@@ -61,14 +61,19 @@ export function DocumentForm({
       </label>
 
       <label className="grid gap-1 text-sm font-medium text-navy md:col-span-3">
-        Link na datoteku (PDF hostan negdje — Google Drive, itd.)
+        Poveznica na datoteku
         <input
           name="fileUrl"
-          type="url"
-          placeholder="https://..."
+          type="text"
+          placeholder="/dokumenti/pravilnik.pdf  ili  https://..."
           required
           className="input"
         />
+        <span className="mt-1 block text-xs text-ink/55">
+          Datoteke smještene u <code>public/dokumenti</code> u repozitoriju
+          dostupne su kao <code>/dokumenti/naziv.pdf</code>. Takva poveznica ne
+          istječe i ne ovisi o tuđim dozvolama.
+        </span>
         {state.errors?.fileUrl && (
           <span className="text-xs text-crimson">{state.errors.fileUrl[0]}</span>
         )}
