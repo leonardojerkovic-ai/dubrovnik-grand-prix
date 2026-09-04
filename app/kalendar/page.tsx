@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { RegisterButton } from "@/components/register-button";
+import { CalendarSubscribe } from "@/components/calendar-subscribe";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -40,6 +41,8 @@ export default async function KalendarPage() {
       <h1 className="font-display text-2xl font-bold text-navy mb-8">
         Kalendar
       </h1>
+
+      <CalendarSubscribe />
 
       {seasons.length === 0 && (
         <p className="text-ink/60">Kalendar još nije objavljen.</p>
