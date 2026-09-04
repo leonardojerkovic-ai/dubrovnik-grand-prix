@@ -23,11 +23,20 @@ jobs:
           PGURL: ${{ secrets.DATABASE_URL }}
         run: |
           set -euo pipefail
+          if [ -z "${PGURL:-}" ]; then
+            echo "GREŠKA: tajna DATABASE_URL nije postavljena."
+            echo "Postavi je u Settings -> Secrets and variables -> Actions."
+            echo "Vrijednost je session pooler adresa (port 5432)."
+            exit 1
+          fi
           # pg_dump iz kontejnera, da se verzija klijenta poklapa s
           # poslužiteljem. Sustavski pg_dump na runneru zna biti stariji i
           # tada odbija raditi.
+          #
+          # Adresa se širi unutar kontejnera, ne u ljusci domaćina — inače bi
+          # se pojavila u popisu procesa.
           docker run --rm -e PGURL postgres:17 \
-            pg_dump "$PGURL" --no-owner --no-privileges --clean --if-exists \
+            sh -c 'pg_dump "$PGURL" --no-owner --no-privileges --clean --if-exists' \
             > dump.sql
           echo "Veličina dumpa: $(du -h dump.sql | cut -f1)"
 
