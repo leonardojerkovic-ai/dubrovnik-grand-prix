@@ -26,6 +26,7 @@ export default async function EditSeasonPage({
           startDate: season.startDate,
           endDate: season.endDate,
           isActive: season.isActive,
+          rulebookVersion: season.rulebookVersion,
         }}
       />
     </div>

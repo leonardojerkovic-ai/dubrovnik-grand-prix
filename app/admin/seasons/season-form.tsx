@@ -11,6 +11,7 @@ type SeasonFormProps = {
     startDate?: Date;
     endDate?: Date;
     isActive?: boolean;
+    rulebookVersion?: string | null;
   };
 };
 
@@ -66,6 +67,19 @@ export function SeasonForm({ action, defaultValues = {} }: SeasonFormProps) {
           defaultValue={defaultValues.yearLabel}
           required
           className="input"
+        />
+      </Field>
+
+      <Field
+        label="Verzija pravilnika"
+        error={state.errors?.rulebookVersion}
+        hint='npr. "GP-2.3" ili "AKD-1.2". Upisuje se u svaki izračunati rezultat, pa se poslije vidi po kojoj je verziji bod nastao (čl. 30).'
+      >
+        <input
+          name="rulebookVersion"
+          defaultValue={defaultValues.rulebookVersion ?? ""}
+          placeholder="GP-2.3"
+          className="input font-mono"
         />
       </Field>
 

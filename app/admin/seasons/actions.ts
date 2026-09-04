@@ -17,6 +17,7 @@ function parseFormData(formData: FormData) {
     startDate: formData.get("startDate"),
     endDate: formData.get("endDate"),
     isActive: formData.get("isActive") === "on",
+    rulebookVersion: formData.get("rulebookVersion"),
   };
 }
 
@@ -42,7 +43,10 @@ export async function createSeason(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { system, yearLabel, startDate, endDate, isActive } = parsed.data;
+  const { system, yearLabel, startDate, endDate, isActive, rulebookVersion } =
+    parsed.data;
+  const rulebook =
+    rulebookVersion && rulebookVersion.length > 0 ? rulebookVersion : null;
 
   try {
     const season = await prisma.season.create({
@@ -52,6 +56,7 @@ export async function createSeason(
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         isActive,
+        rulebookVersion: rulebook,
       },
     });
 
@@ -100,7 +105,10 @@ export async function updateSeason(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { system, yearLabel, startDate, endDate, isActive } = parsed.data;
+  const { system, yearLabel, startDate, endDate, isActive, rulebookVersion } =
+    parsed.data;
+  const rulebook =
+    rulebookVersion && rulebookVersion.length > 0 ? rulebookVersion : null;
   const before = await prisma.season.findUnique({ where: { id: seasonId } });
 
   try {
@@ -112,6 +120,7 @@ export async function updateSeason(
         startDate: new Date(startDate),
         endDate: new Date(endDate),
         isActive,
+        rulebookVersion: rulebook,
       },
     });
 
