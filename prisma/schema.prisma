@@ -110,8 +110,7 @@ enum DocumentCategory {
 model User {
   id            String   @id @default(cuid())
   email         String   @unique
-  passwordHash  String? // null ako se korisnik prijavljuje isključivo preko Googlea
-  googleId      String?  @unique
+  passwordHash  String
   role          Role     @default(PLAYER)
   emailVerified DateTime?
   createdAt     DateTime @default(now())

@@ -1,8 +1,6 @@
-import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 import { prisma } from "./prisma";
 
 /**
@@ -12,17 +10,26 @@ import { prisma } from "./prisma";
  */
 const ROLE_REFRESH_MS = 60_000;
 
+/**
+ * Prijava ide isključivo emailom i lozinkom.
+ *
+ * Google prijava je uklonjena jer je bila nedovršena i, što je važnije,
+ * zaobilazila bi tri stvari koje registracija obavlja: godište i spol
+ * (potrebni za dobne kategorije i žensku ljestvicu), zapis privole
+ * (gdprConsentAt, jedini dokaz pristanka), i pristupni kod kojim se račun
+ * povezuje s igračkim profilom. Račun otvoren Googleom završio bi prazan i
+ * u redu za ručno odobrenje — upravo ondje gdje ne želimo biti.
+ *
+ * PrismaAdapter je uklonjen zajedno s njom: uz JWT sesije i jedini
+ * Credentials provider ne radi ništa, a tražio bi tablice Account,
+ * Session i VerificationToken kojih u shemi nema.
+ */
 export const authOptions: AuthOptions = {
-  adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: {
     signIn: "/prijava",
   },
   providers: [
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID ?? "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-    }),
     CredentialsProvider({
       name: "Email i lozinka",
       credentials: {

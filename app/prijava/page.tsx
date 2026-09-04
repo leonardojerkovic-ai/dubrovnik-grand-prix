@@ -86,19 +86,6 @@ function PrijavaForm() {
         </button>
       </form>
 
-      <div className="my-4 flex items-center gap-3 text-xs text-ink/40">
-        <div className="h-px flex-1 bg-navy/10" />
-        ILI
-        <div className="h-px flex-1 bg-navy/10" />
-      </div>
-
-      <button
-        onClick={() => signIn("google", { callbackUrl })}
-        className="rounded-md border border-navy/20 px-4 py-2.5 font-semibold text-navy hover:bg-navy/5 transition-colors"
-      >
-        Nastavi s Google računom
-      </button>
-
       <p className="mt-2 text-sm text-ink/60">
         <a href="/zaboravljena-lozinka" className="text-navy underline">
           Zaboravljena lozinka?
