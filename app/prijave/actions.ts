@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { canActFor, getManagedPlayers } from "@/lib/guardian";
+import { checkEligibility } from "@/lib/scoring/eligibility";
 
 /** Gumb za prijavu stoji na više stranica, pa se sve moraju osvježiti. */
 function revalidateRegistrations(tournamentId: string) {
@@ -53,10 +54,50 @@ export async function registerForTournament(
 
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
+    include: { season: { select: { system: true, startDate: true } } },
   });
   if (!tournament) return { error: "Turnir nije pronađen." };
   if (tournament.status !== "PRIJAVE_OTVORENE") {
     return { error: "Prijave za ovaj turnir trenutno nisu otvorene." };
+  }
+
+  // Pravo nastupa (čl. 14 GP / čl. 6 Akademije). Rejting se gleda NA DAN
+  // PRIJAVE: mijenja se prvog u mjesecu, a tiho propala prijava bila bi
+  // gora od igrača koji je granicu prešao između prijave i turnira.
+  const full = await prisma.player.findUnique({
+    where: { id: player.id },
+    select: {
+      birthYear: true,
+      gender: true,
+      ratingsCurrent: { select: { standard: true, rapid: true, blitz: true } },
+    },
+  });
+  if (!full) return { error: "Igrač nije pronađen." };
+
+  const tempoRating =
+    tournament.tempo === "STANDARD"
+      ? full.ratingsCurrent?.standard
+      : tournament.tempo === "BLITZ"
+        ? full.ratingsCurrent?.blitz
+        : full.ratingsCurrent?.rapid;
+
+  const eligibility = checkEligibility(
+    {
+      birthYear: full.birthYear,
+      gender: full.gender,
+      tempoRating: tempoRating ?? null,
+      rapidRating: full.ratingsCurrent?.rapid ?? null,
+    },
+    {
+      restrictedCategories: tournament.restrictedCategories,
+      seasonSystem: tournament.season.system as "GP" | "AKADEMIJA",
+      seasonStartYear: tournament.season.startDate.getFullYear(),
+      academyPointsOnly: tournament.academyPointsOnly,
+    }
+  );
+
+  if (!eligibility.allowed) {
+    return { error: eligibility.reason };
   }
 
   await prisma.tournamentRegistration.upsert({

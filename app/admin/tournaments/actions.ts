@@ -26,6 +26,7 @@ function parseFormData(formData: FormData) {
     isJuniorFinal: formData.get("isJuniorFinal") === "on",
     status: formData.get("status"),
     restrictedCategory: formData.get("restrictedCategory"),
+    academyPointsOnly: formData.get("academyPointsOnly") === "on",
   };
 }
 

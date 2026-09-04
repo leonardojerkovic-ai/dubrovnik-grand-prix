@@ -18,6 +18,7 @@ export const tournamentSchema = z.object({
     .default("NAJAVA"),
   // Prazno = turnir otvoren svima. Obrazac nudi jednu kategoriju, ali se
   // sprema kao popis jer čl. 20 st. 2 načelno dopušta i kombinaciju.
+  academyPointsOnly: z.coerce.boolean().default(true),
   restrictedCategory: z
     .enum(GP_RESTRICTION_CODES as [string, ...string[]])
     .optional()

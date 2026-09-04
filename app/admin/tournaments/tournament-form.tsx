@@ -36,6 +36,7 @@ type TournamentFormProps = {
     tempo?: string;
     isFinal?: boolean;
     isJuniorFinal?: boolean;
+    academyPointsOnly?: boolean;
     status?: string;
     baseMinutes?: number | null;
     incrementSeconds?: number | null;
@@ -206,6 +207,26 @@ export function TournamentForm({
           Juniorsko GP Finale
         </label>
       </div>
+
+      {selectedSeason?.system === "AKADEMIJA" && (
+        <label className="flex items-start gap-2 rounded-md border border-navy/10 bg-paper/60 px-3 py-2.5 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="academyPointsOnly"
+            defaultChecked={defaultValues.academyPointsOnly ?? true}
+            className="mt-0.5 h-4 w-4 rounded border-navy/30"
+          />
+          <span>
+            Samo igrači s pravom na bodove (čl. 3)
+            <span className="mt-0.5 block text-xs text-ink/55">
+              Prijavu dopušta samo igračima odgovarajućeg godišta s rapid
+              rejtingom nižim od 1600. Isključi ako želiš pustiti starije ili
+              jače igrače da odigraju izvan konkurencije — bodove ionako ne
+              dobivaju.
+            </span>
+          </span>
+        </label>
+      )}
 
       <Field
         label="Ograničenje prava nastupa"

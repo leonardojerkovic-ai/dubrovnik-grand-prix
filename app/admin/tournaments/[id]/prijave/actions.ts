@@ -2,6 +2,53 @@
 
 import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
+import { checkEligibility } from "@/lib/scoring/eligibility";
+
+/** Vraća razlog zbog kojeg igrač nema pravo nastupa, ili null. */
+async function eligibilityWarning(
+  tournamentId: string,
+  playerId: string
+): Promise<string | null> {
+  const [tournament, player] = await Promise.all([
+    prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      include: { season: { select: { system: true, startDate: true } } },
+    }),
+    prisma.player.findUnique({
+      where: { id: playerId },
+      select: {
+        birthYear: true,
+        gender: true,
+        ratingsCurrent: { select: { standard: true, rapid: true, blitz: true } },
+      },
+    }),
+  ]);
+  if (!tournament || !player) return null;
+
+  const tempoRating =
+    tournament.tempo === "STANDARD"
+      ? player.ratingsCurrent?.standard
+      : tournament.tempo === "BLITZ"
+        ? player.ratingsCurrent?.blitz
+        : player.ratingsCurrent?.rapid;
+
+  const result = checkEligibility(
+    {
+      birthYear: player.birthYear,
+      gender: player.gender,
+      tempoRating: tempoRating ?? null,
+      rapidRating: player.ratingsCurrent?.rapid ?? null,
+    },
+    {
+      restrictedCategories: tournament.restrictedCategories,
+      seasonSystem: tournament.season.system as "GP" | "AKADEMIJA",
+      seasonStartYear: tournament.season.startDate.getFullYear(),
+      academyPointsOnly: tournament.academyPointsOnly,
+    }
+  );
+
+  return result.allowed ? null : result.reason;
+}
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -39,7 +86,15 @@ export async function adminAddRegistration(
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/prijave`);
-  return { message: "Igrač dodan na popis prijavljenih." };
+
+  // Admin smije dodati i igrača bez prava nastupa — postoje razlozi koje
+  // sustav ne zna. Ali ga se upozorava, da to ne prođe nezapaženo.
+  const warning = await eligibilityWarning(tournamentId, playerId);
+  return {
+    message: warning
+      ? `Igrač dodan na popis prijavljenih. UPOZORENJE: ${warning}`
+      : "Igrač dodan na popis prijavljenih.",
+  };
 }
 
 export async function adminRemoveRegistration(

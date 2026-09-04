@@ -317,6 +317,12 @@ model Tournament {
 
   minPlayersMet Boolean @default(false) // izračunato nakon unosa rezultata (N>=6 za GP / N>=7 za Akademiju + odigran predviđen broj kola)
 
+  /// Akademija: vrijedi li uvjet iz čl. 3 (godište i rapid rejting) i za
+  /// PRAVO NASTUPA, ne samo za pravo na bodove. Čl. 6 nastup prepušta
+  /// raspisu, pa je to postavka po turniru, a ne pravilo pravilnika.
+  /// Zadano uključeno — to je ono što klub gotovo uvijek želi.
+  academyPointsOnly Boolean @default(true)
+
   /// Trenutak prve objave rezultata. Od njega teče rok od 7 dana za prigovor
   /// (čl. 29 GP / čl. 22 Akademije); nakon isteka rezultati su konačni.
   /// Zaključavanje se ne sprema kao zastavica nego izvodi iz ovog datuma —

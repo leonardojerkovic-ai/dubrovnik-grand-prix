@@ -51,6 +51,7 @@ export default async function EditTournamentPage({
           baseMinutes: tournament.baseMinutes,
           incrementSeconds: tournament.incrementSeconds,
           restrictedCategories: tournament.restrictedCategories,
+          academyPointsOnly: tournament.academyPointsOnly,
         }}
       />
     </div>
