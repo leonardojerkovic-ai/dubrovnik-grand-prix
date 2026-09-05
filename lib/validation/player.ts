@@ -1,12 +1,18 @@
 import { z } from "zod";
 
+/**
+ * Titule redom kojim ih FIDE navodi: GM, IM, WGM, FM, WIM, CM, WFM, WCM.
+ * Ispod njih su nacionalne kategorije Hrvatskog šahovskog saveza.
+ *
+ * Isti redoslijed vrijedi i pri sortiranju igrača — vidi lib/players/sort.ts.
+ */
 export const TITLES = [
   "GM",
   "IM",
-  "FM",
-  "CM",
   "WGM",
+  "FM",
   "WIM",
+  "CM",
   "WFM",
   "WCM",
   "MK",

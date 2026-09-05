@@ -33,13 +33,15 @@ enum Role {
   GP_MANAGER // voditelj GP-a / voditelj natjecanja Akademije (čl. 26 / čl. 21)
 }
 
+/// Redom kojim ih FIDE navodi. Nabrajanje u Postgresu čuva vrijednosti po
+/// imenu, pa preslagivanje ovdje ne dira postojeće podatke.
 enum Title {
   GM
   IM
-  FM
-  CM
   WGM
+  FM
   WIM
+  CM
   WFM
   WCM
   MK // majstorski kandidat

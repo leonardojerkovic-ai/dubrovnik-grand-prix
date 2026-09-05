@@ -7,9 +7,14 @@
  * Ovo je prikaz za javnost (tko je prijavljen), NE utječe na GP bodovanje.
  */
 
-/** Rang za igrače bez titule ili s nepoznatom oznakom. */
-const TITLE_UNRANKED = 14;
-
+/**
+ * Vrijednost titula, redom kojim ih FIDE navodi:
+ * GM, IM, WGM, FM, WIM, CM, WFM, WCM, pa bez titule.
+ *
+ * Ispod njih idu nacionalne kategorije Hrvatskog šahovskog saveza —
+ * majstorski kandidat pa prva do pete. One nisu dio FIDE poretka, ali se u
+ * klupskim popisima navode i moraju stajati ispod FIDE titula.
+ */
 const TITLE_RANK: Record<string, number> = {
   GM: 1,
   IM: 2,
@@ -17,15 +22,19 @@ const TITLE_RANK: Record<string, number> = {
   FM: 4,
   WIM: 5,
   CM: 6,
-  WCM: 7,
-  MK: 8,
-  I: 9,
-  II: 10,
-  III: 11,
-  IV: 12,
-  V: 13,
-  NONE: 14,
+  WFM: 7,
+  WCM: 8,
+  MK: 9,
+  I: 10,
+  II: 11,
+  III: 12,
+  IV: 13,
+  V: 14,
+  NONE: 15,
 };
+
+/** Rang za igrače bez titule ili s nepoznatom oznakom. */
+const TITLE_UNRANKED = TITLE_RANK.NONE!;
 
 export interface SortablePlayerEntry {
   firstName: string;
