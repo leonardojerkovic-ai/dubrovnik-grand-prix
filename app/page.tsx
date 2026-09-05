@@ -150,6 +150,8 @@ export default async function HomePage() {
                   </Link>
                   <p className="text-xs text-ink/50">
                     {[
+                      t.startTime ?? null,
+                      t.venue ?? null,
                       TEMPO_LABELS[t.tempo] ?? t.tempo.toLowerCase(),
                       t.rounds ? `${t.rounds} kola` : null,
                       t.date.getFullYear() !== new Date().getFullYear()

@@ -306,6 +306,18 @@ model Tournament {
   baseMinutes      Int?
   incrementSeconds Int?
 
+  /// Mjesto održavanja, npr. "Dom šaha, Liechtensteinov put 12, Dubrovnik".
+  venue String?
+
+  /// Vrijeme početka u obliku "HH:MM". Namjerno tekst, a ne datum s
+  /// vremenom: `date` se koristi kao dan na više mjesta (usporedbe članstva,
+  /// cjelodnevni događaji u kalendaru), pa bi mu dodavanje sata unijelo
+  /// vremenske zone ondje gdje ih nema.
+  startTime String?
+
+  /// Poveznica na raspis turnira (PDF ili stranica).
+  announcementUrl String?
+
   isFinal       Boolean @default(false) // GP Finale / Prvenstvo Akademije
   isJuniorFinal Boolean @default(false) // Juniorsko GP Finale (samo GP sustav)
 

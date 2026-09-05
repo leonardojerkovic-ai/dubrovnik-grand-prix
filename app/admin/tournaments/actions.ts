@@ -26,6 +26,9 @@ function parseFormData(formData: FormData) {
     isJuniorFinal: formData.get("isJuniorFinal") === "on",
     status: formData.get("status"),
     restrictedCategory: formData.get("restrictedCategory"),
+    venue: formData.get("venue"),
+    startTime: formData.get("startTime"),
+    announcementUrl: formData.get("announcementUrl"),
     academyPointsOnly: formData.get("academyPointsOnly") === "on",
   };
 }
@@ -40,12 +43,24 @@ export async function createTournament(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { level, baseMinutes, incrementSeconds, restrictedCategory, ...rest } =
-    parsed.data;
+  const {
+    level,
+    baseMinutes,
+    incrementSeconds,
+    restrictedCategory,
+    venue,
+    startTime,
+    announcementUrl,
+    ...rest
+  } = parsed.data;
+  const blank = (v?: string) => (v && v.length > 0 ? v : null);
 
   const tournament = await prisma.tournament.create({
     data: {
       ...rest,
+      venue: blank(venue),
+      startTime: blank(startTime),
+      announcementUrl: blank(announcementUrl),
       restrictedCategories:
         restrictedCategory && restrictedCategory.length > 0
           ? [restrictedCategory]
@@ -83,14 +98,26 @@ export async function updateTournament(
     return { errors: parsed.error.flatten().fieldErrors };
   }
 
-  const { level, baseMinutes, incrementSeconds, restrictedCategory, ...rest } =
-    parsed.data;
+  const {
+    level,
+    baseMinutes,
+    incrementSeconds,
+    restrictedCategory,
+    venue,
+    startTime,
+    announcementUrl,
+    ...rest
+  } = parsed.data;
+  const blank = (v?: string) => (v && v.length > 0 ? v : null);
   const before = await prisma.tournament.findUnique({ where: { id: tournamentId } });
 
   const updated = await prisma.tournament.update({
     where: { id: tournamentId },
     data: {
       ...rest,
+      venue: blank(venue),
+      startTime: blank(startTime),
+      announcementUrl: blank(announcementUrl),
       restrictedCategories:
         restrictedCategory && restrictedCategory.length > 0
           ? [restrictedCategory]

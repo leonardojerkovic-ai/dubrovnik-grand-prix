@@ -165,8 +165,15 @@ export default async function TournamentDetailPage({
               month: "long",
               year: "numeric",
             })}
+            {tournament.startTime ? ` u ${tournament.startTime}` : ""}
           </dd>
         </div>
+        {tournament.venue && (
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-ink/40">Mjesto</dt>
+            <dd className="font-medium text-navy">{tournament.venue}</dd>
+          </div>
+        )}
         {tournament.level && (
           <div>
             <dt className="text-xs uppercase tracking-wide text-ink/40">Razina</dt>
@@ -186,6 +193,17 @@ export default async function TournamentDetailPage({
           </dd>
         </div>
       </dl>
+
+      {tournament.announcementUrl && (
+        <a
+          href={tournament.announcementUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mb-8 inline-block rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+        >
+          Raspis turnira
+        </a>
+      )}
 
       <h2 className="font-display text-lg font-bold text-navy mb-3">
         {hasAnyResults ? "Sudionici" : "Prijavljeni igrači"} ({displayPlayers.length})

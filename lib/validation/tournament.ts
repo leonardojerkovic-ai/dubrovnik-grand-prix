@@ -18,6 +18,21 @@ export const tournamentSchema = z.object({
     .default("NAJAVA"),
   // Prazno = turnir otvoren svima. Obrazac nudi jednu kategoriju, ali se
   // sprema kao popis jer čl. 20 st. 2 načelno dopušta i kombinaciju.
+  venue: z.string().max(200).optional().or(z.literal("")),
+  /** "HH:MM", 24-satni oblik. */
+  startTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Upiši vrijeme u obliku HH:MM, npr. 17:00")
+    .optional()
+    .or(z.literal("")),
+  announcementUrl: z
+    .string()
+    .refine(
+      (v) => v === "" || v.startsWith("/") || /^https?:\/\//.test(v),
+      "Upiši puni URL (https://…) ili putanju unutar stranice (/dokumenti/…)"
+    )
+    .optional()
+    .or(z.literal("")),
   academyPointsOnly: z.coerce.boolean().default(true),
   restrictedCategory: z
     .enum(GP_RESTRICTION_CODES as [string, ...string[]])

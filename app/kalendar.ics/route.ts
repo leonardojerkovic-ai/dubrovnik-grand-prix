@@ -29,6 +29,11 @@ const STATUS: Record<string, string> = {
   ZAVRSEN: "završen",
 };
 
+/** Relativna putanja pretvara se u punu — kalendar nije na našoj domeni. */
+function absolute(url: string, baseUrl: string): string {
+  return url.startsWith("/") ? `${baseUrl}${url}` : url;
+}
+
 export async function GET() {
   const baseUrl = process.env.NEXTAUTH_URL ?? "https://skdubrovnik.hr";
 
@@ -44,7 +49,9 @@ export async function GET() {
       TEMPO[t.tempo] ?? t.tempo.toLowerCase(),
       t.rounds ? `${t.rounds} kola` : null,
       t.level ? LEVEL[t.level] : null,
+      t.startTime ? `Početak u ${t.startTime}` : null,
       STATUS[t.status] ? `Status: ${STATUS[t.status]}` : null,
+      t.announcementUrl ? `Raspis: ${absolute(t.announcementUrl, baseUrl)}` : null,
     ].filter(Boolean);
 
     return {
@@ -54,6 +61,7 @@ export async function GET() {
       date: t.date,
       summary: t.name,
       description: parts.join("\n"),
+      location: t.venue ?? undefined,
       url: `${baseUrl}/turniri/${t.id}`,
       // Raste pri svakoj izmjeni turnira; bez toga kalendar ignorira promjene.
       sequence: Math.floor(t.updatedAt.getTime() / 1000),

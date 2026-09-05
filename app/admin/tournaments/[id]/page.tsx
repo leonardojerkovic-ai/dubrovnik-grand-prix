@@ -52,6 +52,9 @@ export default async function EditTournamentPage({
           incrementSeconds: tournament.incrementSeconds,
           restrictedCategories: tournament.restrictedCategories,
           academyPointsOnly: tournament.academyPointsOnly,
+          venue: tournament.venue,
+          startTime: tournament.startTime,
+          announcementUrl: tournament.announcementUrl,
         }}
       />
     </div>

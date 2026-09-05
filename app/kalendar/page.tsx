@@ -68,6 +68,7 @@ export default async function KalendarPage() {
                       <th className="px-4 py-2">Naziv</th>
                       <th className="px-4 py-2">Datum</th>
                       <th className="px-4 py-2">Razina / tempo</th>
+                      <th className="px-4 py-2">Mjesto</th>
                       <th className="px-4 py-2">Status</th>
                       <th className="px-4 py-2 text-right">Prijava</th>
                     </tr>
@@ -95,6 +96,9 @@ export default async function KalendarPage() {
                             : t.tempo === "RAPID"
                               ? "rapid"
                               : "blitz"}
+                        </td>
+                        <td className="px-4 py-3 text-ink/60">
+                          {[t.startTime, t.venue].filter(Boolean).join(" · ") || "—"}
                         </td>
                         <td className="px-4 py-3">{STATUS_LABELS[t.status]}</td>
                         <td className="px-4 py-3 text-right">

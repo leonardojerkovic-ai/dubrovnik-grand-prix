@@ -37,6 +37,9 @@ type TournamentFormProps = {
     isFinal?: boolean;
     isJuniorFinal?: boolean;
     academyPointsOnly?: boolean;
+    venue?: string | null;
+    startTime?: string | null;
+    announcementUrl?: string | null;
     status?: string;
     baseMinutes?: number | null;
     incrementSeconds?: number | null;
@@ -227,6 +230,42 @@ export function TournamentForm({
           </span>
         </label>
       )}
+
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Mjesto održavanja" error={state.errors?.venue}>
+          <input
+            name="venue"
+            defaultValue={defaultValues.venue ?? ""}
+            placeholder="Dom šaha, Liechtensteinov put 12"
+            className="input"
+          />
+        </Field>
+        <Field
+          label="Vrijeme početka"
+          error={state.errors?.startTime}
+          hint="24-satni oblik, npr. 17:00"
+        >
+          <input
+            type="time"
+            name="startTime"
+            defaultValue={defaultValues.startTime ?? ""}
+            className="input"
+          />
+        </Field>
+      </div>
+
+      <Field
+        label="Poveznica na raspis"
+        error={state.errors?.announcementUrl}
+        hint="Puni URL ili putanja unutar stranice, npr. /dokumenti/raspis.pdf"
+      >
+        <input
+          name="announcementUrl"
+          defaultValue={defaultValues.announcementUrl ?? ""}
+          placeholder="/dokumenti/raspis-zimski-kup.pdf"
+          className="input"
+        />
+      </Field>
 
       <Field
         label="Ograničenje prava nastupa"

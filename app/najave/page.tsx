@@ -46,12 +46,36 @@ export default async function NajavePage() {
             </h2>
             <p className="text-sm text-ink/70 whitespace-pre-wrap mb-3">{a.body}</p>
             {a.tournament && (
-              <Link
-                href={`/turniri/${a.tournament.id}`}
-                className="text-sm text-navy underline"
-              >
-                Pogledaj turnir: {a.tournament.name} →
-              </Link>
+              <div className="rounded-md bg-paper px-3 py-2.5">
+                <Link
+                  href={`/turniri/${a.tournament.id}`}
+                  className="text-sm font-medium text-navy hover:text-crimson hover:underline"
+                >
+                  {a.tournament.name}
+                </Link>
+                <p className="mt-0.5 text-xs text-ink/60">
+                  {[
+                    a.tournament.date.toLocaleDateString("hr-HR", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    }) + (a.tournament.startTime ? ` u ${a.tournament.startTime}` : ""),
+                    a.tournament.venue,
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                </p>
+                {a.tournament.announcementUrl && (
+                  <a
+                    href={a.tournament.announcementUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1.5 inline-block text-xs font-medium text-navy underline hover:text-crimson"
+                  >
+                    Raspis turnira
+                  </a>
+                )}
+              </div>
             )}
           </article>
         ))}
