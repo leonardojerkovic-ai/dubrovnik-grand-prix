@@ -30,11 +30,26 @@ const LEVEL_LABELS: Record<string, string> = {
   VRHUNSKA: "Vrhunska",
 };
 
-export default async function KalendarPage() {
+export default async function KalendarPage({
+  searchParams,
+}: {
+  searchParams?: { smjer?: string };
+}) {
+  /**
+   * Zadano je kronološki, od najranijeg prema dnu — kalendar se tako i čita.
+   * Klik na zaglavlje okreće smjer, korisno kad se gleda što je nedavno
+   * odigrano. Smjer stoji u adresi, pa se poredak može poslati poveznicom i
+   * stranica ostaje bez klijentskog JavaScripta.
+   */
+  const dir: "asc" | "desc" = searchParams?.smjer === "desc" ? "desc" : "asc";
+
   const seasons = await prisma.season.findMany({
     orderBy: [{ system: "asc" }, { startDate: "desc" }],
-    include: { tournaments: { orderBy: { date: "asc" } } },
+    include: { tournaments: { orderBy: { date: dir } } },
   });
+
+  const oppositeHref = `/kalendar?smjer=${dir === "asc" ? "desc" : "asc"}`;
+  const arrow = dir === "asc" ? "\u2191" : "\u2193";
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12">
@@ -66,7 +81,22 @@ export default async function KalendarPage() {
                   <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
                     <tr>
                       <th className="px-4 py-2">Naziv</th>
-                      <th className="px-4 py-2">Datum</th>
+                      <th className="px-4 py-2" aria-sort={dir === "asc" ? "ascending" : "descending"}>
+                        <Link
+                          href={oppositeHref}
+                          className="inline-flex items-center gap-1 text-navy hover:text-crimson"
+                          title={
+                            dir === "asc"
+                              ? "Poredaj od najnovijeg"
+                              : "Poredaj od najstarijeg"
+                          }
+                        >
+                          Datum
+                          <span aria-hidden className="text-[10px]">
+                            {arrow}
+                          </span>
+                        </Link>
+                      </th>
                       <th className="px-4 py-2">Razina / tempo</th>
                       <th className="px-4 py-2">Mjesto</th>
                       <th className="px-4 py-2">Status</th>
@@ -82,7 +112,7 @@ export default async function KalendarPage() {
                           </Link>
                           {t.isFinal && <span className="badge-title ml-2">Finale</span>}
                         </td>
-                        <td className="px-4 py-3 text-ink/70">
+                        <td className="px-4 py-3 font-medium text-navy">
                           {t.date.toLocaleDateString("hr-HR", {
                             day: "numeric",
                             month: "long",
