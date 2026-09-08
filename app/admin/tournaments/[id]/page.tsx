@@ -3,6 +3,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { updateTournament } from "../actions";
 import { TournamentForm } from "../tournament-form";
+import { CopyTextButton } from "@/components/copy-text-button";
+import { buildTournamentAnnouncement } from "@/lib/whatsapp";
 
 export default async function EditTournamentPage({
   params,
@@ -21,6 +23,21 @@ export default async function EditTournamentPage({
 
   const boundUpdateTournament = updateTournament.bind(null, tournament.id);
 
+  const baseUrl = process.env.NEXTAUTH_URL ?? "https://skdubrovnik.hr";
+  const announcement = buildTournamentAnnouncement({
+    name: tournament.name,
+    date: tournament.date,
+    startTime: tournament.startTime,
+    venue: tournament.venue,
+    tempo: tournament.tempo,
+    rounds: tournament.rounds,
+    level: tournament.level,
+    status: tournament.status,
+    announcementUrl: tournament.announcementUrl,
+    tournamentId: tournament.id,
+    baseUrl,
+  });
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -34,6 +51,14 @@ export default async function EditTournamentPage({
           Unos rezultata →
         </Link>
       </div>
+      <div className="mb-5">
+        <CopyTextButton
+          label="Najava za WhatsApp"
+          hint="Tekst se sastavlja iz podataka o turniru — datum, mjesto i satnica ne mogu se razići s onim što piše na stranici."
+          text={announcement}
+        />
+      </div>
+
       <TournamentForm
         action={boundUpdateTournament}
         seasons={seasons}

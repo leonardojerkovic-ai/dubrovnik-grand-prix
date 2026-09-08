@@ -4,6 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { ResultsForm } from "./results-form";
 import { LockBanner } from "./lock-banner";
 import { getLockStatus } from "@/lib/scoring/results-lock";
+import { CopyTextButton } from "@/components/copy-text-button";
+import { buildResultsAnnouncement } from "@/lib/whatsapp";
 
 export default async function TournamentResultsPage({
   params,
@@ -37,6 +39,31 @@ export default async function TournamentResultsPage({
 
   const lock = getLockStatus(tournament);
 
+  // Objava za WhatsApp ima smisla tek kad rezultati postoje.
+  const playedResults = tournament.results.filter((r) => r.gamesPlayed);
+  const playerById = new Map(players.map((p) => [p.id, p]));
+  const baseUrl = process.env.NEXTAUTH_URL ?? "https://skdubrovnik.hr";
+
+  const resultsMessage =
+    playedResults.length > 0
+      ? buildResultsAnnouncement({
+          name: tournament.name,
+          date: tournament.date,
+          playerCount: playedResults.length,
+          tournamentId: tournament.id,
+          baseUrl,
+          results: playedResults.map((r) => {
+            const p = playerById.get(r.playerId);
+            return {
+              rank: r.rank,
+              firstName: p?.firstName ?? "",
+              lastName: p?.lastName ?? "",
+              gpPoints: r.gpPoints,
+            };
+          }),
+        })
+      : null;
+
   return (
     <div>
       <div className="mb-4 flex items-center justify-between">
@@ -57,6 +84,16 @@ export default async function TournamentResultsPage({
           ← Uredi podatke turnira
         </Link>
       </div>
+
+      {resultsMessage && (
+        <div className="mb-4">
+          <CopyTextButton
+            label="Rezultati za WhatsApp"
+            hint="Prvih pet mjesta s bodovima i poveznica na cijeli poredak."
+            text={resultsMessage}
+          />
+        </div>
+      )}
 
       <LockBanner
         tournamentId={tournament.id}
