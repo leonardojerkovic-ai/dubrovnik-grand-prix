@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
+import { AddGuardianshipForm } from "./add-form";
+import { RemoveGuardianshipButton } from "./remove-button";
 
 /**
  * Pregled skrbništava, s naglaskom na onima koja treba razriješiti.
@@ -10,6 +12,37 @@ import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
  * razrješava od slučaja do slučaja.
  */
 export default async function GuardianshipsPage() {
+  const [accountsRaw, childrenRaw] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: { email: "asc" },
+      select: {
+        id: true,
+        email: true,
+        player: { select: { firstName: true, lastName: true } },
+      },
+    }),
+    prisma.player.findMany({
+      where: { deceased: false },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      select: { id: true, firstName: true, lastName: true, birthYear: true },
+    }),
+  ]);
+
+  const accounts = accountsRaw.map((u) => ({
+    id: u.id,
+    label: u.player
+      ? `${u.email} — ${u.player.lastName} ${u.player.firstName}`
+      : u.email,
+  }));
+
+  // U izbor ulaze samo igrači kojima račun vodi netko drugi.
+  const childOptions = childrenRaw
+    .filter((p) => needsGuardian(p.birthYear))
+    .map((p) => ({
+      id: p.id,
+      label: `${p.lastName} ${p.firstName} (${p.birthYear}.)`,
+    }));
+
   const links = await prisma.guardianLink.findMany({
     orderBy: [{ player: { lastName: "asc" } }],
     select: {
@@ -32,9 +65,21 @@ export default async function GuardianshipsPage() {
         Skrbništva
       </h2>
       <p className="mb-5 max-w-2xl text-sm text-ink/60">
-        Roditelji i skrbnici koji upravljaju profilima djece. Veza se
-        uspostavlja upisom pristupnog koda i vrijedi dok se ne ukloni.
+        Roditelji i skrbnici koji upravljaju profilima djece. Vezu može
+        uspostaviti roditelj sam, upisom pristupnog koda djeteta, ili je ovdje
+        dodaješ izravno — korisno kad roditelj i sam igra, pa već ima račun.
       </p>
+
+      <section className="mb-8 rounded-lg border border-navy/10 bg-white px-4 py-4">
+        <h3 className="mb-3 text-sm font-semibold text-navy">
+          Dodaj skrbništvo
+        </h3>
+        <AddGuardianshipForm accounts={accounts} childOptions={childOptions} />
+        <p className="mt-3 text-xs text-ink/50">
+          Ponuđeni su samo igrači mlađi od {SELF_ACCOUNT_AGE} godina. Isto
+          dijete može voditi više skrbnika, primjerice oba roditelja.
+        </p>
+      </section>
 
       {adults.length > 0 && (
         <section className="mb-8">
@@ -55,7 +100,13 @@ export default async function GuardianshipsPage() {
                 >
                   {l.player.lastName} {l.player.firstName} ({l.player.birthYear}.)
                 </Link>
-                <span className="text-ink/60">{l.guardian.email}</span>
+                <span className="flex items-center gap-3 text-ink/60">
+                  {l.guardian.email}
+                  <RemoveGuardianshipButton
+                    linkId={l.id}
+                    label={`${l.player.lastName} ${l.player.firstName}`}
+                  />
+                </span>
               </div>
             ))}
           </div>
@@ -79,7 +130,13 @@ export default async function GuardianshipsPage() {
               >
                 {l.player.lastName} {l.player.firstName} ({l.player.birthYear}.)
               </Link>
-              <span className="text-ink/60">{l.guardian.email}</span>
+              <span className="flex items-center gap-3 text-ink/60">
+                {l.guardian.email}
+                <RemoveGuardianshipButton
+                  linkId={l.id}
+                  label={`${l.player.lastName} ${l.player.firstName}`}
+                />
+              </span>
             </div>
           ))}
         </div>
