@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
-import { isMinorByBirthYear } from "@/lib/guardian-rules";
+import { needsGuardian } from "@/lib/guardian-rules";
 import { registrationSchema } from "@/lib/validation/registration";
 
 export type RegistrationState = {
@@ -77,6 +77,9 @@ export async function registerPlayer(
   const rawCode = String(formData.get("linkCode") ?? "").trim();
   // Roditelj koji sam ne igra ne treba prazan igrački profil koji nikad
   // neće nastupiti — račun mu služi samo za upravljanje djecom.
+  // Označava da se osoba registrira samo radi vođenja djece i da joj ne
+  // treba vlastiti igrački profil. Ne odlučuje o tome hoće li se dijete
+  // voditi kroz skrbništvo — to određuje njegova dob.
   const asGuardian = formData.get("asGuardian") === "on";
 
   if (rawCode.length > 0) {
@@ -102,11 +105,12 @@ export async function registerPlayer(
       select: { id: true },
     });
 
-    const minor = isMinorByBirthYear(target.birthYear);
-
-    // Skrbništvo za dijete, vlastiti profil za sve ostalo. Punoljetnog
-    // igrača nitko drugi ne vodi.
-    if (asGuardian && minor) {
+    // Dob odlučuje, ne kvačica. Da o tome odlučuje korisnik, roditelj koji
+    // je zaboravi označiti dobio bi djetetov profil kao SVOJ — račun bi
+    // radio, ali bi ime djeteta stajalo kao njegovo, a djetetov profil bio
+    // bi trajno zauzet. Greška koja se ne primijeti dok netko ne pogleda
+    // pobliže.
+    if (needsGuardian(target.birthYear)) {
       await prisma.$transaction([
         prisma.guardianLink.create({
           data: { guardianUserId: created.id, playerId: target.id },

@@ -68,10 +68,12 @@ export default function RegistracijaPage() {
             className="mt-0.5 h-4 w-4 rounded border-navy/30"
           />
           <span>
-            Registriram se kao roditelj ili skrbnik
+            Registriram se samo kao roditelj ili skrbnik, ne igram sam/a
             <span className="mt-0.5 block text-xs text-ink/55">
-              Kod koji upisuješ pripada djetetu. Tvoj račun neće imati vlastiti
-              igrački profil, a djecu možeš dodati i kasnije u „Moji igrači“.
+              Tvom računu se neće stvoriti igrački profil. Djecu mlađu od 16
+              godina svejedno vodiš ti — to se određuje prema njihovoj dobi,
+              bez obzira na ovu kvačicu. Djecu možeš dodati i kasnije u
+              „Moji igrači“.
             </span>
           </span>
         </label>

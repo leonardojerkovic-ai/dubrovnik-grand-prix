@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagedPlayers } from "@/lib/guardian";
-import { isMinorByBirthYear } from "@/lib/guardian-rules";
+import { needsGuardian } from "@/lib/guardian-rules";
 import { AddChildForm } from "./add-child-form";
 import { RemoveChildButton } from "./remove-child-button";
 
@@ -59,7 +59,7 @@ export default async function MyPlayersPage() {
               </Link>
               <p className="text-xs text-ink/50">
                 {c.birthYear}.
-                {!isMinorByBirthYear(c.birthYear) && " · punoljetan/na"}
+                {!needsGuardian(c.birthYear) && " · može voditi vlastiti račun"}
               </p>
             </div>
             <RemoveChildButton playerId={c.id} name={`${c.firstName} ${c.lastName}`} />

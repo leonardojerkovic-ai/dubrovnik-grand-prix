@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { isMinorByBirthYear } from "@/lib/guardian-rules";
+import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
 
 /**
  * Pregled skrbništava, s naglaskom na onima koja treba razriješiti.
@@ -22,8 +22,9 @@ export default async function GuardianshipsPage() {
     },
   });
 
-  const adults = links.filter((l) => !isMinorByBirthYear(l.player.birthYear));
-  const minors = links.filter((l) => isMinorByBirthYear(l.player.birthYear));
+  // Igrači koji su dorasli vlastitom računu — skrbništvo im više nije nužno.
+  const adults = links.filter((l) => !needsGuardian(l.player.birthYear));
+  const minors = links.filter((l) => needsGuardian(l.player.birthYear));
 
   return (
     <div>
@@ -38,12 +39,12 @@ export default async function GuardianshipsPage() {
       {adults.length > 0 && (
         <section className="mb-8">
           <h3 className="mb-2 text-sm font-semibold text-crimson">
-            Postali punoljetni ({adults.length})
+            Mogu voditi vlastiti račun ({adults.length})
           </h3>
           <p className="mb-3 text-sm text-ink/60">
-            Ovi igrači više nisu maloljetni. Razmisli treba li im izdati
-            vlastiti pristupni kod i ukloniti skrbništvo — veza se ne prekida
-            sama, da nikoga ne zatekne usred sezone.
+            Ovi igrači imaju {SELF_ACCOUNT_AGE} godina ili više. Razmisli
+            treba li im izdati vlastiti pristupni kod i ukloniti skrbništvo —
+            veza se ne prekida sama, da nikoga ne zatekne usred sezone.
           </p>
           <div className="divide-y divide-navy/[0.07] rounded-lg border border-crimson/30 bg-white">
             {adults.map((l) => (

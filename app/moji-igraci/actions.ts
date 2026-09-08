@@ -5,7 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
-import { isMinorByBirthYear } from "@/lib/guardian-rules";
+import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
 
 export type GuardianActionState = { error?: string; message?: string };
 
@@ -52,10 +52,11 @@ export async function addChildByCode(
     return { error: "Kod nije valjan ili je već iskorišten." };
   }
 
-  if (!isMinorByBirthYear(player.birthYear)) {
+  if (!needsGuardian(player.birthYear)) {
     return {
       error:
-        "Taj igrač je punoljetan i mora otvoriti vlastiti račun. Proslijedi mu kod da ga upiše pri registraciji.",
+        `Igrači od ${SELF_ACCOUNT_AGE} godina naviše vode vlastiti račun. ` +
+        "Proslijedi mu kod da ga upiše pri registraciji.",
     };
   }
 
