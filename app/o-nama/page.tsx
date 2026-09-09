@@ -30,6 +30,32 @@ export default function ONamaPage() {
           poticanja redovitog natjecanja i pripreme igrača za nastup u
           ukupnom klupskom Grand Prixu.
         </p>
+        <p>
+          Ova stranica pokriva natjecanja i ljestvice. Sve ostalo o klubu —
+          vijesti, škola šaha i kontakt — nalazi se na{" "}
+          <a
+            href="https://www.skdubrovnik.hr/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-navy underline hover:text-crimson"
+          >
+            skdubrovnik.hr
+          </a>
+          .
+        </p>
+        <p>
+          Klub djeluje u sastavu{" "}
+          <a
+            href="https://ssdnz.hr/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-medium text-navy underline hover:text-crimson"
+          >
+            Šahovskog saveza Dubrovačko-neretvanske županije
+          </a>
+          , čija se pojedinačna prvenstva vrednuju i u Dubrovnik Grand Prixu
+          (čl. 13.).
+        </p>
       </div>
     </div>
   );
