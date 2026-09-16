@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
@@ -125,6 +126,12 @@ export default async function TournamentDetailPage({
   // prijave. Rejting-sort i dalje vrijedi za igrače bez rezultata (koji su
   // samo prijavljeni, turnir se još nije odigrao).
   const hasAnyResults = tournament.results.length > 0;
+
+  // Nakon turnira prvo što čovjek poželi jest vidjeti gdje je sada na
+  // ljestvici. Akademija ima jednu, GP osam — vodimo na Opći.
+  const isAkademija = tournament.season.system === "AKADEMIJA";
+  const standingsHref = isAkademija ? "/ljestvice/akademija" : "/ljestvice/opci-gp";
+  const standingsLabel = isAkademija ? "Ljestvica Akademije" : "Ljestvica Općeg GP-a";
   const displayPlayers = hasAnyResults
     ? [...sortedPlayers].sort((a, b) => {
         if (a.rank == null && b.rank == null) return 0;
@@ -206,7 +213,8 @@ export default async function TournamentDetailPage({
       )}
 
       <h2 className="font-display text-lg font-bold text-navy mb-3">
-        {hasAnyResults ? "Sudionici" : "Prijavljeni igrači"} ({displayPlayers.length})
+        {hasAnyResults ? "Rezultati" : "Prijavljeni igrači"} ({displayPlayers.length}
+        {hasAnyResults ? " igrača" : ""})
       </h2>
 
       {displayPlayers.length === 0 ? (
@@ -247,6 +255,25 @@ export default async function TournamentDetailPage({
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {hasAnyResults && (
+        <div className="mt-4 flex flex-wrap items-center gap-4">
+          <Link
+            href={standingsHref}
+            className="rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+          >
+            {standingsLabel} →
+          </Link>
+          {/*
+            Gosti izvan kluba redovito pitaju zašto ih nema na ljestvici.
+            Bodovi im se računaju (čl. 4), ali se ljestvica vodi za članove.
+          */}
+          <p className="text-xs text-ink/55">
+            Bodovi se računaju svim igračima, ali se na službenoj ljestvici
+            prikazuju samo članovi ŠK Dubrovnik (čl. 4).
+          </p>
         </div>
       )}
     </div>
