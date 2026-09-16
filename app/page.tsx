@@ -34,10 +34,25 @@ export default async function HomePage() {
     include: { tournaments: { orderBy: { date: "asc" } } },
   });
 
+  /**
+   * Nadolazeći turniri — od danas nadalje.
+   *
+   * Prije se popis samo sortirao po datumu i uzimalo prvih pet, bez obzira
+   * na to je li turnir odigran. Dok se ništa nije odigralo izgledalo je
+   * isto; čim je prvi turnir prošao, ostao je stajati pod naslovom
+   * "Nadolazeći".
+   *
+   * Uspoređuje se po DANU, ne po trenutku: turnir koji se igra danas i dalje
+   * je nadolazeći, a ne nestaje s naslovnice u jutarnjim satima.
+   */
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const upcomingTournaments = activeSeasons
     .flatMap((season) =>
       season.tournaments.map((t) => ({ ...t, seasonSystem: season.system }))
     )
+    .filter((t) => t.date.getTime() >= today.getTime())
     .sort((a, b) => a.date.getTime() - b.date.getTime())
     .slice(0, 5);
 
