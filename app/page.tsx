@@ -106,9 +106,18 @@ export default async function HomePage() {
               <span className="badge-title">Dubrovnik Grand Prix</span>
             )}
           </div>
-          <h1 className="font-hero text-4xl md:text-6xl max-w-2xl leading-[1.08] lg:max-w-[36rem]">
-            Cijela sezona. Jedna ljestvica.{" "}
-            <span className="italic text-gold-light">Svaki potez se broji.</span>
+          {/*
+            Svaka recenica je zasebna cjelina koja se ne lomi iznutra, pa se
+            prijelom uvijek dogodi izmedu recenica, a ne nasred sintagme.
+            Tek od lg naslov ima dovoljno sirine da to bude sigurno; ispod
+            toga se lomi prirodno kako ne bi izasao iz okvira.
+          */}
+          <h1 className="font-hero text-4xl md:text-6xl max-w-2xl leading-[1.08] text-balance">
+            <span className="lg:inline-block">Cijela sezona.</span>{" "}
+            <span className="lg:inline-block">Jedna ljestvica.</span>{" "}
+            <span className="italic text-gold-light lg:inline-block">
+              Svaki potez se broji.
+            </span>
           </h1>
           <span className="mt-6 block h-0.5 w-10 bg-gold" />
           <p className="mt-5 max-w-xl text-sky-light">
