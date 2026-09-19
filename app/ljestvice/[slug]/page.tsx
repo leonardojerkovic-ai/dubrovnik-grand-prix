@@ -2,9 +2,11 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { getGpStandings, type GpCategoryCode } from "@/lib/standings/gp";
+import { getGpStandings } from "@/lib/standings/gp";
 import { getAkademijaStandings } from "@/lib/standings/akademija";
 import { StandingsTable } from "@/components/standings-table";
+import { STANDING_SLUGS } from "@/lib/standings/slugs";
+import { CsvDownload } from "@/components/csv-download";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -14,17 +16,7 @@ import { StandingsTable } from "@/components/standings-table";
  */
 export const revalidate = 60;
 
-const SLUG_MAP: Record<string, { system: "GP" | "AKADEMIJA"; category?: GpCategoryCode; title: string }> = {
-  "opci-gp": { system: "GP", category: "OPCI", title: "Opći GP" },
-  "zene": { system: "GP", category: "ZENE", title: "Žene" },
-  u20: { system: "GP", category: "U20", title: "Juniori U20" },
-  u16: { system: "GP", category: "U16", title: "Kadeti U16" },
-  u12: { system: "GP", category: "U12", title: "Mlađi kadeti U12" },
-  s50: { system: "GP", category: "S50", title: "Veterani +50" },
-  s65: { system: "GP", category: "S65", title: "Veterani +65" },
-  u1800: { system: "GP", category: "U1800", title: "U1800" },
-  akademija: { system: "AKADEMIJA", title: "GP Akademije" },
-};
+const SLUG_MAP = STANDING_SLUGS;
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
   const config = SLUG_MAP[params.slug];
@@ -92,6 +84,13 @@ export default async function StandingsPage({
         </div>
       </div>
       <StandingsTable rows={rows ?? []} />
+
+      {(rows?.length ?? 0) > 0 && (
+        <CsvDownload
+          href={`/ljestvice/${params.slug}/csv`}
+          label="Preuzmi ljestvicu (CSV)"
+        />
+      )}
     </div>
   );
 }

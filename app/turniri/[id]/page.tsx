@@ -9,6 +9,7 @@ import {
 import { PlayerName } from "@/components/player-name";
 import { RegisterButton } from "@/components/register-button";
 import { MedalList } from "@/components/medal-list";
+import { CsvDownload } from "@/components/csv-download";
 import { getTournamentMedals } from "@/lib/akademija/medals";
 
 /**
@@ -261,6 +262,13 @@ export default async function TournamentDetailPage({
             </tbody>
           </table>
         </div>
+      )}
+
+      {hasAnyResults && (
+        <CsvDownload
+          href={`/turniri/${tournament.id}/csv`}
+          label="Preuzmi rezultate (CSV)"
+        />
       )}
 
       {medals.length > 0 && (
