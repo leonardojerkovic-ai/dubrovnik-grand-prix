@@ -2,6 +2,30 @@ import Link from "next/link";
 import Image from "next/image";
 import { RegisterButton } from "@/components/register-button";
 import { prisma } from "@/lib/prisma";
+import { getGpStandings } from "@/lib/standings/gp";
+import { getAkademijaStandings } from "@/lib/standings/akademija";
+import { TournamentCountdown } from "@/components/tournament-countdown";
+import {
+  StandingsPreview,
+  type StandingsPreviewRow,
+} from "@/components/standings-preview";
+
+/** Koliko se mjesta pokazuje na naslovnici. */
+const PREVIEW_SIZE = 8;
+
+function toPreviewRows(
+  rows: {
+    player: { id: string; firstName: string; lastName: string; title: string };
+    total: number;
+  }[]
+): StandingsPreviewRow[] {
+  return rows.slice(0, PREVIEW_SIZE).map((row) => ({
+    playerId: row.player.id,
+    name: `${row.player.lastName} ${row.player.firstName}`,
+    title: row.player.title,
+    total: row.total,
+  }));
+}
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -59,6 +83,24 @@ export default async function HomePage() {
   const gpSeason = activeSeasons.find((s) => s.system === "GP");
   const akademijaSeason = activeSeasons.find((s) => s.system === "AKADEMIJA");
   const primaryLjestvicaHref = gpSeason ? "/ljestvice/opci-gp" : "/ljestvice/akademija";
+
+  // Vrh obiju ljestvica. Dohvaća se usporedno jer su to dva neovisna upita.
+  // Obje funkcije vraćaju null ako sezona nema ljestvicu, pa se odmah svodi
+  // na prazan niz — naslovnica u tom slučaju samo ne prikazuje tu karticu.
+  const [gpTopRaw, akademijaTopRaw] = await Promise.all([
+    gpSeason ? getGpStandings(gpSeason.id, "OPCI") : Promise.resolve(null),
+    akademijaSeason
+      ? getAkademijaStandings(akademijaSeason.id)
+      : Promise.resolve(null),
+  ]);
+  const gpTop = toPreviewRows(gpTopRaw ?? []);
+  const akademijaTop = toPreviewRows(akademijaTopRaw ?? []);
+
+  // Odbrojava se do prvog turnira koji dolazi, bez obzira kojem sustavu
+  // pripada. Vrijeme s poslužitelja ide uz njega da se prvo iscrtavanje na
+  // klijentu poklopi — vidi TournamentCountdown.
+  const nextTournament = upcomingTournaments[0];
+  const serverNowIso = new Date().toISOString();
 
   return (
     <div>
@@ -138,8 +180,44 @@ export default async function HomePage() {
               Kalendar turnira
             </Link>
           </div>
+
+          {nextTournament && (
+            <TournamentCountdown
+              targetIso={nextTournament.date.toISOString()}
+              serverNowIso={serverNowIso}
+              name={nextTournament.name}
+              href={`/turniri/${nextTournament.id}`}
+            />
+          )}
         </div>
       </section>
+
+      {(gpTop.length > 0 || akademijaTop.length > 0) && (
+        <section className="mx-auto max-w-6xl px-4 pt-12">
+          <h2 className="font-hero mb-4 text-2xl text-navy">
+            Trenutni poredak
+          </h2>
+          <div className="grid gap-5 md:grid-cols-2">
+            {gpSeason && (
+              <StandingsPreview
+                heading="Opći GP"
+                seasonLabel={gpSeason.yearLabel}
+                href="/ljestvice/opci-gp"
+                rows={gpTop}
+              />
+            )}
+            {akademijaSeason && (
+              <StandingsPreview
+                heading="GP Akademije"
+                seasonLabel={akademijaSeason.yearLabel}
+                href="/ljestvice/akademija"
+                rows={akademijaTop}
+                accent="akademija"
+              />
+            )}
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-4 py-12">
         <h2 className="font-hero mb-4 text-2xl text-navy">
