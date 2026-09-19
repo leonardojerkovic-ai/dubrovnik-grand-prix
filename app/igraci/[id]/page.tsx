@@ -100,8 +100,6 @@ export default async function PlayerProfilePage({
         <RatingChart history={player.ratingHistory} />
       </div>
 
-      <PlayerMedals items={medals} />
-
       {player.seasons.length === 0 ? (
         <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
           Igrač još nema unesenih rezultata.
@@ -111,6 +109,8 @@ export default async function PlayerProfilePage({
           <PlayerSeasonResults key={season.seasonId} season={season} />
         ))
       )}
+
+      <PlayerMedals items={medals} />
     </div>
   );
 }

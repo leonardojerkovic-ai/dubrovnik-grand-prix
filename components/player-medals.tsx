@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { MedalCategory } from "@prisma/client";
+import { MedalDisc, awardLabel, isSpecial } from "@/components/medal-disc";
 
 /**
  * Vitrina medalja na profilu igrača — čl. 19 Akademije.
  *
- * Djeci i roditeljima je ovo zanimljiviji dio profila od zbroja bodova, pa
- * brojač stoji na vrhu, a popis ispod njega.
+ * Brojač razdvaja odličja ukupnog poretka od posebnih medalja: kategorijska
+ * medalja nije zlatna nego posebna, pa bi je brojanje u zlatne izjednačilo s
+ * pobjedom na turniru.
  */
 
 export interface PlayerMedalItem {
@@ -17,40 +19,40 @@ export interface PlayerMedalItem {
   place: number;
 }
 
-const PLACE_LABELS: Record<number, string> = {
-  1: "zlatnih",
-  2: "srebrnih",
-  3: "brončanih",
-};
-
-function awardLabel(item: PlayerMedalItem): string {
-  if (item.category === "UKUPNO") return `${item.place}. mjesto`;
-  if (item.place === 1) {
-    return item.category === "ZENE"
-      ? "najbolja igračica"
-      : `najbolji u kategoriji ${item.category}`;
-  }
-  return `${item.category} — ${item.place}. mjesto`;
+/**
+ * Hrvatska množina uz broj: 1 zlatna, 2-4 zlatne, 5+ zlatnih (uz iznimke
+ * 11-14). Bez ovoga bi uz jednu medalju pisalo "1 zlatnih".
+ */
+function plural(n: number, one: string, few: string, many: string): string {
+  const mod10 = n % 10;
+  const mod100 = n % 100;
+  if (mod10 === 1 && mod100 !== 11) return one;
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
+  return many;
 }
 
-function Count({ place, value }: { place: number; value: number }) {
-  const tone =
-    place === 1
-      ? "bg-gold text-navy-dark"
-      : place === 2
-        ? "bg-navy/15 text-navy"
-        : "bg-[#b06a2c]/20 text-[#8a4f1d]";
+const PLACE_FORMS: Record<number, [string, string, string]> = {
+  1: ["zlatna", "zlatne", "zlatnih"],
+  2: ["srebrna", "srebrne", "srebrnih"],
+  3: ["brončana", "brončane", "brončanih"],
+};
+
+function Count({
+  category,
+  place,
+  value,
+  label,
+}: {
+  category: MedalCategory;
+  place: number;
+  value: number;
+  label: string;
+}) {
   return (
     <span className="flex items-center gap-2">
-      <span
-        aria-hidden
-        className={`inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${tone}`}
-      >
-        {place}
-      </span>
+      <MedalDisc category={category} place={place} />
       <span className="text-sm text-ink/70">
-        <strong className="text-navy tabular-nums">{value}</strong>{" "}
-        {PLACE_LABELS[place] ?? ""}
+        <strong className="text-navy tabular-nums">{value}</strong> {label}
       </span>
     </span>
   );
@@ -59,10 +61,13 @@ function Count({ place, value }: { place: number; value: number }) {
 export function PlayerMedals({ items }: { items: PlayerMedalItem[] }) {
   if (items.length === 0) return null;
 
-  const counts: { place: number; value: number }[] = [1, 2, 3]
+  const overall = items.filter((i) => !isSpecial(i.category));
+  const special = items.filter((i) => isSpecial(i.category));
+
+  const counts = [1, 2, 3]
     .map((place) => ({
       place,
-      value: items.filter((i) => i.place === place).length,
+      value: overall.filter((i) => i.place === place).length,
     }))
     .filter((c) => c.value > 0);
 
@@ -71,10 +76,29 @@ export function PlayerMedals({ items }: { items: PlayerMedalItem[] }) {
       <h2 className="mb-2 text-sm font-semibold text-navy">Medalje</h2>
 
       <div className="rounded-lg border border-navy/10 bg-white">
-        <div className="flex flex-wrap gap-5 border-b border-navy/10 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-5 border-b border-navy/10 px-4 py-3">
           {counts.map((c) => (
-            <Count key={c.place} place={c.place} value={c.value} />
+            <Count
+              key={c.place}
+              category="UKUPNO"
+              place={c.place}
+              value={c.value}
+              label={(() => {
+                const forms = PLACE_FORMS[c.place];
+                return forms ? plural(c.value, ...forms) : "";
+              })()}
+            />
           ))}
+          {special.length > 0 && (
+            <span className="flex items-center gap-2">
+              <span className="text-sm text-ink/70">
+                <strong className="text-navy tabular-nums">
+                  {special.length}
+                </strong>{" "}
+                {plural(special.length, "posebna", "posebne", "posebnih")}
+              </span>
+            </span>
+          )}
         </div>
 
         <ul className="divide-y divide-navy/10">
@@ -83,11 +107,12 @@ export function PlayerMedals({ items }: { items: PlayerMedalItem[] }) {
               key={item.id}
               className="flex items-baseline justify-between gap-3 px-4 py-2 text-sm"
             >
-              <span className="min-w-0 text-navy">
+              <span className="flex min-w-0 items-center gap-2 text-navy">
+                <MedalDisc category={item.category} place={item.place} />
                 {item.tournamentId ? (
                   <Link
                     href={`/turniri/${item.tournamentId}`}
-                    className="hover:underline"
+                    className="truncate hover:underline"
                   >
                     {item.tournamentName}
                   </Link>
@@ -96,7 +121,7 @@ export function PlayerMedals({ items }: { items: PlayerMedalItem[] }) {
                 )}
               </span>
               <span className="shrink-0 text-xs text-ink/60">
-                {awardLabel(item)}
+                {awardLabel(item.category, item.place)}
               </span>
             </li>
           ))}
