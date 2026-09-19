@@ -10,6 +10,8 @@ import { PlayerName } from "@/components/player-name";
 import { RegisterButton } from "@/components/register-button";
 import { MedalList } from "@/components/medal-list";
 import { CsvDownload } from "@/components/csv-download";
+import { PrizeList } from "@/components/prize-list";
+import { getTournamentPrizes } from "@/lib/tournament-prizes";
 import { getTournamentMedals } from "@/lib/akademija/medals";
 
 /**
@@ -136,6 +138,10 @@ export default async function TournamentDetailPage({
 
   // Medalje postoje samo u Akademiji (čl. 19); za GP turnire popis je prazan.
   const medals = isAkademija ? await getTournamentMedals(tournament.id) : [];
+
+  // Nagrade postoje samo na turnirima glavnog GP-a; Akademija ima medalje
+  // propisane pravilnikom (čl. 19), pa se ta dva popisa ne miješaju.
+  const prizes = isAkademija ? [] : await getTournamentPrizes(tournament.id);
   const standingsHref = isAkademija ? "/ljestvice/akademija" : "/ljestvice/opci-gp";
   const standingsLabel = isAkademija ? "Ljestvica Akademije" : "Ljestvica Općeg GP-a";
   const displayPlayers = hasAnyResults
@@ -269,6 +275,15 @@ export default async function TournamentDetailPage({
           href={`/turniri/${tournament.id}/csv`}
           label="Preuzmi rezultate (CSV)"
         />
+      )}
+
+      {prizes.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-display text-lg font-bold text-navy mb-3">
+            Dodijeljene nagrade
+          </h2>
+          <PrizeList items={prizes} />
+        </section>
       )}
 
       {medals.length > 0 && (

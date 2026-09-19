@@ -77,12 +77,22 @@ export default async function TournamentResultsPage({
             {tournament.date.toLocaleDateString("hr-HR")}
           </p>
         </div>
-        <Link
-          href={`/admin/tournaments/${tournament.id}`}
-          className="text-sm text-navy hover:text-crimson"
-        >
-          ← Uredi podatke turnira
-        </Link>
+        <div className="flex flex-col items-end gap-1">
+          <Link
+            href={`/admin/tournaments/${tournament.id}`}
+            className="text-sm text-navy hover:text-crimson"
+          >
+            ← Uredi podatke turnira
+          </Link>
+          {tournament.season.system === "GP" && (
+            <Link
+              href={`/admin/tournaments/${tournament.id}/nagrade`}
+              className="text-sm text-navy hover:text-crimson"
+            >
+              Nagrade turnira →
+            </Link>
+          )}
+        </div>
       </div>
 
       {resultsMessage && (

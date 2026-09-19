@@ -69,3 +69,30 @@ export function awardLabel(category: MedalCategory, place: number): string {
   }
   return `Posebna medalja — ${CATEGORY_LABELS[category]}, ${place}. mjesto`;
 }
+
+/**
+ * Opća inačica medaljice, za nagrade na GP turnirima (čije oznake ne dolaze
+ * iz zatvorenog popisa kategorija nego ih admin upisuje po turniru).
+ *
+ * Prazna oznaka znači nagradu za ukupni poredak — tada se prikazuje broj
+ * mjesta i boja odličja, kao i kod medalja.
+ */
+export function AwardDisc({
+  label,
+  place,
+}: {
+  label?: string | null;
+  place: number;
+}) {
+  const special = Boolean(label && label.trim() !== "");
+  return (
+    <span
+      aria-hidden
+      className={`inline-flex h-7 shrink-0 items-center justify-center rounded-full font-bold ${toneFor(place)} ${
+        special ? "w-auto px-2 text-[10px] tracking-tight" : "w-7 text-xs"
+      }`}
+    >
+      {special ? label : place}
+    </span>
+  );
+}

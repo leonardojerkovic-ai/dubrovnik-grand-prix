@@ -5,6 +5,8 @@ import { RatingChart } from "@/components/rating-chart";
 import { PlayerSeasonResults } from "@/components/player-season-results";
 import { PlayerMedals } from "@/components/player-medals";
 import { getPlayerMedals } from "@/lib/akademija/medals";
+import { PlayerPrizes } from "@/components/player-prizes";
+import { getPlayerPrizes } from "@/lib/tournament-prizes";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -48,7 +50,10 @@ export default async function PlayerProfilePage({
   if (!player) notFound();
 
   const memberSinceYear = player.memberSince?.getFullYear();
-  const medals = await getPlayerMedals(player.id);
+  const [medals, prizes] = await Promise.all([
+    getPlayerMedals(player.id),
+    getPlayerPrizes(player.id),
+  ]);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -110,6 +115,7 @@ export default async function PlayerProfilePage({
         ))
       )}
 
+      <PlayerPrizes items={prizes} />
       <PlayerMedals items={medals} />
     </div>
   );

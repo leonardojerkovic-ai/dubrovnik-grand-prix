@@ -24,6 +24,7 @@ import {
 } from "@/lib/scoring/rulebook";
 import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
 import { syncTournamentMedals } from "@/lib/akademija/medals";
+import { syncTournamentPrizes } from "@/lib/tournament-prizes";
 import { wasClubMemberOn } from "@/lib/membership";
 import { validateRanks } from "@/lib/scoring/ranks";
 import {
@@ -295,6 +296,10 @@ export async function saveTournamentResults(
     // glavnog GP-a servis ne radi ništa; medalje poznaje samo Akademija.
     const medals = await syncTournamentMedals(tournamentId);
 
+    // Nagrade glavnog GP-a ovise o istom poretku, pa se preračunavaju
+    // zajedno s bodovima. Ako turnir nema unesenih nagrada, ne radi ništa.
+    const prizes = await syncTournamentPrizes(tournamentId);
+
     // Najvažniji zapis u cijelom tragu: rezultati određuju bodove, a čl. 29
     // daje pravo prigovora. Snimaju se svi plasmani i izračunati bodovi.
     await logAudit({
@@ -320,6 +325,9 @@ export async function saveTournamentResults(
 
     const eligibleCount = N - ineligiblePlayers.length;
     let message = `Spremljeno — bodovi izračunati za ${eligibleCount} igrača.`;
+    if (prizes.awarded > 0) {
+      message += ` Dodijeljeno nagrada: ${prizes.awarded}.`;
+    }
     if (medals.awarded > 0) {
       message += ` Dodijeljeno medalja: ${medals.awarded}.`;
       if (medals.keptManual > 0) {
