@@ -105,6 +105,17 @@ enum DocumentCategory {
   OSTALO
 }
 
+/// Kategorije medalja GP-a Akademije — čl. 19. UKUPNO je poredak turnira
+/// odnosno sezone, ZENE je medalja najbolje igračice. Dobne kategorije su
+/// one iz čl. 20 (vidi lib/scoring/akademija/categories.ts).
+enum MedalCategory {
+  UKUPNO
+  U12
+  U10
+  U08
+  ZENE
+}
+
 // ----------------------------------------------------------------------------
 // KORISNICI I IGRAČI
 // ----------------------------------------------------------------------------
@@ -210,6 +221,8 @@ model Player {
   academyEligibility AcademyEligibility[]
   guardians          GuardianLink[]
 
+  medals Medal[]
+
   @@index([lastName, firstName])
   @@map("players")
 }
@@ -278,6 +291,7 @@ model Season {
   tournaments    Tournament[]
   academyEligibility AcademyEligibility[]
   hallOfFame     HallOfFame[]
+  medals         Medal[]
   announcements  Announcement[]
   documents      Document[]
 
@@ -352,6 +366,8 @@ model Tournament {
   registrationClosesAt DateTime?
 
   createdAt DateTime @default(now())
+
+  medals Medal[]
 
   @@index([seasonId])
   updatedAt DateTime @updatedAt
@@ -578,4 +594,56 @@ model HallOfFame {
   @@unique([seasonId, categoryCode, place])
   @@index([playerId])
   @@map("hall_of_fame")
+}
+
+/// Osvojene medalje — GP Akademije, čl. 19.
+///
+/// Zapis postoji i kad bi se medalje mogle izračunati iz rezultata: čl. 19
+/// dopušta prijenos kategorijske medalje na sljedećeg igrača, pa dodjela
+/// ovisi o cijelom poretku, a ne samo o jednom rezultatu. Spremljen zapis
+/// znači da naknadna izmjena starog turnira ne prepisuje tiho tko je što
+/// već primio, i da se iznimka može ručno zabilježiti (polje `manual`).
+///
+/// Dodjelu računa lib/scoring/akademija/medals.ts.
+model Medal {
+  id       String @id @default(cuid())
+  seasonId String
+  // Restrict: povijest osvojenih medalja ne smije nestati brisanjem sezone.
+  season   Season @relation(fields: [seasonId], references: [id], onDelete: Restrict)
+
+  /// Turnir na kojem je medalja osvojena. PRAZNO znači medalju za konačni
+  /// poredak sezone (čl. 19 st. 3), koji nije vezan uz pojedini turnir.
+  tournamentId String?
+  // Cascade: medalja turnira nema smisla bez turnira.
+  tournament   Tournament? @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  playerId String
+  // Restrict: ne dopušta brisanje igrača koji ima medalju bez svjesne odluke.
+  player   Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  category MedalCategory
+  /// 1, 2 ili 3. Kategorijske medalje na turniru uvijek imaju mjesto 1 —
+  /// čl. 19 st. 1 predviđa samo najboljeg u kategoriji.
+  place    Int
+
+  /// Medalju je admin ručno dodijelio ili izmijenio. Ponovni izračun takav
+  /// zapis ne dira — inače bi svaka iznimka nestala pri sljedećem obračunu.
+  manual Boolean @default(false)
+  /// Obrazloženje ručne izmjene. Isto načelo kao kod nadjačavanja pripadnosti
+  /// ljestvici: odluka koja odstupa od automatike mora biti objašnjena.
+  note   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Jedinstvenost se ne može izraziti u Prismi jer ovisi o tome je li
+  /// tournamentId prazan (Postgres NULL-ove smatra različitima). Migracija
+  /// zato stvara četiri PARCIJALNA jedinstvena indeksa:
+  ///   - (tournamentId, category, place) i (tournamentId, playerId) za turnire
+  ///   - (seasonId, category, place) i (seasonId, playerId) za konačni poredak
+  /// Druga dva para su ugrađena čl. 19 st. 4: jedan igrač, jedna medalja.
+  @@index([seasonId])
+  @@index([playerId])
+  @@index([tournamentId])
+  @@map("medals")
 }
