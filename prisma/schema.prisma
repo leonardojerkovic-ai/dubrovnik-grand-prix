@@ -221,7 +221,8 @@ model Player {
   academyEligibility AcademyEligibility[]
   guardians          GuardianLink[]
 
-  medals Medal[]
+  medals      Medal[]
+  prizeAwards TournamentPrizeAward[]
 
   @@index([lastName, firstName])
   @@map("players")
@@ -368,6 +369,7 @@ model Tournament {
   createdAt DateTime @default(now())
 
   medals Medal[]
+  prizes TournamentPrize[]
 
   @@index([seasonId])
   updatedAt DateTime @updatedAt
@@ -646,4 +648,94 @@ model Medal {
   @@index([playerId])
   @@index([tournamentId])
   @@map("medals")
+}
+
+/// Nagrada na turniru glavnog GP-a.
+///
+/// Za razliku od medalja Akademije, koje propisuje čl. 19, nagrade na GP
+/// turnirima nisu u pravilniku nego u raspisu svakog turnira. Zato se ne
+/// zapisuju u kod nego ovdje, kao podaci koje admin unosi po turniru.
+///
+/// Kriteriji su svi neobavezni i kombiniraju se logičkim I. Prazna nagrada,
+/// bez ijednog kriterija, obuhvaća sve igrače — tako se opisuju nagrade za
+/// ukupni poredak, koje time nisu poseban slučaj nego samo nagrada s
+/// najvišim prioritetom.
+///
+/// Dodjelu računa lib/scoring/prizes.ts.
+model TournamentPrize {
+  id           String     @id @default(cuid())
+  tournamentId String
+  // Cascade: nagrada nema smisla bez turnira na kojem se dodjeljuje.
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  /// Puni naziv, onako kako stoji u raspisu: "Najbolja žena", "Najbolji U1800".
+  label String
+  /// Kratka oznaka za medaljicu u prikazu: "Ž", "U1800", "S50". Prazno kod
+  /// nagrada za ukupni poredak — ondje se prikazuje broj mjesta.
+  shortLabel String?
+
+  /// Redoslijed priznanja; manji broj je više priznanje. Nagrade se obilaze
+  /// ovim redom, pa priority odlučuje koju će igrač zadržati kad zadovolji
+  /// više njih. Ukupni poredak ima najmanje vrijednosti.
+  priority Int
+  /// Koliko se nagrada te vrste dodjeljuje (npr. 3 za ukupni poredak).
+  count    Int @default(1)
+
+  /// Prazno = oba spola.
+  gender Gender?
+  /// Rođen te godine ili KASNIJE — dobne kategorije (U20 => G−20).
+  birthYearMin Int?
+  /// Rođen te godine ili RANIJE — veteranske kategorije (S50 => G−50).
+  birthYearMax Int?
+  /// Donja granica rejtinga, uključivo.
+  ratingMin Int?
+  /// Gornja granica rejtinga, ISKLJUČIVO — U1800 se zapisuje kao 1800.
+  ratingMax Int?
+  /// Samo članovi ŠK Dubrovnik na dan turnira (čl. 4).
+  clubMembersOnly Boolean @default(false)
+
+  awards TournamentPrizeAward[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  /// Dva prioriteta iste vrijednosti učinila bi redoslijed nedeterminističnim,
+  /// a time i dodjelu — ista bi se nagrada mogla dodijeliti različitim
+  /// igračima pri dva izračuna.
+  @@unique([tournamentId, priority])
+  @@index([tournamentId])
+  @@map("tournament_prizes")
+}
+
+/// Dobitnik jedne nagrade.
+///
+/// tournamentId se ponavlja iako ga nosi i nagrada — bez njega se na razini
+/// baze ne može iskazati pravilo "jedan igrač, najviše jedna nagrada po
+/// turniru", koje je ovdje temeljno jer se nagrade ne kumuliraju.
+model TournamentPrizeAward {
+  id      String          @id @default(cuid())
+  prizeId String
+  // Cascade: brisanjem nagrade nestaju i njezini dobitnici.
+  prize   TournamentPrize @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+
+  tournamentId String
+  playerId     String
+  // Restrict: ne dopušta brisanje igrača koji ima osvojenu nagradu.
+  player       Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  /// 1, 2, 3 … unutar te nagrade.
+  place Int
+
+  /// Dodijeljeno ručno. Ponovni izračun takav zapis ne dira.
+  manual Boolean @default(false)
+  note   String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([prizeId, place])
+  @@unique([tournamentId, playerId])
+  @@index([playerId])
+  @@index([tournamentId])
+  @@map("tournament_prize_awards")
 }
