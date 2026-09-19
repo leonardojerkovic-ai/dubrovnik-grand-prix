@@ -146,3 +146,21 @@ export function assignMedals(
 export function medalEventForTournament(isFinal: boolean): MedalEvent {
   return isFinal ? "PRVENSTVO" : "KVALIFIKACIJSKI";
 }
+
+/**
+ * Je li medalja prenesena, tj. nije pripala najbolje plasiranom igraču svoje
+ * kategorije — čl. 19 st. 4, zadnja rečenica.
+ *
+ * Služi prikazu: iz same tablice rezultata ne vidi se zašto je U12 medalja
+ * otišla četvrtoplasiranom, pa uz takvu medalju treba stajati objašnjenje.
+ * Medalje ukupnog poretka po definiciji nikad nisu prenesene.
+ */
+export function wasTransferred(
+  award: MedalAward,
+  ranking: MedalCandidate[]
+): boolean {
+  if (award.category === "UKUPNO") return false;
+  const members = ranking.filter((c) => belongsTo(c, award.category));
+  const expected = members[award.place - 1];
+  return expected !== undefined && expected.playerId !== award.playerId;
+}

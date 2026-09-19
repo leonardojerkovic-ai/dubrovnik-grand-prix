@@ -23,6 +23,7 @@ import {
   type ScoringSnapshot,
 } from "@/lib/scoring/rulebook";
 import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
+import { syncTournamentMedals } from "@/lib/akademija/medals";
 import { wasClubMemberOn } from "@/lib/membership";
 import { validateRanks } from "@/lib/scoring/ranks";
 import {
@@ -289,6 +290,11 @@ export async function saveTournamentResults(
       });
     }
 
+    // Medalje se računaju iz poretka, pa ih svaka izmjena rezultata mijenja
+    // (čl. 19 — kategorijska medalja prelazi na sljedećeg igrača). Za turnire
+    // glavnog GP-a servis ne radi ništa; medalje poznaje samo Akademija.
+    const medals = await syncTournamentMedals(tournamentId);
+
     // Najvažniji zapis u cijelom tragu: rezultati određuju bodove, a čl. 29
     // daje pravo prigovora. Snimaju se svi plasmani i izračunati bodovi.
     await logAudit({
@@ -309,10 +315,17 @@ export async function saveTournamentResults(
     });
 
     revalidatePath(`/admin/tournaments/${tournamentId}/results`);
+    revalidatePath(`/turniri/${tournamentId}`);
     revalidateStandings(tournamentId);
 
     const eligibleCount = N - ineligiblePlayers.length;
     let message = `Spremljeno — bodovi izračunati za ${eligibleCount} igrača.`;
+    if (medals.awarded > 0) {
+      message += ` Dodijeljeno medalja: ${medals.awarded}.`;
+      if (medals.keptManual > 0) {
+        message += ` Ručno unesenih zadržano: ${medals.keptManual}.`;
+      }
+    }
     if (ineligiblePlayers.length > 0) {
       message += ` Bez prava na bodove (čl. 3 — godište ili rapid rejting): ${ineligiblePlayers.join(", ")}.`;
     }

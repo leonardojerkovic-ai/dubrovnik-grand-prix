@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { getPlayerProfile } from "@/lib/players/profile";
 import { RatingChart } from "@/components/rating-chart";
 import { PlayerSeasonResults } from "@/components/player-season-results";
+import { PlayerMedals } from "@/components/player-medals";
+import { getPlayerMedals } from "@/lib/akademija/medals";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -46,6 +48,7 @@ export default async function PlayerProfilePage({
   if (!player) notFound();
 
   const memberSinceYear = player.memberSince?.getFullYear();
+  const medals = await getPlayerMedals(player.id);
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-8">
@@ -96,6 +99,8 @@ export default async function PlayerProfilePage({
         </h2>
         <RatingChart history={player.ratingHistory} />
       </div>
+
+      <PlayerMedals items={medals} />
 
       {player.seasons.length === 0 ? (
         <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">

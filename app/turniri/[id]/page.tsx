@@ -8,6 +8,8 @@ import {
 } from "@/lib/players/sort";
 import { PlayerName } from "@/components/player-name";
 import { RegisterButton } from "@/components/register-button";
+import { MedalList } from "@/components/medal-list";
+import { getTournamentMedals } from "@/lib/akademija/medals";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -130,6 +132,9 @@ export default async function TournamentDetailPage({
   // Nakon turnira prvo što čovjek poželi jest vidjeti gdje je sada na
   // ljestvici. Akademija ima jednu, GP osam — vodimo na Opći.
   const isAkademija = tournament.season.system === "AKADEMIJA";
+
+  // Medalje postoje samo u Akademiji (čl. 19); za GP turnire popis je prazan.
+  const medals = isAkademija ? await getTournamentMedals(tournament.id) : [];
   const standingsHref = isAkademija ? "/ljestvice/akademija" : "/ljestvice/opci-gp";
   const standingsLabel = isAkademija ? "Ljestvica Akademije" : "Ljestvica Općeg GP-a";
   const displayPlayers = hasAnyResults
@@ -256,6 +261,15 @@ export default async function TournamentDetailPage({
             </tbody>
           </table>
         </div>
+      )}
+
+      {medals.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-display text-lg font-bold text-navy mb-3">
+            Dodijeljene medalje
+          </h2>
+          <MedalList items={medals} />
+        </section>
       )}
 
       {hasAnyResults && (

@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { assignMedals, medalEventForTournament } from "./medals";
+import {
+  assignMedals,
+  medalEventForTournament,
+  wasTransferred,
+} from "./medals";
 import type { MedalCandidate } from "./medals";
 import { getAkademijaAgeCategories } from "./categories";
 
@@ -134,5 +138,30 @@ describe("assignMedals — rubni slučajevi", () => {
     const awards = assignMedals(mixed, "KVALIFIKACIJSKI");
     expect(awards.filter((a) => a.playerId === "STAR")).toHaveLength(1);
     expect(awards.find((a) => a.playerId === "STAR")?.category).toBe("UKUPNO");
+  });
+});
+
+describe("wasTransferred", () => {
+  const awards = assignMedals(ranking, "KVALIFIKACIJSKI");
+
+  it("medalja ukupnog poretka nikad nije prenesena", () => {
+    const overall = awards.filter((a) => a.category === "UKUPNO");
+    expect(overall.every((a) => !wasTransferred(a, ranking))).toBe(true);
+  });
+
+  it("prepoznaje prenesenu kategorijsku medalju", () => {
+    // U12 vodi A (1. mjesto), ali je medalju dobio D.
+    const u12 = awards.find((a) => a.category === "U12")!;
+    expect(wasTransferred(u12, ranking)).toBe(true);
+  });
+
+  it("ne prijavljuje prijenos kad je medalju dobio prvi u kategoriji", () => {
+    const mixed: MedalCandidate[] = [
+      candidate("STAR", 1, 2010, false),
+      candidate("MLAD", 2, 2019, false),
+    ];
+    const small = assignMedals(mixed, "KVALIFIKACIJSKI");
+    const u12 = small.find((a) => a.category === "U12");
+    expect(u12).toBeUndefined();
   });
 });
