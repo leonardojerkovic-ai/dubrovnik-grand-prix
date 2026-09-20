@@ -16,6 +16,11 @@ import { CsvDownload } from "@/components/csv-download";
 /**
  * Ljestvica određene sezone — trajna adresa oblika /ljestvice/2027/opci-gp.
  *
+ * NAZIVI SEGMENATA: prvi se zove [slug] iako ovdje drži oznaku SEZONE. To
+ * nije nemar — Next.js ne dopušta dva različita naziva dinamičkog segmenta
+ * na istoj razini putanje, a /ljestvice/[slug] već postoji za aktivnu
+ * sezonu. Zato je ovdje [slug] sezona, a [category] ljestvica.
+ *
  * Postoji odvojeno od /ljestvice/[slug], koja uvijek pokazuje aktivnu
  * sezonu. Ta je dobra za svakodnevnu upotrebu, ali beskorisna za arhivu: čim
  * sezona završi, poredak po kojemu su dodijeljene medalje i nagrade nema
@@ -29,11 +34,11 @@ export const revalidate = 3600;
 export async function generateMetadata({
   params,
 }: {
-  params: { season: string; slug: string };
+  params: { slug: string; category: string };
 }): Promise<Metadata> {
-  const config = STANDING_SLUGS[params.slug];
+  const config = STANDING_SLUGS[params.category];
   if (!config) return {};
-  const yearLabel = yearLabelFromSlug(params.season);
+  const yearLabel = yearLabelFromSlug(params.slug);
   return {
     title: `${config.title} — sezona ${yearLabel}`,
     description: `Konačni poredak na ljestvici ${config.title} za sezonu ${yearLabel}.`,
@@ -43,12 +48,12 @@ export async function generateMetadata({
 export default async function ArchivedStandingsPage({
   params,
 }: {
-  params: { season: string; slug: string };
+  params: { slug: string; category: string };
 }) {
-  const config = STANDING_SLUGS[params.slug];
+  const config = STANDING_SLUGS[params.category];
   if (!config) notFound();
 
-  const yearLabel = yearLabelFromSlug(params.season);
+  const yearLabel = yearLabelFromSlug(params.slug);
 
   const season = await prisma.season.findFirst({
     where: { system: config.system, yearLabel },
@@ -101,7 +106,7 @@ export default async function ArchivedStandingsPage({
             return (
               <Link
                 key={s.id}
-                href={`/ljestvice/${seasonSlug(s.yearLabel)}/${params.slug}`}
+                href={`/ljestvice/${seasonSlug(s.yearLabel)}/${params.category}`}
                 className={`rounded-md border px-2 py-1 font-medium ${
                   active
                     ? "border-navy bg-navy text-paper"
@@ -119,7 +124,7 @@ export default async function ArchivedStandingsPage({
 
       {(rows?.length ?? 0) > 0 && (
         <CsvDownload
-          href={`/ljestvice/${params.slug}/csv`}
+          href={`/ljestvice/${params.category}/csv`}
           label="Preuzmi ljestvicu (CSV)"
         />
       )}

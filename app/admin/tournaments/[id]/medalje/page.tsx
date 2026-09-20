@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { MedalDisc } from "@/components/medal-disc";
 import {
-  MEDAL_PRIORITY,
   medalEventForTournament,
   type AkademijaMedalCategory,
 } from "@/lib/scoring/akademija/medals";
