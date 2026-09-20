@@ -8,6 +8,7 @@ import { StandingsTable } from "@/components/standings-table";
 import Link from "next/link";
 import { STANDING_SLUGS, seasonSlug } from "@/lib/standings/slugs";
 import { CsvDownload } from "@/components/csv-download";
+import { ObjectionNote } from "@/components/objection-note";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -85,6 +86,8 @@ export default async function StandingsPage({
         </div>
       </div>
       <StandingsTable rows={rows ?? []} />
+
+      {(rows?.length ?? 0) > 0 && <ObjectionNote />}
 
       <p className="mt-4 text-xs text-ink/55">
         Ova adresa uvijek pokazuje aktivnu sezonu. Za trajnu poveznicu na ovaj

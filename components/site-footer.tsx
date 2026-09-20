@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SECONDARY_NAV } from "@/lib/nav";
+import { SYSTEM_EMAIL } from "@/lib/contact";
 
 export function SiteFooter() {
   return (
@@ -31,6 +32,17 @@ export function SiteFooter() {
           <Link href="/privatnost" className="hover:text-navy">
             Politika privatnosti
           </Link>
+          {/*
+            Adresa ovog sustava, ne kluba — vidi lib/contact.ts. Klupske
+            adrese stoje na /postani-clan i ondje su mjerodavne.
+          */}
+          <a
+            href={`mailto:${SYSTEM_EMAIL}`}
+            className="hover:text-navy"
+            title="Pitanja o bodovima i ljestvicama"
+          >
+            {SYSTEM_EMAIL}
+          </a>
           {/* Vanjske poveznice: matični klub i županijski savez. */}
           <a
             href="https://www.skdubrovnik.hr/"

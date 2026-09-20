@@ -12,6 +12,7 @@ import {
   yearLabelFromSlug,
 } from "@/lib/standings/slugs";
 import { CsvDownload } from "@/components/csv-download";
+import { ObjectionNote } from "@/components/objection-note";
 
 /**
  * Ljestvica određene sezone — trajna adresa oblika /ljestvice/2027/opci-gp.
@@ -121,6 +122,8 @@ export default async function ArchivedStandingsPage({
       )}
 
       <StandingsTable rows={rows ?? []} />
+
+      {(rows?.length ?? 0) > 0 && <ObjectionNote />}
 
       {(rows?.length ?? 0) > 0 && (
         <CsvDownload

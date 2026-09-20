@@ -10,6 +10,8 @@ import { PlayerName } from "@/components/player-name";
 import { RegisterButton } from "@/components/register-button";
 import { MedalList } from "@/components/medal-list";
 import { CsvDownload } from "@/components/csv-download";
+import { ObjectionNote } from "@/components/objection-note";
+import { objectionDeadline } from "@/lib/scoring/results-lock";
 import { PrizeList } from "@/components/prize-list";
 import { getTournamentPrizes } from "@/lib/tournament-prizes";
 import { getTournamentMedals } from "@/lib/akademija/medals";
@@ -268,6 +270,16 @@ export default async function TournamentDetailPage({
             </tbody>
           </table>
         </div>
+      )}
+
+      {hasAnyResults && (
+        <ObjectionNote
+          deadline={
+            tournament.resultsPublishedAt
+              ? objectionDeadline(tournament.resultsPublishedAt)
+              : null
+          }
+        />
       )}
 
       {hasAnyResults && (

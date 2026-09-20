@@ -22,6 +22,7 @@ const FAQ = [
 ];
 
 import type { Metadata } from "next";
+import { SYSTEM_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = {
   title: "FAQ",
@@ -50,6 +51,23 @@ export default function FaqPage() {
           </details>
         ))}
       </div>
+
+      <p className="mt-8 max-w-prose text-sm text-ink/70">
+        Nisi našao odgovor? Za pitanja o bodovima, ljestvicama i korisničkim
+        računima piši na{" "}
+        <a
+          href={`mailto:${SYSTEM_EMAIL}`}
+          className="font-medium text-navy hover:underline"
+        >
+          {SYSTEM_EMAIL}
+        </a>
+        . Za učlanjenje, školu šaha i ostale klupske upite adrese su na
+        stranici{" "}
+        <a href="/postani-clan" className="font-medium text-navy hover:underline">
+          Postani član
+        </a>
+        .
+      </p>
     </div>
   );
 }
