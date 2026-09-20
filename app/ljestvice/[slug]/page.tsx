@@ -5,7 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { getGpStandings } from "@/lib/standings/gp";
 import { getAkademijaStandings } from "@/lib/standings/akademija";
 import { StandingsTable } from "@/components/standings-table";
-import { STANDING_SLUGS } from "@/lib/standings/slugs";
+import Link from "next/link";
+import { STANDING_SLUGS, seasonSlug } from "@/lib/standings/slugs";
 import { CsvDownload } from "@/components/csv-download";
 
 /**
@@ -84,6 +85,18 @@ export default async function StandingsPage({
         </div>
       </div>
       <StandingsTable rows={rows ?? []} />
+
+      <p className="mt-4 text-xs text-ink/55">
+        Ova adresa uvijek pokazuje aktivnu sezonu. Za trajnu poveznicu na ovaj
+        poredak koristi{" "}
+        <Link
+          href={`/ljestvice/${seasonSlug(activeSeason.yearLabel)}/${params.slug}`}
+          className="font-medium text-navy hover:underline"
+        >
+          /ljestvice/{seasonSlug(activeSeason.yearLabel)}/{params.slug}
+        </Link>
+        .
+      </p>
 
       {(rows?.length ?? 0) > 0 && (
         <CsvDownload

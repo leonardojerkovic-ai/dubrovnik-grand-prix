@@ -8,6 +8,20 @@
  * bazi i odmah dobije link za preuzimanje računa. Ovo je privremeno
  * rješenje dok se ne postavi pravi email servis.
  */
+/**
+ * Adresa na koju idu odgovori.
+ *
+ * Pošiljatelj je na poddomeni za slanje (mail.dubrovnikgrandprix.com), na
+ * koju ne stiže ništa — Resend samo šalje. Bez reply-to adrese odgovor
+ * člana se odbija, a članovi odgovaraju: to je klub, ne trgovina. Ako
+ * varijabla nije postavljena, zaglavlje se izostavlja i ponašanje je
+ * jednako dosadašnjem.
+ */
+function replyToHeader(): { reply_to: string } | Record<string, never> {
+  const replyTo = process.env.RESEND_REPLY_TO?.trim();
+  return replyTo ? { reply_to: replyTo } : {};
+}
+
 export async function sendPasswordResetEmail(to: string, resetUrl: string) {
   const apiKey = process.env.RESEND_API_KEY;
 
@@ -26,6 +40,7 @@ export async function sendPasswordResetEmail(to: string, resetUrl: string) {
     },
     body: JSON.stringify({
       from: process.env.RESEND_FROM_EMAIL ?? "Dubrovnik Grand Prix <onboarding@resend.dev>",
+      ...replyToHeader(),
       to,
       subject: "Resetiranje lozinke — Dubrovnik Grand Prix",
       html: `
@@ -75,6 +90,7 @@ export async function sendLinkCodeEmail(
       from:
         process.env.RESEND_FROM_EMAIL ??
         "Dubrovnik Grand Prix <onboarding@resend.dev>",
+      ...replyToHeader(),
       to,
       subject: "Tvoj pristupni kod — Dubrovnik Grand Prix",
       html: `

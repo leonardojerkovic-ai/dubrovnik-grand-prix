@@ -191,3 +191,27 @@ export async function deleteSeason(seasonId: string): Promise<void> {
   revalidateSchedule();
   revalidateStandings();
 }
+
+/**
+ * Preračunava medalje za konačni poredak sezone — čl. 19 st. 3.
+ *
+ * Namjerno ručno, a ne pri svakom unosu rezultata: konačni poredak ima
+ * smisla tek kad je sezona odigrana, a medalje se uručuju jednom.
+ */
+export async function recomputeSeasonMedals(seasonId: string): Promise<void> {
+  const actor = await requireAdmin();
+  const { syncSeasonMedals } = await import("@/lib/akademija/medals");
+  const result = await syncSeasonMedals(seasonId);
+
+  await logAudit({
+    actor,
+    action: "RECALCULATE",
+    entity: "Medal",
+    entityId: seasonId,
+    summary: `Preračunate medalje konačnog poretka (${result.awarded} dodijeljeno)`,
+    after: result,
+  });
+
+  revalidatePath(`/admin/seasons/${seasonId}`);
+  revalidatePath("/hall-of-fame");
+}

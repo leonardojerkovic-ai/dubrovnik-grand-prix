@@ -21,10 +21,21 @@ import {
 } from "./gp/formulas";
 import { calculateFN as akdFN } from "./akademija/formulas";
 
-/** Trenutne verzije. Podignuti pri svakoj izmjeni koja mijenja izračun. */
+/**
+ * Trenutne verzije. Podignuti pri svakoj izmjeni koja mijenja izračun.
+ *
+ * Ove vrijednosti su PRIČUVA: upisuju se u snapshot samo kad sezona nema
+ * vlastitu oznaku u Season.rulebookVersion. Sezone koje je imaju — a imaju
+ * je i GP 2027 (GP-1.0) i Akademija 2026/27 (AKD-1.2) — koriste svoju.
+ *
+ * Numeracija glavnog GP-a krenula je iznova s usvajanjem pravilnika v1.0 u
+ * rujnu 2026. Prijašnja oznaka GP-2.2 označavala je radne verzije koje nisu
+ * usvojene, pa bi sezona otvorena bez upisane verzije dobila oznaku
+ * pravilnika koji ne postoji.
+ */
 export const RULEBOOK_VERSIONS = {
-  GP: "GP-2.2",
-  AKADEMIJA: "AKD-1.1",
+  GP: "GP-1.0",
+  AKADEMIJA: "AKD-1.2",
 } as const;
 
 export type SystemType = keyof typeof RULEBOOK_VERSIONS;

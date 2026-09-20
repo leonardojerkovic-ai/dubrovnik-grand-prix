@@ -84,12 +84,19 @@ export default async function TournamentResultsPage({
           >
             ← Uredi podatke turnira
           </Link>
-          {tournament.season.system === "GP" && (
+          {tournament.season.system === "GP" ? (
             <Link
               href={`/admin/tournaments/${tournament.id}/nagrade`}
               className="text-sm text-navy hover:text-crimson"
             >
               Nagrade turnira →
+            </Link>
+          ) : (
+            <Link
+              href={`/admin/tournaments/${tournament.id}/medalje`}
+              className="text-sm text-navy hover:text-crimson"
+            >
+              Medalje turnira →
             </Link>
           )}
         </div>

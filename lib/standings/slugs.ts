@@ -23,3 +23,19 @@ export const STANDING_SLUGS: Record<string, StandingSlugConfig> = {
   u1800: { system: "GP", category: "U1800", title: "U1800" },
   akademija: { system: "AKADEMIJA", title: "GP Akademije" },
 };
+
+/**
+ * Oznaka sezone u adresi.
+ *
+ * Akademijske sezone imaju oznaku oblika "2026/27", a kosa crta u putanji
+ * znači novi segment — zato se u adresi piše "2026-27". Preslikavanje je
+ * jednoznačno jer oznaka sezone inače ne sadrži crticu.
+ */
+export function seasonSlug(yearLabel: string): string {
+  return yearLabel.replace("/", "-");
+}
+
+export function yearLabelFromSlug(slug: string): string {
+  // "2026-27" -> "2026/27"; "2027" ostaje "2027"
+  return slug.includes("-") ? slug.replace("-", "/") : slug;
+}
