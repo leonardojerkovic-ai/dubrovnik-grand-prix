@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { plural } from "@/lib/plural";
 
 /**
  * Odbrojavanje do sljedećeg turnira.
@@ -62,8 +63,14 @@ export function TournamentCountdown({
     <div className="mt-8 inline-flex flex-wrap items-center gap-x-6 gap-y-3 rounded-lg border border-paper/15 bg-paper/[0.06] px-5 py-4">
       {left ? (
         <div className="flex items-start gap-5">
-          <Unit value={left.days} label={left.days === 1 ? "dan" : "dana"} />
-          <Unit value={left.hours} label="sati" />
+          <Unit
+            value={left.days}
+            label={plural(left.days, "dan", "dana", "dana")}
+          />
+          <Unit
+            value={left.hours}
+            label={plural(left.hours, "sat", "sata", "sati")}
+          />
           <Unit value={left.minutes} label="min" />
         </div>
       ) : (
