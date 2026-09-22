@@ -130,6 +130,21 @@ export async function registerPlayer(
     redirect("/prijava?registered=1&linked=1");
   }
 
+  // Korisnik je označio da se registrira samo kao roditelj ili skrbnik.
+  // Obećanje na obrascu glasi doslovno: "Tvom računu se neće stvoriti
+  // igrački profil." Bez ove grane obećanje se nije ispunjavalo — račun je
+  // svejedno dobivao prazan profil koji nikad ne nastupa, a taj se profil
+  // potom pojavljuje na javnom popisu igrača.
+  //
+  // Podudaranje s postojećim profilima ovdje se namjerno preskače: tko ne
+  // igra, nema svoj profil koji bi preuzeo.
+  if (asGuardian) {
+    await prisma.user.create({
+      data: { email, passwordHash, role: "PLAYER", gdprConsentAt },
+    });
+    redirect("/prijava?registered=1");
+  }
+
   if (candidates.length > 0) {
     // Postoji podudarni profil — račun se stvara BEZ veze na njega.
     // Povezivanje odobrava administrator (vidi napomenu iznad).

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import { getManagedPlayers } from "@/lib/guardian";
 import { needsGuardian } from "@/lib/guardian-rules";

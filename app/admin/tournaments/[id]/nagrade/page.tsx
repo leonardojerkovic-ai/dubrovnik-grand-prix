@@ -87,7 +87,7 @@ export default async function AdminPrizesPage({
         Nagrade se ne kumuliraju. Igrač prima samo najvišu nagradu koju je
         ostvario, a nagrada koja time ostane slobodna pripada sljedećem igraču
         koji zadovoljava njezine uvjete. Redoslijed na popisu odlučuje što je
-        „više" — zato su strelice bitne.
+        &bdquo;više&ldquo; — zato su strelice bitne.
       </div>
 
       <div className="mb-8 rounded-lg border border-navy/10 bg-white p-4">

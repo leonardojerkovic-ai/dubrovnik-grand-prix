@@ -179,7 +179,6 @@ export async function saveTournamentResults(
         select: { id: true, birthYear: true, lastName: true, firstName: true },
       });
       const playerById = new Map(players.map((p) => [p.id, p]));
-      const seasonStartYear = tournament.season.startDate.getFullYear();
 
       for (const row of playedRows) {
         const player = playerById.get(row.playerId);
