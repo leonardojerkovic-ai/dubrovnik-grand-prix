@@ -272,21 +272,18 @@ export default async function TournamentDetailPage({
         </div>
       )}
 
-      {hasAnyResults && (
-        <ObjectionNote
-          deadline={
-            tournament.resultsPublishedAt
-              ? objectionDeadline(tournament.resultsPublishedAt)
-              : null
-          }
-        />
-      )}
-
-      {hasAnyResults && (
-        <CsvDownload
-          href={`/turniri/${tournament.id}/csv`}
-          label="Preuzmi rezultate (CSV)"
-        />
+      {/*
+        Redoslijed nije proizvoljan: medalje i nagrade dio su rezultata pa
+        stoje odmah uz njih, preuzimanje je radnja nad tom tablicom, a
+        napomena o roku zatvara cjelinu.
+      */}
+      {medals.length > 0 && (
+        <section className="mt-8">
+          <h2 className="font-display text-lg font-bold text-navy mb-3">
+            Dodijeljene medalje
+          </h2>
+          <MedalList items={medals} />
+        </section>
       )}
 
       {prizes.length > 0 && (
@@ -298,13 +295,21 @@ export default async function TournamentDetailPage({
         </section>
       )}
 
-      {medals.length > 0 && (
-        <section className="mt-8">
-          <h2 className="font-display text-lg font-bold text-navy mb-3">
-            Dodijeljene medalje
-          </h2>
-          <MedalList items={medals} />
-        </section>
+      {hasAnyResults && (
+        <CsvDownload
+          href={`/turniri/${tournament.id}/csv`}
+          label="Preuzmi rezultate (CSV)"
+        />
+      )}
+
+      {hasAnyResults && (
+        <ObjectionNote
+          deadline={
+            tournament.resultsPublishedAt
+              ? objectionDeadline(tournament.resultsPublishedAt)
+              : null
+          }
+        />
       )}
 
       {hasAnyResults && (
