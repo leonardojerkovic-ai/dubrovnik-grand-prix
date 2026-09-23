@@ -1,9 +1,12 @@
 import { z } from "zod";
+import { normalizeEmail } from "@/lib/email-address";
 
 export const registrationSchema = z.object({
   firstName: z.string().min(1, "Ime je obavezno").max(100),
   lastName: z.string().min(1, "Prezime je obavezno").max(100),
-  email: z.string().email("Neispravan email"),
+  // Normalizacija ide PRIJE provjere oblika, pa i " Ivan@Gmail.COM "
+  // prolazi i u bazu ulazi u jedinstvenom obliku.
+  email: z.string().transform(normalizeEmail).pipe(z.string().email("Neispravan email")),
   password: z.string().min(8, "Lozinka mora imati barem 8 znakova"),
   gender: z.enum(["M", "F"]),
   birthYear: z.coerce.number().int().min(1900).max(new Date().getFullYear()),

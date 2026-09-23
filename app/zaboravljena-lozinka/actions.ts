@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { generateResetToken, hashResetToken } from "@/lib/tokens";
+import { normalizeEmail } from "@/lib/email-address";
 
 export type ForgotPasswordState = { message?: string; error?: string };
 export type ResetPasswordState = { message?: string; error?: string };
@@ -14,7 +15,7 @@ export async function requestPasswordReset(
   _prevState: ForgotPasswordState,
   formData: FormData
 ): Promise<ForgotPasswordState> {
-  const email = String(formData.get("email") ?? "").trim();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
   if (!email) {
     return { error: "Unesi email." };
   }

@@ -16,12 +16,28 @@ const DELIMITER = ";";
 const BOM = "﻿";
 
 /**
+ * Znakovi kojima Excel i LibreOffice započinju formulu.
+ *
+ * Ćelija koja počinje jednim od njih izvršava se pri otvaranju datoteke.
+ * Imena igrača upisuju sami korisnici pri registraciji i završavaju u javnom
+ * izvozu ljestvica, pa bi ime oblika =HYPERLINK(...) postalo formula na
+ * tuđem računalu. Napad je poznat kao CSV injection.
+ */
+const FORMULA_STARTERS = ["=", "+", "-", "@", "\t", "\r"];
+
+/**
  * Polje se navodi pod navodnicima samo kad treba — ako sadrži razdjelnik,
  * navodnik, prijelom retka ili rubni razmak. Navodnik se udvostručuje.
+ *
+ * Prije toga se, ako počinje znakom formule, ispred dodaje apostrof. Excel ga
+ * tumači kao „ovo je tekst" i ne prikazuje ga u ćeliji.
  */
 function escapeCell(value: unknown): string {
   if (value === null || value === undefined) return "";
-  const text = String(value);
+  let text = String(value);
+  if (FORMULA_STARTERS.some((c) => text.startsWith(c))) {
+    text = "'" + text;
+  }
   const needsQuotes =
     text.includes(DELIMITER) ||
     text.includes('"') ||

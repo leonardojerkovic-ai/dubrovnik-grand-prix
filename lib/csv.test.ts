@@ -45,3 +45,27 @@ describe("csvFileName", () => {
     expect(csvFileName("---")).toBe("izvoz.csv");
   });
 });
+
+describe("neutraliziranje formula (CSV injection)", () => {
+  it("ime koje počinje znakom jednakosti dobiva apostrof", () => {
+    const csv = toCsv(["Igrač"], [["=HYPERLINK(\"http://zlo\",\"klikni\")"]]);
+    expect(csv).toContain("'=HYPERLINK");
+  });
+
+  it("pokriva +, -, @ i tabulator", () => {
+    for (const znak of ["+", "-", "@", "\t"]) {
+      expect(toCsv(["A"], [[`${znak}test`]])).toContain(`'${znak}test`);
+    }
+  });
+
+  it("obično ime ostaje netaknuto", () => {
+    expect(toCsv(["A"], [["Končarević Dominik"]])).toContain(
+      "Končarević Dominik"
+    );
+    expect(toCsv(["A"], [["Končarević Dominik"]])).not.toContain("'Konč");
+  });
+
+  it("negativan broj se također navodi — Excel ga svejedno pročita kao broj", () => {
+    expect(toCsv(["A"], [[-5]])).toContain("'-5");
+  });
+});
