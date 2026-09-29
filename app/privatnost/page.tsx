@@ -393,6 +393,8 @@ export default function PrivatnostPage() {
           <p>Klub može javno objavljivati podatke potrebne za prikaz sportskih rezultata, primjerice:</p>
           <ul>
             <li>ime i prezime,</li>
+            <li>godinu rođenja,</li>
+            <li>FIDE ID i FIDE rejting,</li>
             <li>rezultat,</li>
             <li>plasman,</li>
             <li>osvojene bodove,</li>
@@ -403,6 +405,22 @@ export default function PrivatnostPage() {
             Takva obrada može biti potrebna radi transparentnosti
             sportskog natjecanja, vjerodostojnosti rezultata, primjene
             pravilnika i vođenja sportske povijesti.
+          </p>
+          <p>
+            Godina rođenja objavljuje se jer o njoj izravno ovisi dobna
+            kategorija u kojoj igrač nastupa i pravo na bodove, pa bez
+            nje poredak nije provjerljiv. Puni datum rođenja se ne
+            objavljuje. FIDE ID i rejting objavljuju se jer su javni
+            podaci međunarodne šahovske federacije i služe jednoznačnom
+            raspoznavanju igrača te izračunu prema pravilniku.
+          </p>
+          <p>
+            Isto vrijedi i za maloljetne igrače, u opsegu koji je nužan
+            za prikaz sportskog rezultata. Osnova za takvu objavu
+            proizlazi iz Zakona o sportu i pripadajućih podzakonskih
+            propisa te iz pravilnika Hrvatskog šahovskog saveza i
+            Međunarodne šahovske federacije (FIDE), koji uređuju vođenje
+            i objavu natjecateljskih evidencija.
           </p>
           <p>
             Pravilnik o Nacionalnom informacijskom sustavu u sportu
