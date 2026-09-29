@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
+import { claimPlayerByLinkCode } from "@/lib/claim-link-code";
 import { needsGuardian } from "@/lib/guardian-rules";
 import { registrationSchema } from "@/lib/validation/registration";
 import { fieldErrorsFrom } from "@/lib/validation/errors";
@@ -38,7 +39,7 @@ export type RegistrationState = {
  */
 export async function registerPlayer(
   _prevState: RegistrationState,
-  formData: FormData
+  formData: FormData,
 ): Promise<RegistrationState> {
   // Broji se po adresi zahtjeva, ne po e-pošti: tko masovno upisuje račune
   // svaki put upiše drugu adresu.
@@ -110,31 +111,55 @@ export async function registerPlayer(
       };
     }
 
-    const created = await prisma.user.create({
-      data: { email, passwordHash, role: "PLAYER", gdprConsentAt },
-      select: { id: true },
-    });
+    // Račun i povezivanje idu zajedno. Zauzme li kod u međuvremenu netko
+    // drugi, poništava se i stvaranje računa — inače bi ostao račun bez
+    // profila, a korisnik bi vidio samo poruku o grešci i ne bi znao da se
+    // ipak registrirao.
+    //
+    // Poništava se bacanjem iznimke, jer Prisma na običan povratak iz
+    // transakcije ne vraća ništa unatrag.
+    const CODE_TAKEN = "KOD_ZAUZET";
+    let linked = true;
+    try {
+      await prisma.$transaction(async (tx) => {
+        const created = await tx.user.create({
+          data: { email, passwordHash, role: "PLAYER", gdprConsentAt },
+          select: { id: true },
+        });
 
-    // Dob odlučuje, ne kvačica. Da o tome odlučuje korisnik, roditelj koji
-    // je zaboravi označiti dobio bi djetetov profil kao SVOJ — račun bi
-    // radio, ali bi ime djeteta stajalo kao njegovo, a djetetov profil bio
-    // bi trajno zauzet. Greška koja se ne primijeti dok netko ne pogleda
-    // pobliže.
-    if (needsGuardian(target.birthYear)) {
-      await prisma.$transaction([
-        prisma.guardianLink.create({
-          data: { guardianUserId: created.id, playerId: target.id },
-        }),
-        prisma.player.update({
-          where: { id: target.id },
-          data: { linkCodeUsedAt: new Date() },
-        }),
-      ]);
-    } else {
-      await prisma.player.update({
-        where: { id: target.id },
-        data: { userId: created.id, linkCodeUsedAt: new Date() },
+        // Dob odlučuje, ne kvačica. Da o tome odlučuje korisnik, roditelj koji
+        // je zaboravi označiti dobio bi djetetov profil kao SVOJ — račun bi
+        // radio, ali bi ime djeteta stajalo kao njegovo, a djetetov profil bio
+        // bi trajno zauzet. Greška koja se ne primijeti dok netko ne pogleda
+        // pobliže.
+        const guardian = needsGuardian(target.birthYear);
+
+        if (
+          !(await claimPlayerByLinkCode(
+            tx,
+            target.id,
+            guardian ? {} : { userId: created.id },
+          ))
+        ) {
+          throw new Error(CODE_TAKEN);
+        }
+
+        if (guardian) {
+          await tx.guardianLink.create({
+            data: { guardianUserId: created.id, playerId: target.id },
+          });
+        }
       });
+    } catch (error) {
+      if (!(error instanceof Error) || error.message !== CODE_TAKEN)
+        throw error;
+      linked = false;
+    }
+
+    if (!linked) {
+      return {
+        errors: { linkCode: ["Kod nije valjan ili je već iskorišten."] },
+      };
     }
 
     redirect("/prijava?registered=1&linked=1");

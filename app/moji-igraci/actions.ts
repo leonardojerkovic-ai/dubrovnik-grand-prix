@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
+import { claimPlayerByLinkCode } from "@/lib/claim-link-code";
 import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
 
 export type GuardianActionState = { error?: string; message?: string };
@@ -60,15 +61,18 @@ export async function addChildByCode(
     };
   }
 
-  await prisma.$transaction([
-    prisma.guardianLink.create({
+  const claimed = await prisma.$transaction(async (tx) => {
+    if (!(await claimPlayerByLinkCode(tx, player.id))) return false;
+    await tx.guardianLink.create({
       data: { guardianUserId: user.id, playerId: player.id },
-    }),
-    prisma.player.update({
-      where: { id: player.id },
-      data: { linkCodeUsedAt: new Date() },
-    }),
-  ]);
+    });
+    return true;
+  });
+
+  // Netko je istim kodom stigao prije. Ista poruka kao i za nevaljan kod.
+  if (!claimed) {
+    return { error: "Kod nije valjan ili je već iskorišten." };
+  }
 
   revalidatePath("/moji-igraci");
   return {
