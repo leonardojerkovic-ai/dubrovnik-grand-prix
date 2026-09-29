@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 
 type SeasonFormProps = {
@@ -35,7 +36,7 @@ function toDateInput(d?: Date) {
 }
 
 export function SeasonForm({ action, defaultValues = {} }: SeasonFormProps) {
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   return (
     <form action={formAction} className="grid max-w-xl gap-4">

@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { addChildByCode, type GuardianActionState } from "./actions";
 
 const initial: GuardianActionState = {};
@@ -19,7 +20,7 @@ function Submit() {
 }
 
 export function AddChildForm() {
-  const [state, formAction] = useFormState(addChildByCode, initial);
+  const [state, formAction] = useActionState(addChildByCode, initial);
 
   return (
     <form action={formAction} className="flex flex-wrap items-start gap-2">

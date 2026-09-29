@@ -49,11 +49,10 @@ type PlayerEntry = SortablePlayerEntry & {
   gpPoints: number | null;
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const params = await props.params;
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     select: { name: true, date: true },
@@ -65,11 +64,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function TournamentDetailPage({
-  params,
-}: {
-  params: { id: string };
+export default async function TournamentDetailPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: {

@@ -16,11 +16,10 @@ import { getPlayerPrizes } from "@/lib/tournament-prizes";
  */
 export const revalidate = 60;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { id: string };
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
+  const params = await props.params;
   const player = await getPlayerProfile(params.id);
   if (!player) return {};
   const name = `${player.firstName} ${player.lastName}`;
@@ -41,11 +40,10 @@ function Rating({ label, value }: { label: string; value: number | null }) {
   );
 }
 
-export default async function PlayerProfilePage({
-  params,
-}: {
-  params: { id: string };
+export default async function PlayerProfilePage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const player = await getPlayerProfile(params.id);
   if (!player) notFound();
 

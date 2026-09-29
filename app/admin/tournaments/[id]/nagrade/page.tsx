@@ -39,11 +39,10 @@ function criteriaSummary(prize: {
   return parts.length > 0 ? parts.join(" · ") : "svi igrači";
 }
 
-export default async function AdminPrizesPage({
-  params,
-}: {
-  params: { id: string };
+export default async function AdminPrizesPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: { season: true, _count: { select: { results: true } } },

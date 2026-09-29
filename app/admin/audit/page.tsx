@@ -23,11 +23,10 @@ function formatDateTime(d: Date): string {
   }).format(d);
 }
 
-export default async function AdminAuditPage({
-  searchParams,
-}: {
-  searchParams?: { entity?: string; actor?: string };
+export default async function AdminAuditPage(props: {
+  searchParams?: Promise<{ entity?: string; actor?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const entity = searchParams?.entity;
   const actor = searchParams?.actor;
 

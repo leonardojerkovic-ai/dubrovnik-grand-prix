@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { TITLES } from "@/lib/validation/player";
 import type { ActionState } from "./actions";
 
@@ -37,7 +38,7 @@ function SubmitButton() {
 }
 
 export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   const toInputDate = (d?: Date | null) =>
     d ? d.toISOString().slice(0, 10) : "";

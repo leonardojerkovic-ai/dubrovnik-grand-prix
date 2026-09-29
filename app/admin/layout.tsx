@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import type { Metadata } from "next";
@@ -24,42 +25,42 @@ export default async function AdminLayout({
       <div className="mb-6 flex items-center gap-4 border-b border-navy/10 pb-4">
         <h1 className="font-display text-xl font-bold text-navy">Admin</h1>
         <nav className="flex gap-4 text-sm text-ink/70">
-          <a href="/admin/players" className="hover:text-crimson">
+          <Link href="/admin/players" className="hover:text-crimson">
             Igrači
-          </a>
-          <a href="/admin/ratings" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/ratings" className="hover:text-crimson">
             Rejtinzi
-          </a>
-          <a href="/admin/seasons" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/seasons" className="hover:text-crimson">
             Sezone
-          </a>
-          <a href="/admin/tournaments" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/tournaments" className="hover:text-crimson">
             Turniri
-          </a>
-          <a href="/admin/announcements" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/announcements" className="hover:text-crimson">
             Najave
-          </a>
-          <a href="/admin/documents" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/documents" className="hover:text-crimson">
             Dokumenti
-          </a>
-          <a href="/admin/hall-of-fame" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/hall-of-fame" className="hover:text-crimson">
             Hall of Fame
-          </a>
-          <a href="/admin/users" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/users" className="hover:text-crimson">
             Korisnici
-          </a>
-          <a href="/admin/pregled-sezone" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/pregled-sezone" className="hover:text-crimson">
             Pregled sezone
-          </a>
-          <a href="/admin/pristupni-kodovi" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/pristupni-kodovi" className="hover:text-crimson">
             Pristupni kodovi
-          </a>
-          <a href="/admin/skrbnistva" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/skrbnistva" className="hover:text-crimson">
             Skrbništva
-          </a>
-          <a href="/admin/audit" className="hover:text-crimson">
+          </Link>
+          <Link href="/admin/audit" className="hover:text-crimson">
             Trag izmjena
-          </a>
+          </Link>
         </nav>
       </div>
       {children}

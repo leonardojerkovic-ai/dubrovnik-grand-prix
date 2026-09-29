@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { addGuardianship, type GuardianAdminState } from "./actions";
 
 const initial: GuardianAdminState = {};
@@ -26,7 +27,7 @@ export function AddGuardianshipForm({
   // Namjerno NE "children" — to je u Reactu posebno ime i vodilo bi u zabunu.
   childOptions: { id: string; label: string }[];
 }) {
-  const [state, formAction] = useFormState(addGuardianship, initial);
+  const [state, formAction] = useActionState(addGuardianship, initial);
 
   return (
     <form action={formAction} className="grid gap-3">

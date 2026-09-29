@@ -20,7 +20,10 @@ export const revalidate = 60;
 
 const SLUG_MAP = STANDING_SLUGS;
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const params = await props.params;
   const config = SLUG_MAP[params.slug];
   if (!config) return {};
   return {
@@ -29,11 +32,10 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   };
 }
 
-export default async function StandingsPage({
-  params,
-}: {
-  params: { slug: string };
+export default async function StandingsPage(props: {
+  params: Promise<{ slug: string }>;
 }) {
+  const params = await props.params;
   const config = SLUG_MAP[params.slug];
   if (!config) notFound();
 

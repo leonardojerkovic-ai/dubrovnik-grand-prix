@@ -5,11 +5,10 @@ import { AddRegistrationForm } from "./add-registration-form";
 import { adminRemoveRegistration } from "./actions";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 
-export default async function TournamentRegistrationsPage({
-  params,
-}: {
-  params: { id: string };
+export default async function TournamentRegistrationsPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const [tournament, allPlayers] = await Promise.all([
     prisma.tournament.findUnique({
       where: { id: params.id },

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 export default function Error({
   error,
   reset,
@@ -25,12 +27,12 @@ export default function Error({
         >
           Pokušaj ponovno
         </button>
-        <a
+        <Link
           href="/"
           className="rounded-md border border-navy/20 px-5 py-2.5 font-semibold text-navy hover:bg-navy/5 transition-colors"
         >
           Naslovnica
-        </a>
+        </Link>
       </div>
     </div>
   );

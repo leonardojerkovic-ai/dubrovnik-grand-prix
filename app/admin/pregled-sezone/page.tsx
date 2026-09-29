@@ -17,11 +17,10 @@ function fmt(d: Date): string {
   return new Intl.DateTimeFormat("hr-HR", { dateStyle: "short" }).format(d);
 }
 
-export default async function SeasonOverviewPage({
-  searchParams,
-}: {
-  searchParams?: { sezona?: string };
+export default async function SeasonOverviewPage(props: {
+  searchParams?: Promise<{ sezona?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const seasons = await prisma.season.findMany({
     orderBy: { startDate: "desc" },
     select: { id: true, yearLabel: true, system: true, isActive: true },

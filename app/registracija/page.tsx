@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { registerPlayer, type RegistrationState } from "./actions";
 
@@ -20,7 +21,7 @@ function SubmitButton() {
 }
 
 export default function RegistracijaPage() {
-  const [state, formAction] = useFormState(registerPlayer, initialState);
+  const [state, formAction] = useActionState(registerPlayer, initialState);
 
   return (
     <div className="mx-auto max-w-sm px-4 py-12">

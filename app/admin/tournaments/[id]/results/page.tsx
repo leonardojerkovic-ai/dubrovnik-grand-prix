@@ -7,11 +7,10 @@ import { getLockStatus } from "@/lib/scoring/results-lock";
 import { CopyTextButton } from "@/components/copy-text-button";
 import { buildResultsAnnouncement } from "@/lib/whatsapp";
 
-export default async function TournamentResultsPage({
-  params,
-}: {
-  params: { id: string };
+export default async function TournamentResultsPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const [tournament, players] = await Promise.all([
     prisma.tournament.findUnique({
       where: { id: params.id },

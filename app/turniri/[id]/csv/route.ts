@@ -14,8 +14,9 @@ export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
-  { params }: { params: { id: string } }
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: {

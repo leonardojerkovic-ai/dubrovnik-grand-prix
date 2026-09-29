@@ -30,11 +30,10 @@ const DEFAULT_DIR: Record<SortKey, SortDir> = {
   blitz: "desc",
 };
 
-export default async function PlayersPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; sort?: string; dir?: string };
+export default async function PlayersPage(props: {
+  searchParams?: Promise<{ q?: string; sort?: string; dir?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   const q = searchParams?.q?.trim() ?? "";
 
   const sort: SortKey = SORT_KEYS.includes(searchParams?.sort as SortKey)

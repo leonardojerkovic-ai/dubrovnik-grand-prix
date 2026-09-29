@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 
 type Season = { id: string; yearLabel: string; system: string };
@@ -27,7 +28,7 @@ export function DocumentForm({
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
   seasons: Season[];
 }) {
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   return (
     <form action={formAction} className="grid gap-3 md:grid-cols-4 md:items-end">

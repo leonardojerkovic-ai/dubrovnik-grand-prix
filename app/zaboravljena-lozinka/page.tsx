@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { requestPasswordReset, type ForgotPasswordState } from "./actions";
 
 const initialState: ForgotPasswordState = {};
@@ -19,7 +20,7 @@ function SubmitButton() {
 }
 
 export default function ZaboravljenaLozinkaPage() {
-  const [state, formAction] = useFormState(requestPasswordReset, initialState);
+  const [state, formAction] = useActionState(requestPasswordReset, initialState);
 
   return (
     <div className="mx-auto max-w-sm px-4 py-12">

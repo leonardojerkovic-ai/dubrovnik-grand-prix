@@ -5,11 +5,10 @@ import { SeasonForm } from "../season-form";
 import { getSeasonMedals } from "@/lib/akademija/medals";
 import { MEDAL_PRIORITY } from "@/lib/scoring/akademija/medals";
 
-export default async function EditSeasonPage({
-  params,
-}: {
-  params: { id: string };
+export default async function EditSeasonPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const season = await prisma.season.findUnique({ where: { id: params.id } });
   if (!season) notFound();
 

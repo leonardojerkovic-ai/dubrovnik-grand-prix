@@ -37,11 +37,10 @@ function slotLabel(category: AkademijaMedalCategory, place: number): string {
   return `Najbolji u kategoriji ${category}`;
 }
 
-export default async function AdminMedalsPage({
-  params,
-}: {
-  params: { id: string };
+export default async function AdminMedalsPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: { season: true },

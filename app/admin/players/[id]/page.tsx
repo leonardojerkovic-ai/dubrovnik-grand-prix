@@ -3,11 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { updatePlayer } from "../actions";
 import { PlayerForm } from "../player-form";
 
-export default async function EditPlayerPage({
-  params,
-}: {
-  params: { id: string };
+export default async function EditPlayerPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
   const player = await prisma.player.findUnique({
     where: { id: params.id },
     include: { user: { select: { email: true } } },

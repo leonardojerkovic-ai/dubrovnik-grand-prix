@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 import {
   GP_RESTRICTION_CODES,
@@ -67,7 +68,7 @@ export function TournamentForm({
   seasons,
   defaultValues = {},
 }: TournamentFormProps) {
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   const dateValue = defaultValues.date
     ? defaultValues.date.toISOString().slice(0, 10)

@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 
 type Tournament = { id: string; name: string };
@@ -44,7 +45,7 @@ export function AnnouncementForm({
   };
   onDone?: () => void;
 }) {
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   return (
     <form action={formAction} className="grid gap-3">

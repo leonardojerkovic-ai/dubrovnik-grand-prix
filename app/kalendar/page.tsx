@@ -46,11 +46,10 @@ function levelAndTempo(t: { level: string | null; tempo: string }): string {
   return t.level ? `${LEVEL_LABELS[t.level]}, ${tempo}` : tempo;
 }
 
-export default async function KalendarPage({
-  searchParams,
-}: {
-  searchParams?: { sezona?: string };
+export default async function KalendarPage(props: {
+  searchParams?: Promise<{ sezona?: string }>;
 }) {
+  const searchParams = await props.searchParams;
   /**
    * Zadano se prikazuju samo aktivne sezone. Kalendar je prije ispisivao sve
    * odjednom, što je s dvije sezone još bilo pregledno, a s osam bi bilo osam

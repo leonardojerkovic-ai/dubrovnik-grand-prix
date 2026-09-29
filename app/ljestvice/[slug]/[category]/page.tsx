@@ -32,11 +32,10 @@ import { ObjectionNote } from "@/components/objection-note";
  */
 export const revalidate = 3600;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string; category: string };
+export async function generateMetadata(props: {
+  params: Promise<{ slug: string; category: string }>;
 }): Promise<Metadata> {
+  const params = await props.params;
   const config = STANDING_SLUGS[params.category];
   if (!config) return {};
   const yearLabel = yearLabelFromSlug(params.slug);
@@ -46,11 +45,10 @@ export async function generateMetadata({
   };
 }
 
-export default async function ArchivedStandingsPage({
-  params,
-}: {
-  params: { slug: string; category: string };
+export default async function ArchivedStandingsPage(props: {
+  params: Promise<{ slug: string; category: string }>;
 }) {
+  const params = await props.params;
   const config = STANDING_SLUGS[params.category];
   if (!config) notFound();
 

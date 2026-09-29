@@ -1,6 +1,7 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { use, useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { resetPassword, type ResetPasswordState } from "../../zaboravljena-lozinka/actions";
 
 const initialState: ResetPasswordState = {};
@@ -18,13 +19,17 @@ function SubmitButton() {
   );
 }
 
-export default function ResetirajLozinkuPage({
-  params,
-}: {
-  params: { token: string };
+/**
+ * Klijentska komponenta ne smije biti async, a u Nextu 15 `params` je Promise.
+ * Odmotava se React-ovim use(), koji suspendira iscrtavanje dok se ne razriješi
+ * — await bi ovdje pretvorio komponentu u async funkciju i onemogućio hookove.
+ */
+export default function ResetirajLozinkuPage(props: {
+  params: Promise<{ token: string }>;
 }) {
+  const params = use(props.params);
   const boundReset = resetPassword.bind(null, params.token);
-  const [state, formAction] = useFormState(boundReset, initialState);
+  const [state, formAction] = useActionState(boundReset, initialState);
 
   return (
     <div className="mx-auto max-w-sm px-4 py-12">

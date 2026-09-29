@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import type { ActionState } from "../../../players/actions";
 
 /**
@@ -88,7 +89,7 @@ export function PrizeForm({
   tournamentId: string;
   seasonStartYear: number;
 }) {
-  const [state, formAction] = useFormState(action, initialState);
+  const [state, formAction] = useActionState(action, initialState);
 
   const [label, setLabel] = useState("");
   const [shortLabel, setShortLabel] = useState("");
