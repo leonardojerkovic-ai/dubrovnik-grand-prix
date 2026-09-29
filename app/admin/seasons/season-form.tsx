@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
+import { FormErrorSummary } from "@/components/form-error-summary";
 
 type SeasonFormProps = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -40,6 +41,8 @@ export function SeasonForm({ action, defaultValues = {} }: SeasonFormProps) {
 
   return (
     <form action={formAction} className="grid max-w-xl gap-4">
+      <FormErrorSummary errors={state.errors} />
+
       {state.message && (
         <p className="rounded-md bg-academy/10 px-3 py-2 text-sm text-academy">
           {state.message}

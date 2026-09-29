@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { hallOfFameSchema } from "@/lib/validation/hall-of-fame";
 import type { ActionState } from "../players/actions";
+import { fieldErrorsFrom } from "@/lib/validation/errors";
 
 export async function createHallOfFameEntry(
   _prevState: ActionState,
@@ -23,7 +24,7 @@ export async function createHallOfFameEntry(
   });
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   try {

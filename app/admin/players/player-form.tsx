@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { TITLES } from "@/lib/validation/player";
 import type { ActionState } from "./actions";
+import { FormErrorSummary } from "@/components/form-error-summary";
 
 type PlayerFormProps = {
   action: (state: ActionState, formData: FormData) => Promise<ActionState>;
@@ -46,6 +47,8 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
 
   return (
     <form action={formAction} className="grid max-w-xl gap-4">
+      <FormErrorSummary errors={state.errors} />
+
       {state.message && (
         <p className="rounded-md bg-crimson/10 px-3 py-2 text-sm text-crimson">
           {state.message}

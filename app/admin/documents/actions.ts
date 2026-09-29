@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { documentSchema } from "@/lib/validation/document";
 import type { ActionState } from "../players/actions";
+import { fieldErrorsFrom } from "@/lib/validation/errors";
 
 function parseFormData(formData: FormData) {
   return {
@@ -25,7 +26,7 @@ export async function createDocument(
   const actor = await requireAdmin();
   const parsed = documentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   const { seasonId, ...rest } = parsed.data;

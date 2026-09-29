@@ -8,6 +8,7 @@ import { revalidatePlayers } from "@/lib/revalidate";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { playerSchema } from "@/lib/validation/player";
+import { fieldErrorsFrom } from "@/lib/validation/errors";
 
 export type ActionState = {
   errors?: Record<string, string[]>;
@@ -38,7 +39,7 @@ export async function createPlayer(
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   const { fideId, memberSince, memberUntil, ...rest } = parsed.data;
@@ -91,7 +92,7 @@ export async function updatePlayer(
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   const { fideId, memberSince, memberUntil, ...rest } = parsed.data;

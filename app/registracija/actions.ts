@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
 import { needsGuardian } from "@/lib/guardian-rules";
 import { registrationSchema } from "@/lib/validation/registration";
+import { fieldErrorsFrom } from "@/lib/validation/errors";
 
 export type RegistrationState = {
   errors?: Record<string, string[]>;
@@ -48,7 +49,7 @@ export async function registerPlayer(
   });
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   const { firstName, lastName, email, password, gender, birthYear } =

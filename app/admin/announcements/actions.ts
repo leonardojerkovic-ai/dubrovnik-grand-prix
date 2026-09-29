@@ -8,6 +8,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { announcementSchema } from "@/lib/validation/announcement";
 import type { ActionState } from "../players/actions";
+import { fieldErrorsFrom } from "@/lib/validation/errors";
 
 export async function createAnnouncement(
   _prevState: ActionState,
@@ -22,7 +23,7 @@ export async function createAnnouncement(
   });
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   const { tournamentId, seasonId, ...rest } = parsed.data;
@@ -92,7 +93,7 @@ export async function updateAnnouncement(
   });
 
   if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors };
+    return { errors: fieldErrorsFrom(parsed.error) };
   }
 
   const { tournamentId, seasonId, ...rest } = parsed.data;
