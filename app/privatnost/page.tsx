@@ -45,12 +45,17 @@ export default function PrivatnostPage() {
             <br />
             E-mail: skdubrovnik@skdubrovnik.hr
             <br />
-            Internetska stranica: http://skdubrovnik.hr
+            Internetska stranica Kluba: http://skdubrovnik.hr
+            <br />
+            Platforma Dubrovnik Grand Prix: https://www.dubrovnikgrandprix.com
+            <br />
+            E-mail za platformu: info@dubrovnikgrandprix.com
           </p>
           <p>
             Za sva pitanja povezana s obradom osobnih podataka,
             ostvarivanjem prava ispitanika ili ovom Politikom privatnosti
-            možete se obratiti Klubu putem navedene e-mail adrese.
+            možete se obratiti Klubu na bilo koju od navedenih adresa
+            e-pošte.
           </p>
         </section>
 
@@ -152,6 +157,14 @@ export default function PrivatnostPage() {
             <li>tehnički podaci o sesiji,</li>
             <li>zapisi potrebni za otkrivanje neovlaštenog pristupa, zlouporabe ili sigurnosnog incidenta.</li>
           </ul>
+          <p>
+            Radi sprječavanja pogađanja lozinke i zlouporabe obrasca za
+            obnovu lozinke platforma bilježi broj pokušaja prijave,
+            registracije i zahtjeva za obnovu lozinke. Uz svaki pokušaj
+            bilježi se oznaka po kojoj se broji — adresa e-pošte ili IP
+            adresa — te vrijeme pokušaja. Rok čuvanja tih zapisa naveden
+            je u točki 12.3.
+          </p>
         </section>
 
         <section>
@@ -458,18 +471,36 @@ export default function PrivatnostPage() {
 
           <h3 className="font-display font-bold text-navy">10.3. Resend</h3>
           <p>
-            Ako se aktivira Resend ili drugi pružatelj za slanje
-            elektroničke pošte, može se koristiti za transakcijske
-            poruke povezane s korisničkim računom i natjecanjem,
-            primjerice:
+            Resend se koristi za slanje transakcijskih poruka povezanih s
+            korisničkim računom. Trenutno se šalju:
           </p>
           <ul>
-            <li>obnovu lozinke,</li>
-            <li>potvrdu registracije,</li>
-            <li>sigurnosne obavijesti,</li>
-            <li>potvrdu prijave na natjecanje.</li>
+            <li>poveznica za obnovu lozinke,</li>
+            <li>pristupni kod za povezivanje s igračkim profilom.</li>
           </ul>
-          <p>Pružatelju se dostavljaju samo podaci potrebni za izvršenje konkretne usluge.</p>
+          <p>
+            Pružatelju se dostavlja adresa e-pošte primatelja i sadržaj
+            poruke, i ništa više. Uvedu li se druge vrste poruka,
+            primjerice potvrda prijave na natjecanje, ovaj će popis biti
+            dopunjen.
+          </p>
+          <h3 className="font-display font-bold text-navy">10.4. Cloudflare</h3>
+          <p>
+            Cloudflare upravlja domenom dubrovnikgrandprix.com i
+            preusmjeravanjem elektroničke pošte s adrese
+            info@dubrovnikgrandprix.com na službenu adresu Kluba. Poruke
+            poslane na tu adresu prolaze kroz infrastrukturu tog
+            pružatelja.
+          </p>
+
+          <h3 className="font-display font-bold text-navy">10.5. GitHub</h3>
+          <p>
+            Programski kod platforme čuva se na GitHubu. Ondje se, u
+            zasebnom privatnom repozitoriju, čuva i sigurnosna kopija
+            baze podataka. Kopija je šifrirana prije pohrane, a ključ za
+            dešifriranje ne nalazi se kod pružatelja.
+          </p>
+
           <p>
             Popis pružatelja može se mijenjati zbog tehnoloških ili
             organizacijskih razloga. O relevantnim promjenama Klub će
@@ -533,7 +564,16 @@ export default function PrivatnostPage() {
             <li>zakonskih ili sportskih evidencija.</li>
           </ul>
 
-          <h3 className="font-display font-bold text-navy">12.3. Zakonske evidencije</h3>
+          <h3 className="font-display font-bold text-navy">12.3. Zapisi o pokušajima prijave</h3>
+          <p>
+            Zapisi opisani u točki 3.5., koji služe isključivo
+            ograničavanju broja pokušaja, brišu se automatski čim isteknu
+            razdoblja unutar kojih se broje. Ta razdoblja iznose najviše
+            jedan sat. Ti se zapisi ne koriste ni u koju drugu svrhu i ne
+            povezuju se s ponašanjem korisnika na stranici.
+          </p>
+
+          <h3 className="font-display font-bold text-navy">12.4. Zakonske evidencije</h3>
           <p>
             Podaci koji se moraju čuvati na temelju zakona čuvaju se
             tijekom razdoblja koje propisuje odgovarajući propis.
@@ -556,6 +596,7 @@ export default function PrivatnostPage() {
             <li>upravljanje korisničkim ulogama,</li>
             <li>ograničavanje administratorskih ovlasti,</li>
             <li>sigurnosne zapise,</li>
+            <li>ograničavanje broja pokušaja prijave i obnove lozinke,</li>
             <li>zaštitu korisničkih računa,</li>
             <li>zaštitu baze podataka,</li>
             <li>sigurnosne kopije,</li>
@@ -787,8 +828,8 @@ export default function PrivatnostPage() {
             <li>drugih organizacijskih ili sigurnosnih razloga.</li>
           </ul>
           <p>Važeća verzija Politike privatnosti bit će dostupna na ovoj internetskoj stranici.</p>
-          <p className="text-xs text-ink/50">
-            ⚠️ Datum zadnje izmjene: 【upiši datum kad objaviš】
+          <p className="font-medium text-navy">
+            Datum zadnje izmjene: 30. rujna 2026.
           </p>
         </section>
 
