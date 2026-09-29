@@ -7,6 +7,8 @@ import { hashLinkCode, looksLikeLinkCode } from "@/lib/link-code";
 import { needsGuardian } from "@/lib/guardian-rules";
 import { registrationSchema } from "@/lib/validation/registration";
 import { fieldErrorsFrom } from "@/lib/validation/errors";
+import { checkRateLimit, rateLimitMessage } from "@/lib/rate-limit";
+import { requestIp } from "@/lib/request-ip";
 
 export type RegistrationState = {
   errors?: Record<string, string[]>;
@@ -38,6 +40,13 @@ export async function registerPlayer(
   _prevState: RegistrationState,
   formData: FormData
 ): Promise<RegistrationState> {
+  // Broji se po adresi zahtjeva, ne po e-pošti: tko masovno upisuje račune
+  // svaki put upiše drugu adresu.
+  const limit = await checkRateLimit("registracija", await requestIp());
+  if (!limit.allowed) {
+    return { errors: { _form: [rateLimitMessage(limit.retryAt)] } };
+  }
+
   const parsed = registrationSchema.safeParse({
     firstName: formData.get("firstName"),
     lastName: formData.get("lastName"),

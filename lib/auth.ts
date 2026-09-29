@@ -1,4 +1,5 @@
 import { normalizeEmail } from "@/lib/email-address";
+import { checkRateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -40,9 +41,15 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null;
 
-        const user = await prisma.user.findUnique({
-          where: { email: normalizeEmail(credentials.email) },
-        });
+        const email = normalizeEmail(credentials.email);
+
+        // Broji se po adresi e-pošte, dakle po računu koji se napada.
+        // Neuspjeli pokušaj se broji jednako kao uspjeli, jer upravo njih
+        // ima puno kad netko pogađa lozinku.
+        const limit = await checkRateLimit("prijava", email);
+        if (!limit.allowed) return null;
+
+        const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.passwordHash) return null;
 
         const valid = await bcrypt.compare(

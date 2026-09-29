@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Inter,
   Space_Grotesk,
@@ -38,6 +38,20 @@ const mono = JetBrains_Mono({
   variable: "--font-mono",
   weight: ["500", "700"],
 });
+
+/**
+ * Stranica je svijetla i to izričito kaže pregledniku.
+ *
+ * Bez ove izjave preglednik na uređaju u tamnom načinu rada sam pretamni
+ * nativne kontrole — polje za datum, padajuće izbornike, potvrdne okvire —
+ * pa se usred svijetlog obrasca pojavi tamno polje. Najviše se vidi na
+ * admin obrascima i prijavi na turnir, koji se često ispunjavaju s telefona.
+ *
+ * Ovo NIJE tamna tema; ovo je odbijanje da je preglednik improvizira.
+ */
+export const viewport: Viewport = {
+  colorScheme: "light",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(

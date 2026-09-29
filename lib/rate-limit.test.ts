@@ -1,0 +1,45 @@
+import { describe, expect, it } from "vitest";
+import { RATE_LIMITS, rateLimitMessage } from "./rate-limit-rules";
+
+describe("rateLimitMessage", () => {
+  const now = new Date("2026-09-30T10:00:00Z");
+
+  it("zaokružuje naviše, da se ne javi prerano", () => {
+    const retryAt = new Date("2026-09-30T10:04:20Z");
+    expect(rateLimitMessage(retryAt, now)).toBe("Previše pokušaja. Pokušaj ponovno za 5 min.");
+  });
+
+  it("jedninu piše riječju", () => {
+    const retryAt = new Date("2026-09-30T10:00:30Z");
+    expect(rateLimitMessage(retryAt, now)).toBe("Previše pokušaja. Pokušaj ponovno za minutu.");
+  });
+
+  it("dulje čekanje izražava u satima", () => {
+    const retryAt = new Date("2026-09-30T11:00:00Z");
+    expect(rateLimitMessage(retryAt, now)).toBe(
+      "Previše pokušaja. Pokušaj ponovno za sat vremena."
+    );
+  });
+
+  it("ne otkriva ni adresu ni broj pokušaja", () => {
+    const text = rateLimitMessage(new Date("2026-09-30T10:05:00Z"), now);
+    expect(text).not.toMatch(/@|\bpostoji\b|\bračun\b/);
+  });
+
+  it("radi i bez poznatog roka", () => {
+    expect(rateLimitMessage(undefined, now)).toBe("Previše pokušaja. Pokušaj kasnije.");
+  });
+});
+
+describe("RATE_LIMITS", () => {
+  it("svako pravilo ima smislen prozor i granicu", () => {
+    for (const [action, rule] of Object.entries(RATE_LIMITS)) {
+      expect(rule.limit, action).toBeGreaterThan(0);
+      expect(rule.windowMs, action).toBeGreaterThanOrEqual(60_000);
+    }
+  });
+
+  it("reset lozinke je stroži od prijave, jer svaki pokušaj šalje e-mail", () => {
+    expect(RATE_LIMITS.resetLozinke.limit).toBeLessThan(RATE_LIMITS.prijava.limit);
+  });
+});

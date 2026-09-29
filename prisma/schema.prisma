@@ -172,6 +172,23 @@ model PasswordResetToken {
   @@map("password_reset_tokens")
 }
 
+/// Jedan zabilježen pokušaj osjetljive radnje (prijava, registracija,
+/// zahtjev za reset lozinke). Ograničenje se računa brojanjem redaka u
+/// pomičnom prozoru, pa nema stanja koje bi trebalo održavati — stari
+/// redci se brišu usput.
+///
+/// Namjerno u bazi, a ne u memoriji: na Vercelu svaki zahtjev može pasti
+/// na drugu instancu, pa brojač u memoriji ne bi ništa značio.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  /// Radnja i onaj tko je radi, npr. "prijava:ana@primjer.hr".
+  bucket    String
+  createdAt DateTime @default(now())
+
+  @@index([bucket, createdAt])
+  @@map("rate_limit_hits")
+}
+
 model Player {
   id            String   @id @default(cuid())
   firstName     String

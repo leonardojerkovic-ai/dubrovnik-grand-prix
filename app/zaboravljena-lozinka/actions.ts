@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sendPasswordResetEmail } from "@/lib/email";
 import { generateResetToken, hashResetToken } from "@/lib/tokens";
 import { normalizeEmail } from "@/lib/email-address";
+import { checkRateLimit, rateLimitMessage } from "@/lib/rate-limit";
 
 export type ForgotPasswordState = { message?: string; error?: string };
 export type ResetPasswordState = { message?: string; error?: string };
@@ -18,6 +19,13 @@ export async function requestPasswordReset(
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   if (!email) {
     return { error: "Unesi email." };
+  }
+
+  // Svaki zahtjev troši jedan e-mail iz Resendove kvote, pa se broji prije
+  // nego se uopće gleda postoji li račun.
+  const limit = await checkRateLimit("resetLozinke", email);
+  if (!limit.allowed) {
+    return { error: rateLimitMessage(limit.retryAt) };
   }
 
   const user = await prisma.user.findUnique({ where: { email } });
