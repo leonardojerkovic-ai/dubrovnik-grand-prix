@@ -10,7 +10,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { tournamentSchema } from "@/lib/validation/tournament";
 import type { ActionState } from "../players/actions";
-import { fieldErrorsFrom } from "@/lib/validation/errors";
+import { fieldErrorsFrom, formValuesFrom } from "@/lib/validation/errors";
 
 function parseFormData(formData: FormData) {
   return {
@@ -41,7 +41,7 @@ export async function createTournament(
   const actor = await requireAdmin();
   const parsed = tournamentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
-    return { errors: fieldErrorsFrom(parsed.error) };
+    return { errors: fieldErrorsFrom(parsed.error), values: formValuesFrom(formData) };
   }
 
   const {
@@ -96,7 +96,7 @@ export async function updateTournament(
   const actor = await requireAdmin();
   const parsed = tournamentSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
-    return { errors: fieldErrorsFrom(parsed.error) };
+    return { errors: fieldErrorsFrom(parsed.error), values: formValuesFrom(formData) };
   }
 
   const {

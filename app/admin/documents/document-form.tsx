@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 import { FormErrorSummary } from "@/components/form-error-summary";
+import { RetainedValues } from "@/components/retained-values";
 
 type Season = { id: string; yearLabel: string; system: string };
 
@@ -34,6 +35,7 @@ export function DocumentForm({
   return (
     <form action={formAction} className="grid gap-3 md:grid-cols-4 md:items-end">
       <FormErrorSummary errors={state.errors} />
+      <RetainedValues values={state.values} />
 
       <label className="grid gap-1 text-sm font-medium text-navy md:col-span-2">
         Naziv

@@ -5,8 +5,14 @@ import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
 import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
+import { formValuesFrom } from "@/lib/validation/errors";
 
-export type GuardianAdminState = { error?: string; message?: string };
+export type GuardianAdminState = {
+  error?: string;
+  message?: string;
+  /** Poslana polja, da ih obrazac može vratiti nakon odbijenog spremanja. */
+  values?: Record<string, string[]>;
+};
 
 /**
  * Uspostavlja skrbništvo bez pristupnog koda.
@@ -25,7 +31,7 @@ export async function addGuardianship(
   const playerId = String(formData.get("playerId") ?? "");
 
   if (!guardianUserId || !playerId) {
-    return { error: "Odaberi i račun i igrača." };
+    return { values: formValuesFrom(formData), error: "Odaberi i račun i igrača." };
   }
 
   const [user, player] = await Promise.all([
@@ -39,10 +45,11 @@ export async function addGuardianship(
     }),
   ]);
 
-  if (!user || !player) return { error: "Račun ili igrač nije pronađen." };
+  if (!user || !player) return { values: formValuesFrom(formData), error: "Račun ili igrač nije pronađen." };
 
   if (!needsGuardian(player.birthYear)) {
     return {
+      values: formValuesFrom(formData),
       error:
         `${player.lastName} ${player.firstName} ima ${SELF_ACCOUNT_AGE} godina ili više i vodi vlastiti račun. ` +
         "Skrbništvo se uspostavlja samo za mlađe igrače.",
@@ -51,7 +58,7 @@ export async function addGuardianship(
 
   // Račun ne može biti skrbnik samom sebi.
   if (user.player?.id === player.id) {
-    return { error: "Taj račun već ima taj profil kao vlastiti." };
+    return { values: formValuesFrom(formData), error: "Taj račun već ima taj profil kao vlastiti." };
   }
 
   try {
@@ -65,7 +72,7 @@ export async function addGuardianship(
       "code" in err &&
       (err as { code?: string }).code === "P2002"
     ) {
-      return { error: "To skrbništvo već postoji." };
+      return { values: formValuesFrom(formData), error: "To skrbništvo već postoji." };
     }
     throw err;
   }

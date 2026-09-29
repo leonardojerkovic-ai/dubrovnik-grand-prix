@@ -20,3 +20,27 @@ export function fieldErrorsFrom(error: ZodError): Record<string, string[]> {
   if (flat.formErrors.length > 0) out._form = flat.formErrors;
   return out;
 }
+
+/**
+ * Skuplja poslana polja obrasca da ih se nakon neuspjelog spremanja može
+ * vratiti na ekran.
+ *
+ * React 19 sam prazni obrazac čim server akcija završi, pa bi se inače sav
+ * unos izgubio i kad je odbijeno jedno jedino polje. Vrijednosti se čuvaju
+ * kao popis po ključu jer više polja može dijeliti isto ime (skupine
+ * potvrdnih okvira).
+ *
+ * Lozinke se namjerno ne vraćaju: nema razloga da putuju natrag do
+ * preglednika, a korisnik ih ionako upisuje iz glave.
+ */
+const OMITTED_FIELDS = ["password", "confirmPassword", "currentPassword"];
+
+export function formValuesFrom(formData: FormData): Record<string, string[]> {
+  const out: Record<string, string[]> = {};
+  for (const [key, value] of formData.entries()) {
+    if (typeof value !== "string") continue;
+    if (OMITTED_FIELDS.includes(key)) continue;
+    (out[key] ??= []).push(value);
+  }
+  return out;
+}

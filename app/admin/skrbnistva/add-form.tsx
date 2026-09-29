@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { addGuardianship, type GuardianAdminState } from "./actions";
-import { FormErrorSummary } from "@/components/form-error-summary";
+import { RetainedValues } from "@/components/retained-values";
 
 const initial: GuardianAdminState = {};
 
@@ -32,7 +32,7 @@ export function AddGuardianshipForm({
 
   return (
     <form action={formAction} className="grid gap-3">
-      <FormErrorSummary errors={state.errors} />
+      <RetainedValues values={state.values} />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="grid gap-1 text-sm font-medium text-navy">

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 import { FormErrorSummary } from "@/components/form-error-summary";
+import { RetainedValues } from "@/components/retained-values";
 
 type Season = { id: string; yearLabel: string; system: string };
 type PlayerOption = { id: string; label: string };
@@ -49,6 +50,7 @@ export function HallOfFameForm({
   return (
     <form action={formAction} className="grid gap-3 md:grid-cols-5 md:items-end">
       <FormErrorSummary errors={state.errors} />
+      <RetainedValues values={state.values} />
 
       {state.message && (
         <p className="md:col-span-5 rounded-md bg-crimson/10 px-3 py-2 text-sm text-crimson">

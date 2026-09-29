@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { fieldErrorsFrom } from "./errors";
+import { fieldErrorsFrom, formValuesFrom } from "./errors";
 
 const shema = z
   .object({
@@ -35,5 +35,36 @@ describe("fieldErrorsFrom", () => {
   it("prazna polja se izostavljaju", () => {
     const g = greske({ a: "", b: true, c: false });
     expect(Object.keys(g)).toEqual(["a"]);
+  });
+});
+
+describe("formValuesFrom", () => {
+  it("čuva svako poslano polje", () => {
+    const fd = new FormData();
+    fd.set("name", "Jesenski kup");
+    fd.set("rounds", "7");
+    expect(formValuesFrom(fd)).toEqual({ name: ["Jesenski kup"], rounds: ["7"] });
+  });
+
+  it("čuva sve vrijednosti kad polja dijele ime", () => {
+    const fd = new FormData();
+    fd.append("restrictedCategory", "U12");
+    fd.append("restrictedCategory", "ZENE");
+    expect(formValuesFrom(fd).restrictedCategory).toEqual(["U12", "ZENE"]);
+  });
+
+  it("ne vraća lozinke", () => {
+    const fd = new FormData();
+    fd.set("email", "a@b.hr");
+    fd.set("password", "tajna");
+    expect(formValuesFrom(fd)).toEqual({ email: ["a@b.hr"] });
+  });
+
+  it("nepotvrđeni okvir uopće ne dolazi, pa se vraća kao neoznačen", () => {
+    const fd = new FormData();
+    fd.set("isJuniorFinal", "on");
+    const values = formValuesFrom(fd);
+    expect(values.isJuniorFinal).toEqual(["on"]);
+    expect(values.isFinal).toBeUndefined();
   });
 });

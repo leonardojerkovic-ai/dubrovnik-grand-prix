@@ -9,7 +9,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { seasonSchema } from "@/lib/validation/season";
 import type { ActionState } from "../players/actions";
-import { fieldErrorsFrom } from "@/lib/validation/errors";
+import { fieldErrorsFrom, formValuesFrom } from "@/lib/validation/errors";
 
 function parseFormData(formData: FormData) {
   return {
@@ -41,7 +41,7 @@ export async function createSeason(
   const actor = await requireAdmin();
   const parsed = seasonSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
-    return { errors: fieldErrorsFrom(parsed.error) };
+    return { errors: fieldErrorsFrom(parsed.error), values: formValuesFrom(formData) };
   }
 
   const { system, yearLabel, startDate, endDate, isActive, rulebookVersion } =
@@ -103,7 +103,7 @@ export async function updateSeason(
   const actor = await requireAdmin();
   const parsed = seasonSchema.safeParse(parseFormData(formData));
   if (!parsed.success) {
-    return { errors: fieldErrorsFrom(parsed.error) };
+    return { errors: fieldErrorsFrom(parsed.error), values: formValuesFrom(formData) };
   }
 
   const { system, yearLabel, startDate, endDate, isActive, rulebookVersion } =

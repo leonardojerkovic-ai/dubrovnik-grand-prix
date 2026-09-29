@@ -8,11 +8,13 @@ import { revalidatePlayers } from "@/lib/revalidate";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { playerSchema } from "@/lib/validation/player";
-import { fieldErrorsFrom } from "@/lib/validation/errors";
+import { fieldErrorsFrom, formValuesFrom } from "@/lib/validation/errors";
 
 export type ActionState = {
   errors?: Record<string, string[]>;
   message?: string;
+  /** Poslana polja, da ih obrazac može vratiti nakon odbijenog spremanja. */
+  values?: Record<string, string[]>;
 };
 
 function parseFormData(formData: FormData) {
@@ -39,7 +41,7 @@ export async function createPlayer(
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
-    return { errors: fieldErrorsFrom(parsed.error) };
+    return { errors: fieldErrorsFrom(parsed.error), values: formValuesFrom(formData) };
   }
 
   const { fideId, memberSince, memberUntil, ...rest } = parsed.data;
@@ -92,7 +94,7 @@ export async function updatePlayer(
   const parsed = playerSchema.safeParse(parseFormData(formData));
 
   if (!parsed.success) {
-    return { errors: fieldErrorsFrom(parsed.error) };
+    return { errors: fieldErrorsFrom(parsed.error), values: formValuesFrom(formData) };
   }
 
   const { fideId, memberSince, memberUntil, ...rest } = parsed.data;

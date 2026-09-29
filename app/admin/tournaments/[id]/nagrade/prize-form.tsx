@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "../../../players/actions";
 import { FormErrorSummary } from "@/components/form-error-summary";
+import { RetainedValues } from "@/components/retained-values";
 
 /**
  * Unos jedne nagrade.
@@ -120,6 +121,7 @@ export function PrizeForm({
   return (
     <form action={formAction} className="grid gap-4">
       <FormErrorSummary errors={state.errors} />
+      <RetainedValues values={state.values} />
 
       <input type="hidden" name="tournamentId" value={tournamentId} />
 

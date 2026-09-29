@@ -1,9 +1,10 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import type { ActionState } from "../players/actions";
 import { FormErrorSummary } from "@/components/form-error-summary";
+import { RetainedValues } from "@/components/retained-values";
 import {
   GP_RESTRICTION_CODES,
   GP_RESTRICTION_LABELS,
@@ -70,6 +71,10 @@ export function TournamentForm({
   defaultValues = {},
 }: TournamentFormProps) {
   const [state, formAction] = useActionState(action, initialState);
+  // Juniorsko Finale je završni turnir (čl. 3), pa mu rezultat mora biti
+  // zaštićen od odbacivanja (čl. 20 st. 6). Kombinacija bez "završni turnir"
+  // nikad nije dopuštena, pa je obrazac uopće ne nudi.
+  const finalRef = useRef<HTMLInputElement>(null);
 
   const dateValue = defaultValues.date
     ? defaultValues.date.toISOString().slice(0, 10)
@@ -101,6 +106,7 @@ export function TournamentForm({
   return (
     <form action={formAction} className="grid max-w-xl gap-4">
       <FormErrorSummary errors={state.errors} />
+      <RetainedValues values={state.values} />
 
       {state.message && (
         <p className="rounded-md bg-academy/10 px-3 py-2 text-sm text-academy">
@@ -199,6 +205,7 @@ export function TournamentForm({
           <input
             type="checkbox"
             name="isFinal"
+            ref={finalRef}
             defaultChecked={defaultValues.isFinal}
             className="h-4 w-4 rounded border-navy/30"
           />
@@ -209,6 +216,9 @@ export function TournamentForm({
             type="checkbox"
             name="isJuniorFinal"
             defaultChecked={defaultValues.isJuniorFinal}
+            onChange={(e) => {
+              if (e.target.checked && finalRef.current) finalRef.current.checked = true;
+            }}
             className="h-4 w-4 rounded border-navy/30"
           />
           Juniorsko GP Finale
