@@ -52,6 +52,14 @@ export interface NovcanaNagrada extends PrizeCriteria {
    * istoj oznaci u poretku.
    */
   oznaka?: string | null;
+  /**
+   * Je li gornja granica rejtinga uključiva.
+   *
+   * Zadano je ISKLJUČIVA, jer tako glasi uobičajena oznaka: U1800 znači
+   * rejting manji od 1800. Raspis koji kaže „do 1800 uključivo" postavlja
+   * ovo na true.
+   */
+  rejtingDoUkljucivo?: boolean;
 }
 
 export interface Natjecatelj {
@@ -84,6 +92,26 @@ export interface Dodjela {
   prenesena: boolean;
 }
 
+/** Igrač bez rejtinga računa se kao 1400 — isto kao kod F_R (čl. 24). */
+const BEZ_REJTINGA_KAO = 1400;
+
+function zadovoljavaRejting(n: Natjecatelj, nagrada: NovcanaNagrada): boolean {
+  const rejting = n.rejting ?? BEZ_REJTINGA_KAO;
+
+  if (nagrada.ratingMin !== null && nagrada.ratingMin !== undefined) {
+    if (rejting < nagrada.ratingMin) return false;
+  }
+
+  if (nagrada.ratingMax !== null && nagrada.ratingMax !== undefined) {
+    const prolazi = nagrada.rejtingDoUkljucivo
+      ? rejting <= nagrada.ratingMax
+      : rejting < nagrada.ratingMax;
+    if (!prolazi) return false;
+  }
+
+  return true;
+}
+
 /**
  * Kandidat u obliku koji razumije matchesCriteria iz lib/scoring/prizes.
  * Igrač bez zapisanog spola ili godišta ne može zadovoljiti nagradu koja
@@ -108,6 +136,11 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
       ? true
       : nagrada.birthYearMax !== null && nagrada.birthYearMax !== undefined;
   if (nagrada.gender && n.spol === null) return false;
+  if (!zadovoljavaRejting(n, nagrada)) return false;
+
+  // Rejting je već provjeren — granice se maknu da matchesCriteria ne bi
+  // gornju tumačio kao isključivu i onda kad raspis kaže drukčije.
+  const bezRejtinga = { ...nagrada, ratingMin: null, ratingMax: null };
 
   if (trebaGodiste && n.godiste === null) {
     // Godišta nema. Jedini preostali podatak o dobi je oznaka iz izvoza, i
@@ -120,13 +153,13 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
     // Ostali uvjeti (spol, rejting, članstvo) i dalje moraju proći, pa se
     // dobne granice privremeno maknu.
     return matchesCriteria(kaoKandidat(n, index), {
-      ...nagrada,
+      ...bezRejtinga,
       birthYearMin: null,
       birthYearMax: null,
     });
   }
 
-  return matchesCriteria(kaoKandidat(n, index), nagrada);
+  return matchesCriteria(kaoKandidat(n, index), bezRejtinga);
 }
 
 /** Redoslijed obrade: iznos, pa opće prije posebne, pa objavljeni redoslijed. */

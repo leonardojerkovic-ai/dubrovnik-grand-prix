@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toCsv } from "@/lib/csv";
 import {
   granicePoOznaci,
@@ -14,6 +14,12 @@ import {
   type NovcanaNagrada,
 } from "@/lib/nagrade/dodjela";
 import { procitajTablicu } from "@/lib/nagrade/unos";
+import {
+  obrisiPredlozak,
+  spremiPredlozak,
+  ucitajPredloske,
+  type Predlosci,
+} from "@/lib/nagrade/predlosci";
 
 /** "" = bez dobnog uvjeta, "VLASTITO" = raspon se upisuje ručno. */
 type DobnaKategorija = "" | "VLASTITO" | (typeof PONUDENE_KATEGORIJE)[number];
@@ -28,7 +34,9 @@ type Redak = {
   /** Vrijede samo uz dob === "VLASTITO". */
   godisteOd: string;
   godisteDo: string;
+  rejtingOd: string;
   rejtingDo: string;
+  rejtingDoUkljucivo: boolean;
   samoClanovi: boolean;
   broj: string;
 };
@@ -45,7 +53,9 @@ function noviRedak(dio: Partial<Redak> = {}): Redak {
     dob: "",
     godisteOd: "",
     godisteDo: "",
+    rejtingOd: "",
     rejtingDo: "",
+    rejtingDoUkljucivo: false,
     samoClanovi: false,
     broj: "1",
     ...dio,
@@ -77,6 +87,41 @@ export function NovcaneNagradeAlat() {
   const [godinaSezone, setGodinaSezone] = useState(String(new Date().getFullYear()));
   const [redci, setRedci] = useState<Redak[]>(POCETNI);
 
+  // Predlošci žive u pregledniku, pa se čitaju tek nakon prvog iscrtavanja —
+  // na poslužitelju localStorage ne postoji.
+  const [predlosci, setPredlosci] = useState<Predlosci<Redak>>({});
+  const [odabrani, setOdabrani] = useState("");
+  useEffect(() => setPredlosci(ucitajPredloske<Redak>()), []);
+
+  const naziviPredlozaka = Object.keys(predlosci).sort((a, b) =>
+    a.localeCompare(b, "hr")
+  );
+
+  function ucitaj(naziv: string) {
+    const predlozak = predlosci[naziv];
+    if (!predlozak) return;
+    setGodinaSezone(predlozak.godinaSezone);
+    // Kroz noviRedak, da stariji predlošci dobiju polja koja tada nisu
+    // postojala — npr. raspon rejtinga.
+    setRedci(predlozak.redci.map((r) => noviRedak(r)));
+  }
+
+  function spremi() {
+    const predlozeno = odabrani || "";
+    const naziv = window.prompt("Naziv predloška:", predlozeno)?.trim();
+    if (!naziv) return;
+    if (predlosci[naziv] && !window.confirm(`Prebrisati predložak „${naziv}"?`)) return;
+    setPredlosci(spremiPredlozak(naziv, { godinaSezone, redci }));
+    setOdabrani(naziv);
+  }
+
+  function obrisi() {
+    if (!odabrani) return;
+    if (!window.confirm(`Obrisati predložak „${odabrani}"?`)) return;
+    setPredlosci(obrisiPredlozak<Redak>(odabrani));
+    setOdabrani("");
+  }
+
   const { natjecatelji, greske } = useMemo(() => procitajTablicu(tekst), [tekst]);
 
   const nagrade = useMemo<NovcanaNagrada[]>(() => {
@@ -105,7 +150,9 @@ export function NovcaneNagradeAlat() {
           gender: r.spol === "" ? null : r.spol,
           birthYearMin: granice.birthYearMin,
           birthYearMax: granice.birthYearMax,
+          ratingMin: r.rejtingOd.trim() === "" ? null : Number(r.rejtingOd),
           ratingMax: r.rejtingDo.trim() === "" ? null : Number(r.rejtingDo),
+          rejtingDoUkljucivo: r.rejtingDoUkljucivo,
           clubMembersOnly: r.samoClanovi,
         };
       });
@@ -191,7 +238,51 @@ export function NovcaneNagradeAlat() {
       </section>
 
       <section className="grid gap-3">
-        <h3 className="font-display font-bold text-navy">2. Objavljene nagrade</h3>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="font-display font-bold text-navy">2. Objavljene nagrade</h3>
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            <select
+              value={odabrani}
+              onChange={(e) => {
+                setOdabrani(e.target.value);
+                if (e.target.value) ucitaj(e.target.value);
+              }}
+              className="input w-48"
+              aria-label="Spremljeni predlošci"
+            >
+              <option value="">
+                {naziviPredlozaka.length === 0
+                  ? "— nema predložaka —"
+                  : "— odaberi predložak —"}
+              </option>
+              {naziviPredlozaka.map((naziv) => (
+                <option key={naziv} value={naziv}>
+                  {naziv}
+                </option>
+              ))}
+            </select>
+            <button
+              type="button"
+              onClick={spremi}
+              className="rounded-md border border-navy/20 px-3 py-1.5 font-medium text-navy hover:bg-navy/5"
+            >
+              Spremi kao predložak
+            </button>
+            {odabrani && (
+              <button
+                type="button"
+                onClick={obrisi}
+                className="text-xs text-ink/50 hover:text-crimson"
+              >
+                obriši
+              </button>
+            )}
+          </div>
+        </div>
+        <p className="text-xs text-ink/60">
+          Predložak pamti nagrade i godinu sezone, ali ne i poredak. Spremljen
+          je u ovom pregledniku, pa ga na drugom računalu nema.
+        </p>
         <label className="flex items-center gap-2 text-sm text-ink">
           Godina početka sezone
           <input
@@ -214,7 +305,7 @@ export function NovcaneNagradeAlat() {
                 <th className="pb-1 pr-2 font-medium">Vrsta</th>
                 <th className="pb-1 pr-2 font-medium">Spol</th>
                 <th className="pb-1 pr-2 font-medium">Dob</th>
-                <th className="pb-1 pr-2 font-medium">Rejting &lt;</th>
+                <th className="pb-1 pr-2 font-medium">Rejting</th>
                 <th className="pb-1 pr-2 font-medium">Član</th>
                 <th className="pb-1 pr-2 font-medium">Broj</th>
                 <th className="pb-1" />
@@ -299,14 +390,38 @@ export function NovcaneNagradeAlat() {
                     )}
                   </td>
                   <td className="py-1.5 pr-2">
-                    <input
-                      type="number"
-                      step={50}
-                      value={r.rejtingDo}
-                      onChange={(e) => promijeni(r.id, { rejtingDo: e.target.value })}
-                      placeholder="1800"
-                      className="input w-24"
-                    />
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="number"
+                        step={50}
+                        value={r.rejtingOd}
+                        onChange={(e) => promijeni(r.id, { rejtingOd: e.target.value })}
+                        placeholder="od"
+                        className="input w-20"
+                        aria-label={`Rejting od (uključivo) — ${r.naziv || "nova nagrada"}`}
+                      />
+                      <select
+                        value={r.rejtingDoUkljucivo ? "le" : "lt"}
+                        onChange={(e) =>
+                          promijeni(r.id, { rejtingDoUkljucivo: e.target.value === "le" })
+                        }
+                        className="input w-14 px-1 text-center"
+                        aria-label={`Gornja granica rejtinga — ${r.naziv || "nova nagrada"}`}
+                        title="Kako se tumači gornja granica"
+                      >
+                        <option value="lt">&lt;</option>
+                        <option value="le">≤</option>
+                      </select>
+                      <input
+                        type="number"
+                        step={50}
+                        value={r.rejtingDo}
+                        onChange={(e) => promijeni(r.id, { rejtingDo: e.target.value })}
+                        placeholder="do"
+                        className="input w-20"
+                        aria-label={`Rejting do — ${r.naziv || "nova nagrada"}`}
+                      />
+                    </div>
                   </td>
                   <td className="py-1.5 pr-2 text-center">
                     <input

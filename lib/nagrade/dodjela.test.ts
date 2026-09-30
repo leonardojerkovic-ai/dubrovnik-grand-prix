@@ -238,3 +238,79 @@ describe("dob iz oznake kad godišta nema", () => {
     expect(d[0]!.ime).toBeNull();
   });
 });
+
+describe("granice rejtinga", () => {
+  const poredak = [
+    igrac(1, "A1900", { rejting: 1900 }),
+    igrac(2, "A1800", { rejting: 1800 }),
+    igrac(3, "A1700", { rejting: 1700 }),
+    igrac(4, "Bez", { rejting: null }),
+  ];
+
+  it("gornja granica je zadano isključiva — U1800 ne uzima 1800", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "u1800", iznos: 100, posebna: true, ratingMax: 1800 }),
+    ]);
+    expect(d[0]!.ime).toBe("A1700");
+  });
+
+  it("uključiva gornja granica uzima i točnu vrijednost", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({
+        id: "do1800",
+        iznos: 100,
+        posebna: true,
+        ratingMax: 1800,
+        rejtingDoUkljucivo: true,
+      }),
+    ]);
+    expect(d[0]!.ime).toBe("A1800");
+  });
+
+  it("raspon od–do uzima obje granice", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({
+        id: "raspon",
+        iznos: 100,
+        posebna: true,
+        ratingMin: 1750,
+        ratingMax: 1850,
+        rejtingDoUkljucivo: true,
+      }),
+    ]);
+    expect(d[0]!.ime).toBe("A1800");
+  });
+
+  it("donja granica je uključiva", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "od1800", iznos: 100, posebna: true, ratingMin: 1800 }),
+    ]);
+    // A1900 je bolje plasiran i također prolazi.
+    expect(d[0]!.ime).toBe("A1900");
+  });
+
+  it("igrač bez rejtinga računa se kao 1400", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "u1500", iznos: 100, posebna: true, ratingMax: 1500 }),
+    ]);
+    expect(d[0]!.ime).toBe("Bez");
+  });
+
+  it("rejting vrijedi i kad se dob čita iz oznake", () => {
+    const poredakBezGodista: Natjecatelj[] = [
+      { mjesto: 1, ime: "Jak junior", godiste: null, spol: "M", rejting: 2100, clan: false, kategorije: ["U20"] },
+      { mjesto: 2, ime: "Slab junior", godiste: null, spol: "M", rejting: 1500, clan: false, kategorije: ["U20"] },
+    ];
+    const d = dodijeliNagrade(poredakBezGodista, [
+      nagrada({
+        id: "u20u1800",
+        iznos: 100,
+        posebna: true,
+        birthYearMin: 2007,
+        oznaka: "U20",
+        ratingMax: 1800,
+      }),
+    ]);
+    expect(d[0]!.ime).toBe("Slab junior");
+  });
+});
