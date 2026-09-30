@@ -1,0 +1,35 @@
+name: Podsjetnik — rejtinzi
+
+# Prvog u mjesecu u 07:00 UTC, sat nakon objave FIDE liste.
+#
+# Ne preuzima ništa s FIDE-a, nego samo pogleda datum najnovije liste u
+# bazi. Zadatak PADA kad su rejtinzi zastarjeli, i taj je neuspjeh cijela
+# poanta: GitHub tada pošalje obavijest, koja znači „pokreni uvoz kod
+# kuće". Vidi komentar u fide-ratings.yml zašto uvoz ne može ovdje.
+on:
+  schedule:
+    - cron: "0 7 1 * *"
+  workflow_dispatch:
+
+jobs:
+  provjera:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - run: npx prisma generate
+
+      - name: Provjeri datum liste u bazi
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run fide:provjeri

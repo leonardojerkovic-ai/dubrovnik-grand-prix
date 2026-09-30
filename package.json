@@ -14,7 +14,8 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "typecheck": "tsc --noEmit",
-    "fide:import": "tsx scripts/import-fide-ratings.ts"
+    "fide:import": "tsx scripts/import-fide-ratings.ts",
+    "fide:provjeri": "tsx scripts/provjeri-rejtinge.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
