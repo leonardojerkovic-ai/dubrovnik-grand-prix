@@ -49,6 +49,9 @@ export default async function AdminLayout({
           <Link href="/admin/users" className="hover:text-crimson">
             Korisnici
           </Link>
+          <Link href="/admin/novcane-nagrade" className="hover:text-crimson">
+            Novčane nagrade
+          </Link>
           <Link href="/admin/pregled-sezone" className="hover:text-crimson">
             Pregled sezone
           </Link>
