@@ -27,6 +27,15 @@ export default function NovcaneNagradePage() {
           će dobiti posebnu nagradu prema objavljenom redoslijedu posebnih
           nagrada.&rdquo;
         </p>
+        <p className="mt-2">Redoslijed dodjele iz toga slijedi:</p>
+        <ol className="mt-1 list-decimal pl-5">
+          <li>veći iznos se dodjeljuje prije manjeg;</li>
+          <li>pri jednakom iznosu opće mjesto je iznad posebnih nagrada;</li>
+          <li>
+            među posebnim nagradama odlučuje objavljeni redoslijed, a to je
+            redoslijed redaka u tablici nagrada.
+          </li>
+        </ol>
         <p className="mt-2">
           Nagrada koju igrač ne uzme jer je dobio veću prelazi na sljedećeg
           igrača koji zadovoljava njezine uvjete, pa se fond podijeli u

@@ -9,12 +9,17 @@ import { matchesCriteria, type PrizeCriteria } from "../scoring/prizes";
  *    igrač će dobiti veću nagradu. Ako su nagrade jednake igrač će dobiti
  *    posebnu nagradu prema objavljenom redoslijedu posebnih nagrada."
  *
+ * Zadnja rečenica razrješava jednakost MEĐU POSEBNIM nagradama — koju od
+ * više jednakih posebnih igrač dobiva. Odnos općeg mjesta i posebne nagrade
+ * pri jednakom iznosu uređen je zasebno, odlukom Kluba: opće mjesto je iznad
+ * posebnih.
+ *
  * Iz toga slijedi redoslijed kojim se nagrade dodjeljuju — po IZNOSU, a ne
  * po vrsti. To je bitna razlika u odnosu na medalje Akademije (čl. 19), gdje
  * redoslijed propisuje pravilnik. Ovdje ga propisuje novac:
  *
  *  1. veći iznos ide prije manjeg;
- *  2. pri jednakom iznosu posebna nagrada ide prije općeg mjesta;
+ *  2. pri jednakom iznosu opće mjesto ide prije posebne nagrade;
  *  3. među posebnim nagradama odlučuje objavljeni redoslijed.
  *
  * Svaka se nagrada zatim daje najbolje plasiranom igraču koji zadovoljava
@@ -96,11 +101,11 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
   return matchesCriteria(kaoKandidat(n, index), nagrada);
 }
 
-/** Redoslijed obrade: iznos, pa posebna prije opće, pa objavljeni redoslijed. */
+/** Redoslijed obrade: iznos, pa opće prije posebne, pa objavljeni redoslijed. */
 export function redoslijedDodjele(nagrade: NovcanaNagrada[]): NovcanaNagrada[] {
   return [...nagrade].sort((a, b) => {
     if (a.iznos !== b.iznos) return b.iznos - a.iznos;
-    if (a.posebna !== b.posebna) return a.posebna ? -1 : 1;
+    if (a.posebna !== b.posebna) return a.posebna ? 1 : -1;
     return a.redoslijed - b.redoslijed;
   });
 }

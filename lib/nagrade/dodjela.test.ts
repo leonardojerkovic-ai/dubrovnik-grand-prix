@@ -55,16 +55,22 @@ describe("dodijeliNagrade", () => {
     expect(po("1.mjesto").prenesena).toBe(true);
   });
 
-  it("pri jednakim iznosima igrač dobiva POSEBNU nagradu", () => {
-    const poredak = [igrac(1, "Ana", { spol: "F" }), igrac(2, "Boris")];
+  it("pri jednakim iznosima opće mjesto je iznad posebne nagrade", () => {
+    const poredak = [
+      igrac(1, "Ana", { spol: "F" }),
+      igrac(2, "Boris"),
+      igrac(3, "Cvita", { spol: "F" }),
+    ];
     const nagrade = [
-      nagrada({ id: "1.mjesto", iznos: 200 }),
       nagrada({ id: "zene", iznos: 200, posebna: true, gender: "F" }),
+      nagrada({ id: "1.mjesto", iznos: 200 }),
     ];
 
     const d = dodijeliNagrade(poredak, nagrade);
-    expect(d.find((x) => x.nagradaId === "zene")!.ime).toBe("Ana");
-    expect(d.find((x) => x.nagradaId === "1.mjesto")!.ime).toBe("Boris");
+    // Ana uzima prvo mjesto, pa nagrada za igračicu pada na Cvitu.
+    expect(d.find((x) => x.nagradaId === "1.mjesto")!.ime).toBe("Ana");
+    expect(d.find((x) => x.nagradaId === "zene")!.ime).toBe("Cvita");
+    expect(d.find((x) => x.nagradaId === "zene")!.prenesena).toBe(true);
   });
 
   it("među jednakim posebnim nagradama odlučuje objavljeni redoslijed", () => {
@@ -154,7 +160,7 @@ describe("dodijeliNagrade", () => {
 });
 
 describe("redoslijedDodjele", () => {
-  it("veći iznos ide prvi, pa posebna prije opće, pa objavljeni redoslijed", () => {
+  it("veći iznos ide prvi, pa opće prije posebne, pa objavljeni redoslijed", () => {
     const poredak = redoslijedDodjele([
       nagrada({ id: "opca-100", iznos: 100 }),
       nagrada({ id: "posebna-100-b", iznos: 100, posebna: true, redoslijed: 2 }),
@@ -164,9 +170,9 @@ describe("redoslijedDodjele", () => {
 
     expect(poredak.map((n) => n.id)).toEqual([
       "opca-300",
+      "opca-100",
       "posebna-100-a",
       "posebna-100-b",
-      "opca-100",
     ]);
   });
 });
