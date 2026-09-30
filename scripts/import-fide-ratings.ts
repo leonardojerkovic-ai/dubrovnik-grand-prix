@@ -48,16 +48,69 @@ function* iterateLines(bytes: Uint8Array): Generator<string> {
   }
 }
 
+/**
+ * Razmotava lanac uzroka koji `fetch` skriva.
+ *
+ * Kad veza ne uspije, Node baci Error s porukom „fetch failed", a pravi
+ * razlog — istek vremena, odbijena veza, greška u TLS-u, DNS — stoji u
+ * `cause`, po potrebi u više razina. Bez ovoga zapisnik zadatka kaže samo
+ * da nije uspjelo, što nije dovoljno ni za jednu odluku.
+ */
+function opisiGresku(err: unknown): string {
+  const dijelovi: string[] = [];
+  let trenutni: unknown = err;
+
+  for (let dubina = 0; dubina < 5 && trenutni instanceof Error; dubina++) {
+    const kod = (trenutni as { code?: string }).code;
+    dijelovi.push(kod ? `${trenutni.message} (${kod})` : trenutni.message);
+    trenutni = (trenutni as { cause?: unknown }).cause;
+  }
+
+  return dijelovi.join(" ← ");
+}
+
+const POKUSAJA = 3;
+const CEKANJE_MS = 15_000;
+/** FIDE liste su 7–13 MB; runneru zna trebati i pola minute. */
+const ISTEK_MS = 120_000;
+
+async function dohvatiUzPonavljanje(url: string): Promise<Response> {
+  let zadnja: unknown;
+
+  for (let pokusaj = 1; pokusaj <= POKUSAJA; pokusaj++) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          // FIDE poslužitelj zna odbiti vezu bez uobičajenih zaglavlja.
+          "User-Agent":
+            "Mozilla/5.0 (compatible; SK-Dubrovnik-GP/1.0; +https://www.dubrovnikgrandprix.com)",
+          Accept: "application/zip, application/octet-stream, */*",
+        },
+        signal: AbortSignal.timeout(ISTEK_MS),
+      });
+      if (!res.ok) {
+        throw new Error(`FIDE je vratio ${res.status} ${res.statusText}`);
+      }
+      return res;
+    } catch (err) {
+      zadnja = err;
+      console.log(`  pokušaj ${pokusaj}/${POKUSAJA} nije uspio: ${opisiGresku(err)}`);
+      if (pokusaj < POKUSAJA) {
+        await new Promise((r) => setTimeout(r, CEKANJE_MS * pokusaj));
+      }
+    }
+  }
+
+  throw new Error(
+    `Preuzimanje ${url} nije uspjelo nakon ${POKUSAJA} pokušaja: ${opisiGresku(zadnja)}`
+  );
+}
+
 async function downloadList(type: FideRatingType): Promise<Uint8Array> {
   const url = ratingListUrl(type);
   console.log(`  preuzimam ${url}`);
 
-  const res = await fetch(url, {
-    headers: { "User-Agent": "SK-Dubrovnik-GP/1.0 (klupski uvoz rejtinga)" },
-  });
-  if (!res.ok) {
-    throw new Error(`FIDE je vratio ${res.status} ${res.statusText} za ${url}`);
-  }
+  const res = await dohvatiUzPonavljanje(url);
 
   const zipped = new Uint8Array(await res.arrayBuffer());
   console.log(`  preuzeto ${(zipped.length / 1024 / 1024).toFixed(1)} MB`);
@@ -204,7 +257,7 @@ async function main() {
 
 main()
   .catch((err) => {
-    console.error("\nUvoz nije uspio:", err instanceof Error ? err.message : err);
+    console.error("\nUvoz nije uspio:", opisiGresku(err) || String(err));
     process.exitCode = 1;
   })
   .finally(async () => {
