@@ -1,0 +1,10 @@
+Konačni poredak nakon 7 Kola
+Mj.	SNo	 		Ime	Vrsta	spol	FED	RtgI	Klub/Grad	Bod.	 TB1 	 TB2 	 TB3 	 TB4 	 TB5 	 TB6 	Rp	n	w	we	w-we	K	rtg+/-
+1	3		GM	Nikčević, Nebojša			MNE	2318	ŠK Hvar, Hvar	6	30,5	33	27,25	0	5,8	5	2466	7	6	4,86	1,14	10	11,4
+2	8		FM	Djokić, Mihailo			SRB	2231		6	28	30	24,25	0	6	5	2392	7	6	4,55	1,45	20	29
+9	15		MK	Begić, Domagoj	U20		CRO	2124	ŠK Petar Sedlar - Pepe, Kaštel Novi	5	28	31	20	0	5	5	2184	7	5	4,19	0,81	20	16,2
+12	25			Jovanović, Anja	U20	w	SRB	2029		5	24	26	16	0	5	5	2068	7	5	4,37	0,63	20	12,6
+13	14		IM	Markotić, Gordan	S65		CRO	2128	ŠK Dubrovnik, Dubrovnik	4,5	28	32	18,5	0	4,4	4	2140	7	4,5	4,14	0,36	10	3,6
+27	43		MK	Karač, Miho	S65		CRO	1795	ŠK Dubrovnik, Dubrovnik	4	23,5	26,5	14,25	0	3,8	2	1945	6	3	2,00	1,00	40	40
+85	82			Bulajić, Vanja	U20		MNE	1414		2	14,5	14,5	1	0	2	2	950	4	0	0,50	-0,50	40	-20
+95	85		IV	Radulj, Vice			CRO	0	ŠK Dubrovnik, Dubrovnik	0	7	7	0

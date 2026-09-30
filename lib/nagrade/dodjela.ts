@@ -71,6 +71,8 @@ export interface Natjecatelj {
   /** Rejting na dan turnira; bez rejtinga se računa kao 1400. */
   rejting: number | null;
   clan: boolean;
+  /** Klub iz izvora, kad ga izvoz nosi. Služi utvrđivanju članstva. */
+  klub?: string;
   /**
    * Dobne oznake kakve daje Swiss-Manager u stupcu „Vrsta" — U20, S65 i
    * slično. Vrijede samo kad godište nije poznato; tada je ta oznaka jedini

@@ -84,6 +84,7 @@ function eur(iznos: number): string {
 
 export function NovcaneNagradeAlat() {
   const [tekst, setTekst] = useState("");
+  const [domaciKlub, setDomaciKlub] = useState("ŠK Dubrovnik");
   const [godinaSezone, setGodinaSezone] = useState(String(new Date().getFullYear()));
   const [redci, setRedci] = useState<Redak[]>(POCETNI);
 
@@ -122,7 +123,12 @@ export function NovcaneNagradeAlat() {
     setOdabrani("");
   }
 
-  const { natjecatelji, greske } = useMemo(() => procitajTablicu(tekst), [tekst]);
+  const { natjecatelji, greske } = useMemo(
+    () => procitajTablicu(tekst, { domaciKlub }),
+    [tekst, domaciKlub]
+  );
+  const brojClanova = natjecatelji.filter((n) => n.clan).length;
+  const imaStupacKluba = natjecatelji.some((n) => n.klub);
 
   const nagrade = useMemo<NovcanaNagrada[]>(() => {
     const G = Number(godinaSezone) || new Date().getFullYear();
@@ -209,8 +215,11 @@ export function NovcaneNagradeAlat() {
           redoslijed redaka. Prepoznaju se zaglavlja Ime, Godište, Kategorija
           (ili Vrsta), Spol, Rejting i Član; ostali se stupci preskaču. Bez
           zaglavlja se očekuje redoslijed Ime, Godište, Spol, Rejting, Član.
-          Izvoz iz Swiss-Managera nema godišta, nego oznaku U20 ili S65 u
-          stupcu Vrsta — takvog se igrača prepoznaje po toj oznaci.
+          Konačni poredak iz Swiss-Managera može se zalijepiti onakav kakav
+          jest — naslov iznad zaglavlja se preskače, suvišni stupci se
+          zanemaruju, dob se čita iz stupca Vrsta, žene iz oznake w, a
+          članstvo iz naziva kluba. Izričit stupac Član ima prednost pred
+          nazivom kluba.
         </p>
         <textarea
           value={tekst}
@@ -220,9 +229,26 @@ export function NovcaneNagradeAlat() {
           placeholder="Ime&#9;Godište&#9;Spol&#9;Rejting&#9;Član"
           className="input font-mono text-xs"
         />
-        <p className="text-xs text-ink/60">
-          Pročitano igrača: <strong className="text-navy">{natjecatelji.length}</strong>
-        </p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink/60">
+          <span>
+            Pročitano igrača:{" "}
+            <strong className="text-navy">{natjecatelji.length}</strong>
+          </span>
+          <label className="flex items-center gap-2">
+            Domaći klub
+            <input
+              value={domaciKlub}
+              onChange={(e) => setDomaciKlub(e.target.value)}
+              className="input w-44 text-xs"
+            />
+          </label>
+          {imaStupacKluba && (
+            <span>
+              Prepoznato članova:{" "}
+              <strong className="text-navy">{brojClanova}</strong>
+            </span>
+          )}
+        </div>
         {greske.length > 0 && (
           <div role="alert" className="rounded-md border border-crimson/30 bg-crimson/5 px-3 py-2 text-xs">
             <p className="font-semibold text-crimson">
