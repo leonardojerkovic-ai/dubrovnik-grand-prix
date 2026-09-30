@@ -2,7 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { toCsv } from "@/lib/csv";
-import { ageBoundsForCategory } from "@/lib/scoring/prizes";
+import {
+  granicePoOznaci,
+  PONUDENE_KATEGORIJE,
+  PRAZNE_GRANICE,
+} from "@/lib/nagrade/dob";
 import {
   dodijeliNagrade,
   ukupanFond,
@@ -11,7 +15,8 @@ import {
 } from "@/lib/nagrade/dodjela";
 import { procitajTablicu } from "@/lib/nagrade/unos";
 
-type DobnaKategorija = "" | "U12" | "U16" | "U20" | "S50" | "S65";
+/** "" = bez dobnog uvjeta, "VLASTITO" = raspon se upisuje ručno. */
+type DobnaKategorija = "" | "VLASTITO" | (typeof PONUDENE_KATEGORIJE)[number];
 
 type Redak = {
   id: string;
@@ -20,6 +25,9 @@ type Redak = {
   posebna: boolean;
   spol: "" | "M" | "F";
   dob: DobnaKategorija;
+  /** Vrijede samo uz dob === "VLASTITO". */
+  godisteOd: string;
+  godisteDo: string;
   rejtingDo: string;
   samoClanovi: boolean;
   broj: string;
@@ -35,6 +43,8 @@ function noviRedak(dio: Partial<Redak> = {}): Redak {
     posebna: true,
     spol: "",
     dob: "",
+    godisteOd: "",
+    godisteDo: "",
     rejtingDo: "",
     samoClanovi: false,
     broj: "1",
@@ -75,9 +85,13 @@ export function NovcaneNagradeAlat() {
     return redci
       .filter((r) => r.naziv.trim() !== "" && Number(r.iznos) > 0)
       .map((r, index) => {
-        const granice = r.dob
-          ? ageBoundsForCategory(r.dob, G)
-          : { birthYearMin: null, birthYearMax: null };
+        const granice =
+          r.dob === "VLASTITO"
+            ? {
+                birthYearMin: r.godisteOd.trim() === "" ? null : Number(r.godisteOd),
+                birthYearMax: r.godisteDo.trim() === "" ? null : Number(r.godisteDo),
+              }
+            : (granicePoOznaci(r.dob, G) ?? PRAZNE_GRANICE);
 
         return {
           id: r.id,
@@ -249,15 +263,37 @@ export function NovcaneNagradeAlat() {
                     <select
                       value={r.dob}
                       onChange={(e) => promijeni(r.id, { dob: e.target.value as DobnaKategorija })}
-                      className="input w-24"
+                      className="input w-28"
                     >
                       <option value="">—</option>
-                      <option value="U12">U12</option>
-                      <option value="U16">U16</option>
-                      <option value="U20">U20</option>
-                      <option value="S50">S50</option>
-                      <option value="S65">S65</option>
+                      {PONUDENE_KATEGORIJE.map((k) => (
+                        <option key={k} value={k}>
+                          {k}
+                        </option>
+                      ))}
+                      <option value="VLASTITO">godište…</option>
                     </select>
+                    {r.dob === "VLASTITO" && (
+                      <div className="mt-1 flex items-center gap-1 text-xs text-ink/60">
+                        <input
+                          type="number"
+                          value={r.godisteOd}
+                          onChange={(e) => promijeni(r.id, { godisteOd: e.target.value })}
+                          placeholder="od"
+                          className="input w-20"
+                          aria-label={`Najranije godište — ${r.naziv || "nova nagrada"}`}
+                        />
+                        <span>–</span>
+                        <input
+                          type="number"
+                          value={r.godisteDo}
+                          onChange={(e) => promijeni(r.id, { godisteDo: e.target.value })}
+                          placeholder="do"
+                          className="input w-20"
+                          aria-label={`Najkasnije godište — ${r.naziv || "nova nagrada"}`}
+                        />
+                      </div>
+                    )}
                   </td>
                   <td className="py-1.5 pr-2">
                     <input
@@ -312,7 +348,9 @@ export function NovcaneNagradeAlat() {
           </button>
           <span className="text-ink/60">
             Objavljeni redoslijed posebnih nagrada je redoslijed redaka u ovoj
-            tablici. On odlučuje samo kad su iznosi jednaki.
+            tablici; odlučuje samo kad su iznosi jednaki. Za dob koju gotove
+            oznake ne pokrivaju odaberi &bdquo;godište…&rdquo; i upiši raspon — prazno
+            polje znači da s te strane nema granice.
           </span>
         </div>
       </section>

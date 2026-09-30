@@ -145,6 +145,20 @@ describe("dodijeliNagrade", () => {
     expect(dodijeliNagrade(poredak, nagrade)[0]!.ime).toBe("Bara");
   });
 
+  it("zatvoreni raspon godišta uzima obje granice", () => {
+    // Nagrada za rođene 1960.–1970., kakvu gotove oznake ne pokrivaju.
+    const poredak = [
+      igrac(1, "Ana", { godiste: 1955 }),
+      igrac(2, "Boris", { godiste: 1965 }),
+      igrac(3, "Cvita", { godiste: 1975 }),
+    ];
+    const nagrade = [
+      nagrada({ id: "raspon", iznos: 80, posebna: true, birthYearMin: 1960, birthYearMax: 1970 }),
+    ];
+
+    expect(dodijeliNagrade(poredak, nagrade)[0]!.ime).toBe("Boris");
+  });
+
   it("nitko ne dobiva dvije nagrade", () => {
     const poredak = [igrac(1, "Ana", { spol: "F", clan: true, godiste: 2010 })];
     const nagrade = [
