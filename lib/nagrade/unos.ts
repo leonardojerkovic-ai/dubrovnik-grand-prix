@@ -28,6 +28,9 @@ const ZAGLAVLJA: Record<string, keyof Natjecatelj | "mjesto"> = {
   rodjen: "godiste",
   rođen: "godiste",
   god: "godiste",
+  kategorija: "kategorije",
+  kategorije: "kategorije",
+  vrsta: "kategorije",
   spol: "spol",
   m_z: "spol",
   rejting: "rejting",
@@ -136,6 +139,10 @@ export function procitajTablicu(tekst: string): RezultatUnosa {
       ime,
       godiste,
       spol: citajSpol(polje("spol")),
+      kategorije: polje("kategorije")
+        .split(/[\s,;]+/)
+        .map((k) => k.trim())
+        .filter((k) => k !== ""),
       rejting: citajBroj(polje("rejting")),
       clan: citajClanstvo(polje("clan")),
     });

@@ -46,6 +46,12 @@ export interface NovcanaNagrada extends PrizeCriteria {
   redoslijed: number;
   /** Koliko se primjeraka te nagrade dodjeljuje. */
   broj: number;
+  /**
+   * Dobna oznaka iz koje su izvedene granice godišta, npr. „U20".
+   * Služi igračima kojima godište nije poznato — njih se prepoznaje po
+   * istoj oznaci u poretku.
+   */
+  oznaka?: string | null;
 }
 
 export interface Natjecatelj {
@@ -57,6 +63,12 @@ export interface Natjecatelj {
   /** Rejting na dan turnira; bez rejtinga se računa kao 1400. */
   rejting: number | null;
   clan: boolean;
+  /**
+   * Dobne oznake kakve daje Swiss-Manager u stupcu „Vrsta" — U20, S65 i
+   * slično. Vrijede samo kad godište nije poznato; tada je ta oznaka jedini
+   * podatak o dobi koji izvoz uopće sadrži.
+   */
+  kategorije?: string[];
 }
 
 export interface Dodjela {
@@ -95,8 +107,24 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
     nagrada.birthYearMin !== null && nagrada.birthYearMin !== undefined
       ? true
       : nagrada.birthYearMax !== null && nagrada.birthYearMax !== undefined;
-  if (trebaGodiste && n.godiste === null) return false;
   if (nagrada.gender && n.spol === null) return false;
+
+  if (trebaGodiste && n.godiste === null) {
+    // Godišta nema. Jedini preostali podatak o dobi je oznaka iz izvoza, i
+    // vrijedi samo ako se točno poklapa s oznakom nagrade — S65 ne pokriva
+    // S60, jer izvoz ne kaže je li igrač i za nju star dovoljno.
+    if (!nagrada.oznaka) return false;
+    const trazena = nagrada.oznaka.toUpperCase();
+    if (!(n.kategorije ?? []).some((k) => k.toUpperCase() === trazena)) return false;
+
+    // Ostali uvjeti (spol, rejting, članstvo) i dalje moraju proći, pa se
+    // dobne granice privremeno maknu.
+    return matchesCriteria(kaoKandidat(n, index), {
+      ...nagrada,
+      birthYearMin: null,
+      birthYearMax: null,
+    });
+  }
 
   return matchesCriteria(kaoKandidat(n, index), nagrada);
 }

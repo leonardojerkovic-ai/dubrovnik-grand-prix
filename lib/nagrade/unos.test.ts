@@ -73,3 +73,32 @@ describe("procitajTablicu", () => {
     expect(procitajTablicu("   \n\n")).toEqual({ natjecatelji: [], greske: [] });
   });
 });
+
+describe("stupac s dobnom oznakom", () => {
+  it("čita Kategoriju i Vrstu kao dobnu oznaku", () => {
+    const a = procitajTablicu("Ime\tKategorija\nPehar, Borna\tU20");
+    const b = procitajTablicu("Ime\tVrsta\nPehar, Borna\tU20");
+    expect(a.natjecatelji[0]!.kategorije).toEqual(["U20"]);
+    expect(b.natjecatelji[0]!.kategorije).toEqual(["U20"]);
+  });
+
+  it("prazna ćelija daje prazan popis, a ne prazan niz znakova", () => {
+    const { natjecatelji } = procitajTablicu("Ime\tVrsta\nMazur, Stefan\t");
+    expect(natjecatelji[0]!.kategorije).toEqual([]);
+  });
+
+  it("nepoznate stupce preskače", () => {
+    // Izvoz iz Swiss-Managera nosi i Klub, koji alatu ne treba.
+    const { natjecatelji, greske } = procitajTablicu(
+      "Ime\tVrsta\tSpol\tRejting\tKlub\tČlan\nPerak, Ana\tU20\tŽ\t\tŠK Dubrovnik, Dubrovnik\tDA"
+    );
+    expect(greske).toEqual([]);
+    expect(natjecatelji[0]).toMatchObject({
+      ime: "Perak, Ana",
+      kategorije: ["U20"],
+      spol: "F",
+      rejting: null,
+      clan: true,
+    });
+  });
+});

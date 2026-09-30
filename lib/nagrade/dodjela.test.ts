@@ -190,3 +190,51 @@ describe("redoslijedDodjele", () => {
     ]);
   });
 });
+
+describe("dob iz oznake kad godišta nema", () => {
+  // Swiss-Manager u konačnom poretku daje stupac „Vrsta" s U20/S65, ali ne i
+  // godište. Bez ovoga bi sve dobne nagrade ostale nedodijeljene.
+  const poredak: Natjecatelj[] = [
+    { mjesto: 1, ime: "Stariji", godiste: null, spol: "M", rejting: 2300, clan: false, kategorije: [] },
+    { mjesto: 2, ime: "Junior", godiste: null, spol: "M", rejting: 2100, clan: false, kategorije: ["U20"] },
+    { mjesto: 3, ime: "Veteran", godiste: null, spol: "M", rejting: 2000, clan: false, kategorije: ["S65"] },
+  ];
+
+  it("oznaka iz poretka zamjenjuje nepoznato godište", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "u20", iznos: 100, posebna: true, birthYearMin: 2007, oznaka: "U20" }),
+      nagrada({ id: "s65", iznos: 90, posebna: true, birthYearMax: 1962, oznaka: "S65" }),
+    ]);
+    expect(d.find((x) => x.nagradaId === "u20")!.ime).toBe("Junior");
+    expect(d.find((x) => x.nagradaId === "s65")!.ime).toBe("Veteran");
+  });
+
+  it("oznaka se mora točno poklopiti — S65 ne pokriva S60", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "s60", iznos: 90, posebna: true, birthYearMax: 1967, oznaka: "S60" }),
+    ]);
+    expect(d[0]!.ime).toBeNull();
+  });
+
+  it("ostali uvjeti i dalje vrijede uz oznaku", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "u20zene", iznos: 100, posebna: true, birthYearMin: 2007, oznaka: "U20", gender: "F" }),
+    ]);
+    expect(d[0]!.ime).toBeNull();
+  });
+
+  it("poznato godište ima prednost pred oznakom", () => {
+    const d = dodijeliNagrade(
+      [{ mjesto: 1, ime: "Krivo označen", godiste: 1990, spol: "M", rejting: 2000, clan: false, kategorije: ["U20"] }],
+      [nagrada({ id: "u20", iznos: 100, posebna: true, birthYearMin: 2007, oznaka: "U20" })]
+    );
+    expect(d[0]!.ime).toBeNull();
+  });
+
+  it("bez oznake na nagradi vrijedi samo godište", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "raspon", iznos: 100, posebna: true, birthYearMin: 2007 }),
+    ]);
+    expect(d[0]!.ime).toBeNull();
+  });
+});

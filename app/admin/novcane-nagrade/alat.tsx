@@ -101,6 +101,7 @@ export function NovcaneNagradeAlat() {
           // Objavljeni redoslijed = redoslijed redaka u obrascu.
           redoslijed: index,
           broj: Math.max(1, Number(r.broj) || 1),
+          oznaka: r.dob === "VLASTITO" || r.dob === "" ? null : r.dob,
           gender: r.spol === "" ? null : r.spol,
           birthYearMin: granice.birthYearMin,
           birthYearMax: granice.birthYearMax,
@@ -158,9 +159,11 @@ export function NovcaneNagradeAlat() {
         </div>
         <p className="text-xs text-ink/60">
           Označi stupce u Excelu, kopiraj i zalijepi ovdje. Poredak određuje
-          redoslijed redaka. Prepoznaju se zaglavlja Ime, Godište, Spol,
-          Rejting i Član; bez zaglavlja se očekuje upravo taj redoslijed
-          stupaca.
+          redoslijed redaka. Prepoznaju se zaglavlja Ime, Godište, Kategorija
+          (ili Vrsta), Spol, Rejting i Član; ostali se stupci preskaču. Bez
+          zaglavlja se očekuje redoslijed Ime, Godište, Spol, Rejting, Član.
+          Izvoz iz Swiss-Managera nema godišta, nego oznaku U20 ili S65 u
+          stupcu Vrsta — takvog se igrača prepoznaje po toj oznaci.
         </p>
         <textarea
           value={tekst}
