@@ -10,6 +10,7 @@
  *   npm run fide:import              — sva tri tempa
  *   npm run fide:import -- --dry-run — bez upisa u bazu
  *   npm run fide:import -- --type=RAPID
+ *   npm run fide:import -- --date=2026-10-01
  */
 
 import { unzipSync } from "fflate";
@@ -25,9 +26,59 @@ const prisma = new PrismaClient();
 const ALL_TYPES: FideRatingType[] = ["STANDARD", "RAPID", "BLITZ"];
 
 /** Datum liste — prvi dan tekućeg mjeseca, u ponoć UTC. */
-function currentListDate(): Date {
-  const now = new Date();
+function currentListDate(now: Date = new Date()): Date {
   return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+}
+
+/**
+ * Od kojeg se dana u mjesecu datum liste više ne smije pogađati.
+ *
+ * FIDE objavljuje listu za idući mjesec nekoliko dana prije njegova
+ * početka. Tko uvoz pokrene 29. rujna preuzme LISTOPADSKU listu, a skripta
+ * bi je datirala kao rujansku i time pregazila vrijednosti po kojima su
+ * računati F_R (čl. 24) i kategorije (čl. 22) za sve odigrano u rujnu.
+ *
+ * Šteta se ne vidi — brojevi u bazi ostanu razumni, samo su krivi. Zato se
+ * u tom razdoblju datum mora navesti izričito.
+ */
+const DAN_OD_KOJEG_SE_PITA = 25;
+
+function citajDatumListe(args: string[], now: Date = new Date()): Date {
+  const zadano = args.find((a) => a.startsWith("--date="))?.split("=")[1];
+
+  if (zadano) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(zadano)) {
+      throw new Error(`Datum „${zadano}" nije oblika GGGG-MM-DD.`);
+    }
+    const datum = new Date(`${zadano}T00:00:00.000Z`);
+    if (Number.isNaN(datum.getTime())) {
+      throw new Error(`Datum „${zadano}" ne postoji.`);
+    }
+    return datum;
+  }
+
+  if (now.getUTCDate() >= DAN_OD_KOJEG_SE_PITA) {
+    const tekuci = currentListDate(now);
+    const sljedeci = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth() + 1, 1)
+    );
+    const iso = (d: Date) => d.toISOString().slice(0, 10);
+
+    throw new Error(
+      [
+        `Danas je ${iso(now)}, a FIDE listu za idući mjesec objavljuje prije`,
+        "njegova početka. Ne mogu znati koju si listu preuzeo, pa datum",
+        "navedi izričito:",
+        "",
+        `    npm run fide:import -- --date=${iso(sljedeci)}   (lista za idući mjesec)`,
+        `    npm run fide:import -- --date=${iso(tekuci)}   (lista za tekući mjesec)`,
+        "",
+        "Pogrešan datum pregazi vrijednosti po kojima su već računati bodovi.",
+      ].join("\n")
+    );
+  }
+
+  return currentListDate(now);
 }
 
 /**
@@ -214,7 +265,7 @@ async function main() {
     throw new Error(`Nepoznat tempo: ${typeArg}. Dopušteno: ${ALL_TYPES.join(", ")}`);
   }
 
-  const listDate = currentListDate();
+  const listDate = citajDatumListe(args);
   console.log(
     `Uvoz FIDE rejtinga za ${listDate.toISOString().slice(0, 10)}${dryRun ? " (probno, bez upisa)" : ""}`
   );

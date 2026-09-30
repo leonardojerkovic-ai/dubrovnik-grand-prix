@@ -45,6 +45,26 @@ Za jedan tempo posebno:
 npm run fide:import -- --type=RAPID
 ```
 
+## Datum liste
+
+Vrijednosti se u bazu spremaju pod datumom liste, a taj datum odlučuje koji
+je rejting vrijedio na dan turnira. Zadano je prvi dan tekućeg mjeseca.
+
+Problem je što FIDE listu za idući mjesec objavljuje **prije** njegova
+početka — listopadska je izašla 29. rujna. Tko uvoz pokrene tih dana,
+preuzme listopadsku listu, a skripta bi je datirala kao rujansku i time
+pregazila vrijednosti po kojima su već računati bodovi za rujanske turnire.
+Brojevi bi ostali razumni, samo krivi, i to se ne bi vidjelo.
+
+Zato od 25. u mjesecu skripta odbija pogađati i traži izričit datum:
+
+```powershell
+npm run fide:import -- --date=2026-10-01
+```
+
+Najjednostavnije je uvoz pokrenuti prvog u mjesecu ili poslije, kad zadana
+vrijednost ionako odgovara.
+
 ## Podsjetnik
 
 Zadatak „Podsjetnik — rejtinzi" prvog u mjesecu u 07:00 UTC pogleda datum
