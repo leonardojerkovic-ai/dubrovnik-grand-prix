@@ -314,3 +314,66 @@ describe("granice rejtinga", () => {
     expect(d[0]!.ime).toBe("Slab junior");
   });
 });
+
+describe("oznaka prenesena", () => {
+  it("n-to mjesto n-tom igraču nije prijenos", () => {
+    const poredak = [1, 2, 3, 4].map((m) => igrac(m, `I${m}`));
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "1", naziv: "1. mjesto", iznos: 300 }),
+      nagrada({ id: "2", naziv: "2. mjesto", iznos: 200 }),
+      nagrada({ id: "3", naziv: "3. mjesto", iznos: 100 }),
+    ]);
+    expect(d.map((x) => x.ime)).toEqual(["I1", "I2", "I3"]);
+    expect(d.some((x) => x.prenesena)).toBe(false);
+  });
+
+  it("isto vrijedi za niz nagrada s istim uvjetima", () => {
+    const poredak = [
+      igrac(1, "M1"),
+      igrac(2, "Z1", { spol: "F" }),
+      igrac(3, "Z2", { spol: "F" }),
+    ];
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "z1", naziv: "Najbolja igračica", iznos: 200, posebna: true, gender: "F" }),
+      nagrada({ id: "z2", naziv: "Druga igračica", iznos: 100, posebna: true, gender: "F" }),
+    ]);
+    expect(d.map((x) => x.ime)).toEqual(["Z1", "Z2"]);
+    expect(d.some((x) => x.prenesena)).toBe(false);
+  });
+
+  it("prijenos se označi tek kad je netko uzeo veću nagradu", () => {
+    const poredak = [
+      igrac(1, "Ana", { spol: "F" }),
+      igrac(2, "Boris"),
+      igrac(3, "Cvita"),
+    ];
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "zene", naziv: "Najbolja igračica", iznos: 500, posebna: true, gender: "F" }),
+      nagrada({ id: "1", naziv: "1. mjesto", iznos: 300 }),
+      nagrada({ id: "2", naziv: "2. mjesto", iznos: 200 }),
+    ]);
+    const po = (id: string) => d.find((x) => x.nagradaId === id)!;
+
+    expect(po("zene").prenesena).toBe(false);
+    // Ana je uzela nagradu za igračicu, pa prvo mjesto pada na Borisa.
+    expect(po("1").ime).toBe("Boris");
+    expect(po("1").prenesena).toBe(true);
+    // Drugo mjesto bi ionako pripalo Borisu, ali on je uzeo prvo.
+    expect(po("2").ime).toBe("Cvita");
+    expect(po("2").prenesena).toBe(true);
+  });
+
+  it("nagrade s različitim uvjetima ne dijele brojač", () => {
+    const poredak = [
+      igrac(1, "Ana", { spol: "F", clan: true }),
+      igrac(2, "Bara", { spol: "F" }),
+    ];
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "zene", iznos: 200, posebna: true, gender: "F" }),
+      nagrada({ id: "clan", iznos: 100, posebna: true, clubMembersOnly: true }),
+    ]);
+    // Ana uzima nagradu za igračicu; članska nema drugog člana i ostaje prazna.
+    expect(d.find((x) => x.nagradaId === "zene")!.ime).toBe("Ana");
+    expect(d.find((x) => x.nagradaId === "clan")!.ime).toBeNull();
+  });
+});

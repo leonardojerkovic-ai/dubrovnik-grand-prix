@@ -193,21 +193,52 @@ export function redoslijedDodjele(nagrade: NovcanaNagrada[]): NovcanaNagrada[] {
   });
 }
 
+/**
+ * Potpis uvjeta nagrade.
+ *
+ * Nagrade s istim uvjetima čine niz: „1., 2. i 3. mjesto" nemaju nijedan
+ * uvjet, „igrači 2201–2400 1., 2. i 3. mjesto" imaju iste granice rejtinga.
+ * Unutar takvog niza n-ta nagrada po redu prirodno pripada n-tom igraču
+ * koji uvjete zadovoljava — treće mjesto trećem igraču, a ne prvom.
+ *
+ * Bez toga bi svaka nagrada osim prve u nizu ispala „prenesena", pa bi
+ * oznaka stajala gotovo uz svaku i ne bi značila ništa.
+ */
+function potpisUvjeta(n: NovcanaNagrada): string {
+  return JSON.stringify([
+    n.gender ?? null,
+    n.birthYearMin ?? null,
+    n.birthYearMax ?? null,
+    n.oznaka?.toUpperCase() ?? null,
+    n.ratingMin ?? null,
+    n.ratingMax ?? null,
+    n.rejtingDoUkljucivo ?? false,
+    n.clubMembersOnly ?? false,
+    (n.titule ?? []).map((t) => t.trim().toUpperCase()).sort(),
+  ]);
+}
+
 export function dodijeliNagrade(
   poredak: Natjecatelj[],
   nagrade: NovcanaNagrada[]
 ): Dodjela[] {
   const zauzeti = new Set<number>();
   const rezultat: Dodjela[] = [];
+  /** Koliko je nagrada s istim uvjetima već podijeljeno. */
+  const potroseno = new Map<string, number>();
 
   for (const nagrada of redoslijedDodjele(nagrade)) {
-    // Tko bi nagradu dobio da nema pravila o nekumulativnosti — po tome se
-    // prepoznaje je li prenesena.
+    const potpis = potpisUvjeta(nagrada);
     const ocekivani = poredak
       .map((n, i) => [n, i] as const)
       .filter(([n, i]) => zadovoljava(n, i, nagrada));
 
     for (let primjerak = 1; primjerak <= nagrada.broj; primjerak++) {
+      // Kome bi nagrada pripala da nitko nije uzeo veću.
+      const redniBroj = potroseno.get(potpis) ?? 0;
+      potroseno.set(potpis, redniBroj + 1);
+      const prirodni = ocekivani[redniBroj];
+
       const dobitnik = ocekivani.find(([, i]) => !zauzeti.has(i));
 
       if (!dobitnik) {
@@ -226,7 +257,6 @@ export function dodijeliNagrade(
       const [natjecatelj, index] = dobitnik;
       zauzeti.add(index);
 
-      const bezPravila = ocekivani[primjerak - 1];
       rezultat.push({
         nagradaId: nagrada.id,
         naziv: nagrada.naziv,
@@ -234,7 +264,7 @@ export function dodijeliNagrade(
         primjerak,
         ime: natjecatelj.ime,
         mjesto: natjecatelj.mjesto,
-        prenesena: bezPravila !== undefined && bezPravila[1] !== index,
+        prenesena: prirodni !== undefined && prirodni[1] !== index,
       });
     }
   }
