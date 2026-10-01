@@ -31,6 +31,11 @@ enum Role {
   PLAYER
   ADMIN
   GP_MANAGER // voditelj GP-a / voditelj natjecanja Akademije (čl. 26 / čl. 21)
+  /// Sudac turnira. Dobiva pristup ISKLJUČIVO alatu za raspodjelu novčanih
+  /// nagrada — ništa ne čita iz baze i ništa u nju ne upisuje. Postoji zato
+  /// što nagrade dijeli sudac na turniru, a njemu nema razloga davati
+  /// pristup igračima, rezultatima ni korisnicima.
+  SUDAC
 }
 
 /// Redom kojim ih FIDE navodi. Nabrajanje u Postgresu čuva vrijednosti po

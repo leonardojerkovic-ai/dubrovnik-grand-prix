@@ -6,7 +6,10 @@ import { logAudit } from "@/lib/audit";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
-export async function updateUserRole(userId: string, role: "PLAYER" | "ADMIN" | "GP_MANAGER") {
+export async function updateUserRole(
+  userId: string,
+  role: "PLAYER" | "SUDAC" | "GP_MANAGER" | "ADMIN"
+) {
   // Samo ADMIN smije mijenjati role — GP_MANAGER ima pristup admin panelu
   // za svoj posao (turniri, rezultati) ali ne smije dijeliti admin prava.
   const actor = await requireAdmin(["ADMIN"]);

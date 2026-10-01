@@ -16,6 +16,10 @@ export default async function AdminLayout({
   const session = await getServerSession(authOptions);
   const role = (session?.user as { role?: string } | undefined)?.role;
 
+  // Sudac nema što raditi u adminu, ali JE prijavljen — slanje na prijavu
+  // izgledalo bi kao da mu lozinka ne valja.
+  if (role === "SUDAC") redirect("/alati/nagrade");
+
   if (!session || (role !== "ADMIN" && role !== "GP_MANAGER")) {
     redirect("/prijava?callbackUrl=/admin");
   }
@@ -49,7 +53,7 @@ export default async function AdminLayout({
           <Link href="/admin/users" className="hover:text-crimson">
             Korisnici
           </Link>
-          <Link href="/admin/novcane-nagrade" className="hover:text-crimson">
+          <Link href="/alati/nagrade" className="hover:text-crimson">
             Novčane nagrade
           </Link>
           <Link href="/admin/pregled-sezone" className="hover:text-crimson">

@@ -1,17 +1,21 @@
 import type { Metadata } from "next";
 import { NovcaneNagradeAlat } from "./alat";
+import { requireAlatNagrade } from "@/lib/require-alat-nagrade";
 
 export const metadata: Metadata = {
-  title: "Novčane nagrade",
+  title: "Raspodjela novčanih nagrada",
+  robots: { index: false, follow: false },
 };
 
-export default function NovcaneNagradePage() {
+export default async function NovcaneNagradePage() {
+  await requireAlatNagrade();
+
   return (
-    <div className="grid gap-6">
+    <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8">
       <div>
-        <h2 className="font-display text-lg font-bold text-navy">
+        <h1 className="font-display text-xl font-bold text-navy">
           Raspodjela novčanih nagrada
-        </h2>
+        </h1>
         <p className="mt-1 max-w-3xl text-sm text-ink/70">
           Zalijepi konačni poredak iz Excela, upiši objavljene nagrade i
           program izračuna kome što pripada. Ništa se ne sprema u bazu —

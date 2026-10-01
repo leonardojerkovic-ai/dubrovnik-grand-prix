@@ -27,6 +27,8 @@ export function SiteHeader() {
     | undefined;
   const signedIn = status === "authenticated";
   const isAdmin = user?.role === "ADMIN" || user?.role === "GP_MANAGER";
+  // Sucu je alat za nagrade jedino čemu ima pristup, pa mu stoji u zaglavlju.
+  const isSudac = user?.role === "SUDAC";
   // Ime dolazi iz povezanog igračkog profila; dok veza ne postoji, email je
   // jedino čime se korisnik može predstaviti.
   const label = user?.displayName ?? user?.email ?? "";
@@ -78,6 +80,14 @@ export function SiteHeader() {
                   className="rounded-md border border-navy/20 px-3 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
                 >
                   Admin
+                </Link>
+              )}
+              {isSudac && (
+                <Link
+                  href="/alati/nagrade"
+                  className="rounded-md border border-navy/20 px-3 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+                >
+                  Nagrade
                 </Link>
               )}
               <Link
@@ -184,6 +194,15 @@ export function SiteHeader() {
                   className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light"
                 >
                   Admin panel
+                </Link>
+              )}
+              {isSudac && (
+                <Link
+                  href="/alati/nagrade"
+                  onClick={() => setMobileOpen(false)}
+                  className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light"
+                >
+                  Novčane nagrade
                 </Link>
               )}
               <button

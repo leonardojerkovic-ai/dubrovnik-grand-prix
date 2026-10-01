@@ -19,7 +19,11 @@ export function RoleSelect({
       defaultValue={currentRoleValue}
       disabled={disabled || isPending}
       onChange={(e) => {
-        const role = e.target.value as "PLAYER" | "ADMIN" | "GP_MANAGER";
+        const role = e.target.value as
+          | "PLAYER"
+          | "SUDAC"
+          | "GP_MANAGER"
+          | "ADMIN";
         startTransition(async () => {
           await updateUserRole(userId, role);
         });
@@ -27,6 +31,7 @@ export function RoleSelect({
       className="input"
     >
       <option value="PLAYER">Igrač</option>
+      <option value="SUDAC">Sudac — samo novčane nagrade</option>
       <option value="GP_MANAGER">Voditelj GP-a</option>
       <option value="ADMIN">Administrator</option>
     </select>
