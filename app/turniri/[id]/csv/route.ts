@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { csvFileName, csvResponse, toCsv } from "@/lib/csv";
+import { bezNule, rejtinziNaDatum } from "@/lib/ratings/na-datum";
 
 /**
  * Izvoz rezultata turnira u CSV.
@@ -34,6 +35,14 @@ export async function GET(
 
   if (!tournament) notFound();
 
+  // Isti izvor kao na stranici turnira: rejting na dan turnira, a ne
+  // današnji. Vidi lib/ratings/na-datum.ts.
+  const rejtinziTada = await rejtinziNaDatum({
+    playerIds: tournament.results.map((r) => r.playerId),
+    tempo: tournament.tempo,
+    datum: tournament.date,
+  });
+
   const csv = toCsv(
     [
       "Plasman",
@@ -48,7 +57,7 @@ export async function GET(
       r.rank,
       r.player.title === "NONE" ? "" : r.player.title,
       `${r.player.lastName} ${r.player.firstName}`,
-      r.ratingSnapshotUsed ?? "",
+      bezNule(r.ratingSnapshotUsed) ?? rejtinziTada.get(r.playerId) ?? "",
       r.gpPoints ?? "",
       r.gamesPlayed ? "da" : "ne",
       r.wasClubMember ? "da" : "ne",

@@ -15,6 +15,11 @@ import { objectionDeadline } from "@/lib/scoring/results-lock";
 import { PrizeList } from "@/components/prize-list";
 import { getTournamentPrizes } from "@/lib/tournament-prizes";
 import { getTournamentMedals } from "@/lib/akademija/medals";
+import {
+  bezNule,
+  rejtinziNaDatum,
+  tempoKaoPolje,
+} from "@/lib/ratings/na-datum";
 
 /**
  * Podaci se mijenjaju iz admina i iz vanjskih poslova (uvoz FIDE rejtinga
@@ -87,12 +92,33 @@ export default async function TournamentDetailPage(props: {
 
   if (!tournament) notFound();
 
-  const ratingField =
-    tournament.tempo === "STANDARD"
-      ? "standard"
-      : tournament.tempo === "RAPID"
-        ? "rapid"
-        : "blitz";
+  const ratingField = tempoKaoPolje(tournament.tempo);
+
+  // Rejting uz ime znači „rejting na dan turnira", ne današnji. Inače bi se
+  // tablica odigranog turnira mijenjala svaki put kad FIDE objavi novu
+  // listu — i to tiho, bez ijednog traga.
+  const sviIgraci = [
+    ...tournament.registrations.map((r) => r.player.id),
+    ...tournament.results.map((r) => r.player.id),
+  ];
+  const rejtinziTada = await rejtinziNaDatum({
+    playerIds: Array.from(new Set(sviIgraci)),
+    tempo: tournament.tempo,
+    datum: tournament.date,
+  });
+
+  /**
+   * Prvi izbor je vrijednost koja je stvarno ušla u izračun bodova. Ako je
+   * nema, uzima se snimak s dana turnira. Današnji rejting ostaje samo za
+   * turnire koji se tek igraju, gdje snimka još nema.
+   */
+  function rejtingZa(playerId: string, uRezultatu: number | null | undefined) {
+    const izRezultata = bezNule(uRezultatu);
+    if (izRezultata !== null) return izRezultata;
+    const tada = rejtinziTada.get(playerId);
+    if (tada !== undefined) return tada;
+    return null;
+  }
 
   // Spoji igrače iz samoprijava I admin-unesenih rezultata, po playerId
   // (bez duplikata) — rezultat (rank/bodovi), ako postoji, ide uz igrača.
@@ -105,21 +131,22 @@ export default async function TournamentDetailPage(props: {
       lastName: r.player.lastName,
       title: r.player.title,
       isClubMember: r.player.isClubMember,
-      rating: r.player.ratingsCurrent?.[ratingField] ?? null,
+      rating:
+        rejtingZa(r.player.id, null) ??
+        bezNule(r.player.ratingsCurrent?.[ratingField]),
       rank: null,
       gpPoints: null,
     });
   }
 
   for (const res of tournament.results) {
-    const existing = playerMap.get(res.player.id);
     playerMap.set(res.player.id, {
       id: res.player.id,
       firstName: res.player.firstName,
       lastName: res.player.lastName,
       title: res.player.title,
       isClubMember: res.player.isClubMember,
-      rating: existing?.rating ?? res.player.ratingsCurrent?.[ratingField] ?? null,
+      rating: rejtingZa(res.player.id, res.ratingSnapshotUsed),
       rank: res.rank,
       gpPoints: res.gpPoints,
     });
@@ -256,7 +283,7 @@ export default async function TournamentDetailPage(props: {
                     <PlayerName {...p} />
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums">
-                    {p.rating ?? 0}
+                    {p.rating ?? "—"}
                   </td>
                   {hasAnyResults && (
                     <td className="px-4 py-2 text-right font-mono tabular-nums">
