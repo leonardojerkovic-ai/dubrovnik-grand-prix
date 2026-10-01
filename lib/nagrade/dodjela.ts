@@ -9,17 +9,23 @@ import { matchesCriteria, type PrizeCriteria } from "../scoring/prizes";
  *    igrač će dobiti veću nagradu. Ako su nagrade jednake igrač će dobiti
  *    posebnu nagradu prema objavljenom redoslijedu posebnih nagrada."
  *
- * Zadnja rečenica razrješava jednakost MEĐU POSEBNIM nagradama — koju od
- * više jednakih posebnih igrač dobiva. Odnos općeg mjesta i posebne nagrade
- * pri jednakom iznosu uređen je zasebno, odlukom Kluba: opće mjesto je iznad
- * posebnih.
+ * Zadnja rečenica podnosi dva čitanja, i Klub bira koje vrijedi za pojedini
+ * raspis (vidi PravilaJednakosti):
+ *
+ *  - „posebna nagrada" doslovno: pri jednakom iznosu igrač uzima POSEBNU, a
+ *    opće mjesto pada na sljedećeg;
+ *  - rečenica razrješava jednakost samo MEĐU POSEBNIM nagradama, dok je
+ *    opće mjesto iznad njih.
+ *
+ * Kod ne presuđuje između tih čitanja. Odluka je Klubova i vidi se u
+ * obrascu.
  *
  * Iz toga slijedi redoslijed kojim se nagrade dodjeljuju — po IZNOSU, a ne
  * po vrsti. To je bitna razlika u odnosu na medalje Akademije (čl. 19), gdje
  * redoslijed propisuje pravilnik. Ovdje ga propisuje novac:
  *
  *  1. veći iznos ide prije manjeg;
- *  2. pri jednakom iznosu opće mjesto ide prije posebne nagrade;
+ *  2. pri jednakom iznosu odlučuje odabrano pravilo;
  *  3. među posebnim nagradama odlučuje objavljeni redoslijed.
  *
  * Svaka se nagrada zatim daje najbolje plasiranom igraču koji zadovoljava
@@ -184,11 +190,27 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
   return matchesCriteria(kaoKandidat(n, index), bezRejtinga);
 }
 
-/** Redoslijed obrade: iznos, pa opće prije posebne, pa objavljeni redoslijed. */
-export function redoslijedDodjele(nagrade: NovcanaNagrada[]): NovcanaNagrada[] {
+/**
+ * Što ima prednost kad su iznosi jednaki.
+ *
+ * `OPCE_PRIJE` — opće mjesto je iznad posebnih nagrada.
+ * `POSEBNA_PRIJE` — igrač uzima posebnu nagradu, a opće mjesto pada dalje.
+ */
+export type PravilaJednakosti = "OPCE_PRIJE" | "POSEBNA_PRIJE";
+
+export const ZADANO_PRAVILO: PravilaJednakosti = "OPCE_PRIJE";
+
+/** Redoslijed obrade: iznos, pa odabrano pravilo, pa objavljeni redoslijed. */
+export function redoslijedDodjele(
+  nagrade: NovcanaNagrada[],
+  pravilo: PravilaJednakosti = ZADANO_PRAVILO
+): NovcanaNagrada[] {
   return [...nagrade].sort((a, b) => {
     if (a.iznos !== b.iznos) return b.iznos - a.iznos;
-    if (a.posebna !== b.posebna) return a.posebna ? 1 : -1;
+    if (a.posebna !== b.posebna) {
+      const posebnaPrva = pravilo === "POSEBNA_PRIJE";
+      return a.posebna === posebnaPrva ? -1 : 1;
+    }
     return a.redoslijed - b.redoslijed;
   });
 }
@@ -220,14 +242,15 @@ function potpisUvjeta(n: NovcanaNagrada): string {
 
 export function dodijeliNagrade(
   poredak: Natjecatelj[],
-  nagrade: NovcanaNagrada[]
+  nagrade: NovcanaNagrada[],
+  pravilo: PravilaJednakosti = ZADANO_PRAVILO
 ): Dodjela[] {
   const zauzeti = new Set<number>();
   const rezultat: Dodjela[] = [];
   /** Koliko je nagrada s istim uvjetima već podijeljeno. */
   const potroseno = new Map<string, number>();
 
-  for (const nagrada of redoslijedDodjele(nagrade)) {
+  for (const nagrada of redoslijedDodjele(nagrade, pravilo)) {
     const potpis = potpisUvjeta(nagrada);
     const ocekivani = poredak
       .map((n, i) => [n, i] as const)

@@ -11,7 +11,9 @@ import {
   dodijeliNagrade,
   ukupanFond,
   ukupnoIsplaceno,
+  ZADANO_PRAVILO,
   type NovcanaNagrada,
+  type PravilaJednakosti,
 } from "@/lib/nagrade/dodjela";
 import { procitajTablicu } from "@/lib/nagrade/unos";
 import {
@@ -90,6 +92,7 @@ export function NovcaneNagradeAlat() {
   const [domaciKlub, setDomaciKlub] = useState("ŠK Dubrovnik");
   const [godinaSezone, setGodinaSezone] = useState(String(new Date().getFullYear()));
   const [redci, setRedci] = useState<Redak[]>(POCETNI);
+  const [pravilo, setPravilo] = useState<PravilaJednakosti>(ZADANO_PRAVILO);
 
   // Predlošci žive u pregledniku, pa se čitaju tek nakon prvog iscrtavanja —
   // na poslužitelju localStorage ne postoji.
@@ -105,6 +108,7 @@ export function NovcaneNagradeAlat() {
     const predlozak = predlosci[naziv];
     if (!predlozak) return;
     setGodinaSezone(predlozak.godinaSezone);
+    if (predlozak.pravilo) setPravilo(predlozak.pravilo);
     // Kroz noviRedak, da stariji predlošci dobiju polja koja tada nisu
     // postojala — npr. raspon rejtinga.
     setRedci(predlozak.redci.map((r) => noviRedak(r)));
@@ -115,7 +119,7 @@ export function NovcaneNagradeAlat() {
     const naziv = window.prompt("Naziv predloška:", predlozeno)?.trim();
     if (!naziv) return;
     if (predlosci[naziv] && !window.confirm(`Prebrisati predložak „${naziv}"?`)) return;
-    setPredlosci(spremiPredlozak(naziv, { godinaSezone, redci }));
+    setPredlosci(spremiPredlozak(naziv, { godinaSezone, redci, pravilo }));
     setOdabrani(naziv);
   }
 
@@ -172,8 +176,9 @@ export function NovcaneNagradeAlat() {
   }, [redci, godinaSezone]);
 
   const dodjele = useMemo(
-    () => (natjecatelji.length > 0 ? dodijeliNagrade(natjecatelji, nagrade) : []),
-    [natjecatelji, nagrade]
+    () =>
+      natjecatelji.length > 0 ? dodijeliNagrade(natjecatelji, nagrade, pravilo) : [],
+    [natjecatelji, nagrade, pravilo]
   );
 
   const isplaceno = ukupnoIsplaceno(dodjele);
@@ -330,6 +335,35 @@ export function NovcaneNagradeAlat() {
             po njoj se računaju dobne kategorije (čl. 22)
           </span>
         </label>
+
+        <fieldset className="rounded-md border border-navy/10 bg-paper/60 px-3 py-2.5">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-ink/50">
+            Kad su iznosi jednaki
+          </legend>
+          <div className="grid gap-1 text-sm text-ink">
+            {(
+              [
+                ["OPCE_PRIJE", "Opće mjesto je iznad posebnih nagrada"],
+                ["POSEBNA_PRIJE", "Igrač uzima posebnu nagradu, opće mjesto pada dalje"],
+              ] as const
+            ).map(([vrijednost, opis]) => (
+              <label key={vrijednost} className="flex items-center gap-2">
+                <input
+                  type="radio"
+                  name="pravilo-jednakosti"
+                  checked={pravilo === vrijednost}
+                  onChange={() => setPravilo(vrijednost)}
+                  className="h-4 w-4 border-navy/30"
+                />
+                {opis}
+              </label>
+            ))}
+          </div>
+          <p className="mt-1.5 text-xs text-ink/60">
+            Rečenica iz raspisa podnosi oba čitanja, pa odluka pripada raspisu,
+            a ne programu. Na nagrade različitih iznosa ovo ne utječe.
+          </p>
+        </fieldset>
 
         <datalist id="titule-izbor">
           {["GM", "IM", "FM", "CM", "WGM", "WIM", "WFM", "WCM", "MK"].map((t) => (

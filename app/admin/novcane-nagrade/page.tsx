@@ -30,7 +30,11 @@ export default function NovcaneNagradePage() {
         <p className="mt-2">Redoslijed dodjele iz toga slijedi:</p>
         <ol className="mt-1 list-decimal pl-5">
           <li>veći iznos se dodjeljuje prije manjeg;</li>
-          <li>pri jednakom iznosu opće mjesto je iznad posebnih nagrada;</li>
+          <li>
+            pri jednakom iznosu odlučuje pravilo odabrano uz tablicu nagrada —
+            zadnja rečenica podnosi dva čitanja, pa izbor pripada raspisu, a ne
+            programu;
+          </li>
           <li>
             među posebnim nagradama odlučuje objavljeni redoslijed, a to je
             redoslijed redaka u tablici nagrada.

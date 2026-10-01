@@ -377,3 +377,57 @@ describe("oznaka prenesena", () => {
     expect(d.find((x) => x.nagradaId === "clan")!.ime).toBeNull();
   });
 });
+
+describe("pravilo pri jednakom iznosu", () => {
+  const poredak = [
+    igrac(1, "Ana", { spol: "F" }),
+    igrac(2, "Boris"),
+    igrac(3, "Cvita", { spol: "F" }),
+  ];
+  const nagrade = [
+    nagrada({ id: "1", naziv: "1. mjesto", iznos: 200 }),
+    nagrada({ id: "zene", naziv: "Najbolja igračica", iznos: 200, posebna: true, gender: "F" }),
+  ];
+
+  it("OPCE_PRIJE: Ana uzima prvo mjesto", () => {
+    const d = dodijeliNagrade(poredak, nagrade, "OPCE_PRIJE");
+    expect(d.find((x) => x.nagradaId === "1")!.ime).toBe("Ana");
+    expect(d.find((x) => x.nagradaId === "zene")!.ime).toBe("Cvita");
+  });
+
+  it("POSEBNA_PRIJE: Ana uzima nagradu za igračicu", () => {
+    const d = dodijeliNagrade(poredak, nagrade, "POSEBNA_PRIJE");
+    expect(d.find((x) => x.nagradaId === "zene")!.ime).toBe("Ana");
+    expect(d.find((x) => x.nagradaId === "1")!.ime).toBe("Boris");
+  });
+
+  it("pravilo ne dira nagrade različitih iznosa", () => {
+    const razliciti = [
+      nagrada({ id: "1", iznos: 300 }),
+      nagrada({ id: "zene", iznos: 200, posebna: true, gender: "F" }),
+    ];
+    for (const pravilo of ["OPCE_PRIJE", "POSEBNA_PRIJE"] as const) {
+      const d = dodijeliNagrade(poredak, razliciti, pravilo);
+      expect(d.find((x) => x.nagradaId === "1")!.ime, pravilo).toBe("Ana");
+      expect(d.find((x) => x.nagradaId === "zene")!.ime, pravilo).toBe("Cvita");
+    }
+  });
+
+  it("objavljeni redoslijed među posebnima vrijedi u oba pravila", () => {
+    const dvijePosebne = [
+      nagrada({ id: "clan", iznos: 150, posebna: true, redoslijed: 2, clubMembersOnly: true }),
+      nagrada({ id: "zene", iznos: 150, posebna: true, redoslijed: 1, gender: "F" }),
+    ];
+    const sama = [igrac(1, "Ana", { spol: "F", clan: true })];
+    for (const pravilo of ["OPCE_PRIJE", "POSEBNA_PRIJE"] as const) {
+      const d = dodijeliNagrade(sama, dvijePosebne, pravilo);
+      expect(d.find((x) => x.nagradaId === "zene")!.ime, pravilo).toBe("Ana");
+    }
+  });
+
+  it("zadano je OPCE_PRIJE", () => {
+    expect(dodijeliNagrade(poredak, nagrade)).toEqual(
+      dodijeliNagrade(poredak, nagrade, "OPCE_PRIJE")
+    );
+  });
+});

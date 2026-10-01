@@ -15,6 +15,8 @@ const KLJUC = "dgp:novcane-nagrade:predlosci";
 export interface Predlozak<T> {
   godinaSezone: string;
   redci: T[];
+  /** Pravilo pri jednakom iznosu; stariji predlošci ga nemaju. */
+  pravilo?: "OPCE_PRIJE" | "POSEBNA_PRIJE";
 }
 
 export type Predlosci<T> = Record<string, Predlozak<T>>;
