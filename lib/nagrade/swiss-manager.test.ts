@@ -93,3 +93,59 @@ describe("ispis iz Swiss-Managera", () => {
     expect(dodjele.every((d) => d.ime !== null)).toBe(true);
   });
 });
+
+describe("titule iz Swiss-Managera", () => {
+  const { natjecatelji } = procitajTablicu(ISPIS, { domaciKlub: "ŠK Dubrovnik" });
+
+  it("čita stupac bez naziva lijevo od imena", () => {
+    expect(natjecatelji.find((n) => n.ime === "Nikčević, Nebojša")!.titula).toBe("GM");
+    expect(natjecatelji.find((n) => n.ime === "Djokić, Mihailo")!.titula).toBe("FM");
+    expect(natjecatelji.find((n) => n.ime === "Markotić, Gordan")!.titula).toBe("IM");
+  });
+
+  it("nacionalne kategorije se prepisuju kakve jesu", () => {
+    expect(natjecatelji.find((n) => n.ime === "Begić, Domagoj")!.titula).toBe("MK");
+  });
+
+  it("igrač bez titule nema zapisanu titulu", () => {
+    expect(natjecatelji.find((n) => n.ime === "Jovanović, Anja")!.titula).toBeUndefined();
+  });
+
+  it("nagrada za titulu ide najbolje plasiranom nositelju", () => {
+    const dodjele = dodijeliNagrade(natjecatelji, [
+      { id: "1", naziv: "1. mjesto", iznos: 300, posebna: false, redoslijed: 0, broj: 1 },
+      {
+        id: "im", naziv: "Najbolji IM", iznos: 150, posebna: true, redoslijed: 1, broj: 1,
+        titule: ["IM"],
+      },
+      {
+        id: "fm", naziv: "Najbolji FM", iznos: 120, posebna: true, redoslijed: 2, broj: 1,
+        titule: ["FM"],
+      },
+    ]);
+    const dobitnik = (id: string) => dodjele.find((d) => d.nagradaId === id)!.ime;
+
+    // Nikčević je GM i uzima prvo mjesto; Djokić je FM, Markotić IM.
+    expect(dobitnik("1")).toBe("Nikčević, Nebojša");
+    expect(dobitnik("fm")).toBe("Djokić, Mihailo");
+    expect(dobitnik("im")).toBe("Markotić, Gordan");
+  });
+
+  it("jedna nagrada može obuhvatiti više titula", () => {
+    const dodjele = dodijeliNagrade(natjecatelji, [
+      {
+        id: "imfm", naziv: "Najbolji IM ili FM", iznos: 150, posebna: true,
+        redoslijed: 0, broj: 2, titule: ["IM", "FM"],
+      },
+    ]);
+    expect(dodjele.map((d) => d.ime)).toEqual(["Djokić, Mihailo", "Markotić, Gordan"]);
+  });
+
+  it("GM ne uzima nagradu za IM-a", () => {
+    const dodjele = dodijeliNagrade(
+      natjecatelji.filter((n) => n.titula === "GM"),
+      [{ id: "im", naziv: "Najbolji IM", iznos: 150, posebna: true, redoslijed: 0, broj: 1, titule: ["IM"] }]
+    );
+    expect(dodjele[0]!.ime).toBeNull();
+  });
+});

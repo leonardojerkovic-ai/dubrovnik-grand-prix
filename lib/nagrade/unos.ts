@@ -52,6 +52,11 @@ const ZAGLAVLJA: Record<string, keyof Natjecatelj | "mjesto"> = {
   "član kluba": "clan",
   clanstvo: "clan",
   članstvo: "clan",
+  titula: "titula",
+  titule: "titula",
+  title: "titula",
+  tit: "titula",
+  zvanje: "titula",
   klub: "klub",
   "klub/grad": "klub",
   "klub / grad": "klub",
@@ -184,6 +189,15 @@ export function procitajTablicu(
   const podaci = zaglavlje ? redci.slice(redakZaglavlja + 1) : redci;
   const stupci: (string | null)[] = zaglavlje ?? [...ZADANI_STUPCI];
 
+  // Swiss-Manager stupac s titulom ostavlja BEZ naziva, odmah lijevo od
+  // imena. Prepoznaje se po položaju jer drugog traga nema.
+  if (zaglavlje) {
+    const indeksImena = stupci.indexOf("ime");
+    if (indeksImena > 0 && stupci[indeksImena - 1] === null) {
+      stupci[indeksImena - 1] = "titula";
+    }
+  }
+
   const indeksSpola = stupci.indexOf("spol");
   const svePoRetku = podaci.map(podijeli);
   const praznoJeMusko =
@@ -240,6 +254,7 @@ export function procitajTablicu(
         ? citajClanstvo(polje("clan"))
         : domaci !== null && klub !== "" && zaUsporedbu(klub).includes(domaci),
       ...(klub !== "" ? { klub } : {}),
+      ...(polje("titula") !== "" ? { titula: polje("titula") } : {}),
     });
   });
 

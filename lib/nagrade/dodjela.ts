@@ -60,6 +60,14 @@ export interface NovcanaNagrada extends PrizeCriteria {
    * ovo na true.
    */
   rejtingDoUkljucivo?: boolean;
+  /**
+   * Titule koje nagrada traži, npr. ["IM"] ili ["IM", "FM"].
+   *
+   * Usporedba je doslovna: WIM nije IM. Ženske titule su zasebne titule, a
+   * ne inačice muških, pa bi svako „pametno" poklapanje značilo da nagrada
+   * za IM-a ode WIM-ici — ili obrnuto.
+   */
+  titule?: string[] | null;
 }
 
 export interface Natjecatelj {
@@ -73,6 +81,12 @@ export interface Natjecatelj {
   clan: boolean;
   /** Klub iz izvora, kad ga izvoz nosi. Služi utvrđivanju članstva. */
   klub?: string;
+  /**
+   * Titula ispred imena, onako kako je daje izvoz: GM, IM, FM, WIM, MK…
+   * Swiss-Manager u istom stupcu nosi i nacionalne kategorije (MK, I, II),
+   * pa se ovdje ništa ne tumači — samo prepisuje.
+   */
+  titula?: string;
   /**
    * Dobne oznake kakve daje Swiss-Manager u stupcu „Vrsta" — U20, S65 i
    * slično. Vrijede samo kad godište nije poznato; tada je ta oznaka jedini
@@ -139,6 +153,12 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
       : nagrada.birthYearMax !== null && nagrada.birthYearMax !== undefined;
   if (nagrada.gender && n.spol === null) return false;
   if (!zadovoljavaRejting(n, nagrada)) return false;
+
+  if (nagrada.titule && nagrada.titule.length > 0) {
+    const igraceva = n.titula?.trim().toUpperCase();
+    if (!igraceva) return false;
+    if (!nagrada.titule.some((t) => t.trim().toUpperCase() === igraceva)) return false;
+  }
 
   // Rejting je već provjeren — granice se maknu da matchesCriteria ne bi
   // gornju tumačio kao isključivu i onda kad raspis kaže drukčije.

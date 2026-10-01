@@ -37,6 +37,8 @@ type Redak = {
   rejtingOd: string;
   rejtingDo: string;
   rejtingDoUkljucivo: boolean;
+  /** Jedna ili više titula, odvojene zarezom. Prazno = bez uvjeta. */
+  titule: string;
   samoClanovi: boolean;
   broj: string;
 };
@@ -56,6 +58,7 @@ function noviRedak(dio: Partial<Redak> = {}): Redak {
     rejtingOd: "",
     rejtingDo: "",
     rejtingDoUkljucivo: false,
+    titule: "",
     samoClanovi: false,
     broj: "1",
     ...dio,
@@ -159,6 +162,10 @@ export function NovcaneNagradeAlat() {
           ratingMin: r.rejtingOd.trim() === "" ? null : Number(r.rejtingOd),
           ratingMax: r.rejtingDo.trim() === "" ? null : Number(r.rejtingDo),
           rejtingDoUkljucivo: r.rejtingDoUkljucivo,
+          titule: r.titule
+            .split(/[\s,;]+/)
+            .map((t) => t.trim())
+            .filter((t) => t !== ""),
           clubMembersOnly: r.samoClanovi,
         };
       });
@@ -218,8 +225,8 @@ export function NovcaneNagradeAlat() {
           Konačni poredak iz Swiss-Managera može se zalijepiti onakav kakav
           jest — naslov iznad zaglavlja se preskače, suvišni stupci se
           zanemaruju, dob se čita iz stupca Vrsta, žene iz oznake w, a
-          članstvo iz naziva kluba. Izričit stupac Član ima prednost pred
-          nazivom kluba.
+          članstvo iz naziva kluba, a titula iz stupca bez naziva lijevo od
+          imena. Izričit stupac Član ima prednost pred nazivom kluba.
         </p>
         <textarea
           value={tekst}
@@ -322,8 +329,14 @@ export function NovcaneNagradeAlat() {
           </span>
         </label>
 
+        <datalist id="titule-izbor">
+          {["GM", "IM", "FM", "CM", "WGM", "WIM", "WFM", "WCM", "MK"].map((t) => (
+            <option key={t} value={t} />
+          ))}
+        </datalist>
+
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[56rem] text-sm">
+          <table className="w-full min-w-[64rem] text-sm">
             <thead className="text-left text-xs uppercase tracking-wide text-ink/50">
               <tr>
                 <th className="pb-1 pr-2 font-medium">Naziv</th>
@@ -331,6 +344,7 @@ export function NovcaneNagradeAlat() {
                 <th className="pb-1 pr-2 font-medium">Vrsta</th>
                 <th className="pb-1 pr-2 font-medium">Spol</th>
                 <th className="pb-1 pr-2 font-medium">Dob</th>
+                <th className="pb-1 pr-2 font-medium">Titula</th>
                 <th className="pb-1 pr-2 font-medium">Rejting</th>
                 <th className="pb-1 pr-2 font-medium">Član</th>
                 <th className="pb-1 pr-2 font-medium">Broj</th>
@@ -416,6 +430,17 @@ export function NovcaneNagradeAlat() {
                     )}
                   </td>
                   <td className="py-1.5 pr-2">
+                    <input
+                      value={r.titule}
+                      onChange={(e) => promijeni(r.id, { titule: e.target.value })}
+                      placeholder="—"
+                      list="titule-izbor"
+                      className="input w-24"
+                      aria-label={`Titula — ${r.naziv || "nova nagrada"}`}
+                      title="Npr. IM. Više titula odvoji zarezom."
+                    />
+                  </td>
+                  <td className="py-1.5 pr-2">
                     <div className="flex items-center gap-1">
                       <input
                         type="number"
@@ -494,7 +519,8 @@ export function NovcaneNagradeAlat() {
             Objavljeni redoslijed posebnih nagrada je redoslijed redaka u ovoj
             tablici; odlučuje samo kad su iznosi jednaki. Za dob koju gotove
             oznake ne pokrivaju odaberi &bdquo;godište…&rdquo; i upiši raspon — prazno
-            polje znači da s te strane nema granice.
+            polje znači da s te strane nema granice. Titula se upisuje
+            doslovno — WIM nije IM; više titula odvoji zarezom.
           </span>
         </div>
       </section>
