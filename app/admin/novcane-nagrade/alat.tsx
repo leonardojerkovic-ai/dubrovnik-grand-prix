@@ -223,10 +223,12 @@ export function NovcaneNagradeAlat() {
           (ili Vrsta), Spol, Rejting i Član; ostali se stupci preskaču. Bez
           zaglavlja se očekuje redoslijed Ime, Godište, Spol, Rejting, Član.
           Konačni poredak iz Swiss-Managera može se zalijepiti onakav kakav
-          jest — naslov iznad zaglavlja se preskače, suvišni stupci se
-          zanemaruju, dob se čita iz stupca Vrsta, žene iz oznake w, a
-          članstvo iz naziva kluba, a titula iz stupca bez naziva lijevo od
-          imena. Izričit stupac Član ima prednost pred nazivom kluba.
+          jest, na hrvatskom ili engleskom — naslov iznad zaglavlja se
+          preskače, suvišni stupci se zanemaruju, dob se čita iz stupca
+          Vrsta odnosno Typ, žene iz oznake w, članstvo iz naziva kluba, a
+          titula iz stupca bez naziva lijevo od imena. Izričit stupac Član
+          ima prednost pred nazivom kluba. Ispis bez stupca s klubom ne daje
+          članstvo — tada ga dodaj kao stupac Član u Excelu.
         </p>
         <textarea
           value={tekst}
