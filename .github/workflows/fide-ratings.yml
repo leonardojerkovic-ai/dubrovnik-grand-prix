@@ -1,24 +1,21 @@
 name: Uvoz FIDE rejtinga
 
-# BEZ RASPOREDA, namjerno.
+# Prvog u mjesecu u 06:00 UTC. FIDE liste objavljuje krajem prethodnog
+# mjeseca, pa je prvi dan siguran termin.
 #
-# FIDE odbija promet iz podatkovnih centara: veza na ratings.fide.com:443
-# s GitHubovih poslužitelja istekne prije nego se uspostavi
-# (UND_ERR_CONNECT_TIMEOUT, tri pokušaja zaredom). Isti uvoz s kućnog
-# priključka prolazi bez problema. To se ne da popraviti podešavanjem
-# zadatka, pa zakazano pokretanje ovdje ne bi radilo ništa osim što bi
-# svakog prvog u mjesecu slalo obavijest o neuspjehu.
+# Uvoz ide preko Lichessova FIDE API-ja, ne izravno s ratings.fide.com.
+# FIDE odbija promet iz podatkovnih centara — veza s GitHubovih poslužitelja
+# istekne prije nego se uspostavi (UND_ERR_CONNECT_TIMEOUT). Lichess iste te
+# službene liste povlači sam i nudi ih po igraču, a njega ne blokira nitko.
 #
-# Uvoz se zato pokreće na vlastitom računalu:
+# Službeni izvor ostaje dostupan za ručno pokretanje s kućnog priključka:
 #
-#     npm run fide:import -- --dry-run
-#     npm run fide:import
+#     npm run fide:import -- --izvor=fide
 #
-# Da se na to ne zaboravi, zaseban zadatak (podsjetnik-rejtinzi.yml) prvog
-# u mjesecu provjerava datum liste u bazi i javi ako je zastarjela.
-#
-# Ručno pokretanje ostaje, za slučaj da FIDE jednom prestane blokirati.
+# Vidi docs/rejtinzi.md.
 on:
+  schedule:
+    - cron: "0 6 1 * *"
   workflow_dispatch:
     inputs:
       dry_run:

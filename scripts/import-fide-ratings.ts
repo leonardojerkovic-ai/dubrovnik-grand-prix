@@ -1,16 +1,24 @@
 /**
  * Uvoz mjesečnih FIDE rejtinga.
  *
- * Pokreće se u GitHub Actions (.github/workflows/fide-ratings.yml), ne na
- * Vercelu: službene liste su 7–13 MB u zipu i preko milijun redaka, što je
- * previše za serverless funkciju s ograničenim trajanjem. Runner nema to
- * ograničenje, ispis je vidljiv u GitHub sučelju, a Vercel u tome ne sudjeluje.
+ * Dva izvora istih podataka:
+ *
+ *   --izvor=lichess  (zadano)  Lichessov FIDE API, jedan poziv po igraču.
+ *                              Radi svugdje, pa i s GitHubovih poslužitelja.
+ *   --izvor=fide                Službene FIDE liste, zip od 7–13 MB po tempu.
+ *                              FIDE odbija promet iz podatkovnih centara, pa
+ *                              ovo radi samo s kućnog priključka.
+ *
+ * Lichess je izvedeni izvor — iste te liste povlači sam. Put do izvornika
+ * namjerno ostaje, za slučaj da Lichess ukine endpoint ili da treba
+ * provjeriti koja je brojka prava.
  *
  * Pokretanje:
- *   npm run fide:import              — sva tri tempa
- *   npm run fide:import -- --dry-run — bez upisa u bazu
+ *   npm run fide:import                      — sva tri tempa, preko Lichessa
+ *   npm run fide:import -- --dry-run         — bez upisa u bazu
  *   npm run fide:import -- --type=RAPID
  *   npm run fide:import -- --date=2026-10-01
+ *   npm run fide:import -- --izvor=fide      — sa službenih lista, lokalno
  */
 
 import { unzipSync } from "fflate";
@@ -20,6 +28,11 @@ import {
   ratingListUrl,
   type FideRatingType,
 } from "../lib/fide/parse-rating-list";
+import {
+  dohvatiIgraca,
+  rejtinziIzOdgovora,
+  type RejtinziPoTempu,
+} from "../lib/fide/lichess";
 
 const prisma = new PrismaClient();
 
@@ -179,24 +192,92 @@ async function downloadList(type: FideRatingType): Promise<Uint8Array> {
   return content;
 }
 
-async function importType(
+export type Izvor = "lichess" | "fide";
+
+/** Rejtinzi svih igrača, po FIDE ID-u. */
+type Prikupljeno = Map<string, RejtinziPoTempu>;
+
+/** Pristojan razmak između poziva Lichessu. */
+const RAZMAK_MS = 250;
+
+function prazno(): RejtinziPoTempu {
+  return { STANDARD: null, RAPID: null, BLITZ: null };
+}
+
+/**
+ * Lichess daje sva tri tempa u jednom odgovoru, pa se prolazi JEDNOM kroz
+ * igrače umjesto jednom po tempu.
+ */
+async function sLichessa(fideIds: string[]): Promise<Prikupljeno> {
+  const prikupljeno: Prikupljeno = new Map();
+  let nepronadenih = 0;
+
+  console.log(`\nDohvaćam s Lichessa (${fideIds.length} igrača)…`);
+
+  for (const fideId of fideIds) {
+    const igrac = await dohvatiIgraca(fideId, {
+      naPredah: (s) => console.log(`  Lichess traži predah, čekam ${s} s…`),
+    });
+
+    if (!igrac) {
+      nepronadenih++;
+      prikupljeno.set(fideId, prazno());
+    } else {
+      prikupljeno.set(fideId, rejtinziIzOdgovora(igrac));
+    }
+
+    await new Promise((r) => setTimeout(r, RAZMAK_MS));
+  }
+
+  if (nepronadenih > 0) {
+    console.log(
+      `  nije pronađeno ${nepronadenih} igrača — redovito su to oni koji još nisu ni na jednoj FIDE listi`
+    );
+  }
+
+  return prikupljeno;
+}
+
+/** Službene liste: jedan zip po tempu, pa izdvajanje naših igrača. */
+async function sFideListi(
+  fideIds: string[],
+  types: FideRatingType[]
+): Promise<Prikupljeno> {
+  const prikupljeno: Prikupljeno = new Map(fideIds.map((id) => [id, prazno()]));
+  const trazeni = new Set(fideIds);
+
+  for (const type of types) {
+    console.log(`\n[${type}]`);
+    const content = await downloadList(type);
+    const nadeni = extractPlayers(iterateLines(content), trazeni, type);
+    console.log(`  pronađeno ${nadeni.size} od ${trazeni.size} igrača`);
+
+    for (const [fideId, rejting] of nadeni) {
+      const zapis = prikupljeno.get(fideId);
+      if (zapis) zapis[type] = rejting;
+    }
+  }
+
+  return prikupljeno;
+}
+
+async function prikupi(
+  izvor: Izvor,
+  fideIds: string[],
+  types: FideRatingType[]
+): Promise<Prikupljeno> {
+  return izvor === "lichess"
+    ? sLichessa(fideIds)
+    : sFideListi(fideIds, types);
+}
+
+async function upisiTempo(
   type: FideRatingType,
-  players: { id: string; fideId: string }[],
+  prikupljeno: Prikupljeno,
+  byFideId: Map<string, string>,
   listDate: Date,
   dryRun: boolean
 ): Promise<number> {
-  console.log(`\n[${type}]`);
-
-  const byFideId = new Map(players.map((p) => [p.fideId, p.id]));
-  const content = await downloadList(type);
-  const found = extractPlayers(
-    iterateLines(content),
-    new Set(byFideId.keys()),
-    type
-  );
-
-  console.log(`  pronađeno ${found.size} od ${byFideId.size} igrača`);
-
   const column = {
     STANDARD: "standard",
     RAPID: "rapid",
@@ -204,10 +285,14 @@ async function importType(
   }[type] as "standard" | "rapid" | "blitz";
 
   let written = 0;
+  let bezRejtinga = 0;
 
-  for (const [fideId, rating] of found) {
-    const playerId = byFideId.get(fideId)!;
-    if (rating === null) continue;
+  for (const [fideId, playerId] of byFideId) {
+    const rating = prikupljeno.get(fideId)?.[type] ?? null;
+    if (rating === null) {
+      bezRejtinga++;
+      continue;
+    }
 
     if (dryRun) {
       console.log(`  [probno] ${fideId} -> ${rating}`);
@@ -242,13 +327,9 @@ async function importType(
     written++;
   }
 
-  const missing = [...byFideId.keys()].filter((id) => !found.has(id));
-  if (missing.length > 0) {
-    console.log(
-      `  nije pronađeno na listi (vjerojatno neocijenjeni u ovom tempu): ${missing.join(", ")}`
-    );
-  }
-
+  console.log(
+    `  ${type}: upisano ${written}, bez rejtinga u tom tempu ${bezRejtinga}`
+  );
   return written;
 }
 
@@ -256,6 +337,12 @@ async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
   const typeArg = args.find((a) => a.startsWith("--type="))?.split("=")[1];
+  const izvorArg = args.find((a) => a.startsWith("--izvor="))?.split("=")[1];
+  const izvor: Izvor = (izvorArg ?? "lichess").toLowerCase() as Izvor;
+
+  if (izvor !== "lichess" && izvor !== "fide") {
+    throw new Error(`Nepoznat izvor: ${izvorArg}. Dopušteno: lichess, fide.`);
+  }
 
   const types = typeArg
     ? [typeArg.toUpperCase() as FideRatingType]
@@ -267,7 +354,9 @@ async function main() {
 
   const listDate = citajDatumListe(args);
   console.log(
-    `Uvoz FIDE rejtinga za ${listDate.toISOString().slice(0, 10)}${dryRun ? " (probno, bez upisa)" : ""}`
+    `Uvoz FIDE rejtinga za ${listDate.toISOString().slice(0, 10)}` +
+      ` — izvor: ${izvor === "lichess" ? "Lichess" : "službene FIDE liste"}` +
+      (dryRun ? " (probno, bez upisa)" : "")
   );
 
   const players = await prisma.player.findMany({
@@ -285,9 +374,14 @@ async function main() {
   }
   console.log(`Igrača s FIDE ID-om: ${withId.length}`);
 
+  const byFideId = new Map<string, string>();
+  for (const igrac of withId) byFideId.set(igrac.fideId, igrac.id);
+  const prikupljeno = await prikupi(izvor, [...byFideId.keys()], types);
+
+  console.log("");
   let total = 0;
   for (const type of types) {
-    total += await importType(type, withId, listDate, dryRun);
+    total += await upisiTempo(type, prikupljeno, byFideId, listDate, dryRun);
   }
 
   if (!dryRun && total > 0) {
@@ -297,8 +391,8 @@ async function main() {
         actorRole: "SYSTEM",
         action: "UPDATE",
         entity: "PlayerRating",
-        summary: `Automatski uvoz FIDE rejtinga (${types.join(", ")}): ${total} vrijednosti`,
-        after: { listDate: listDate.toISOString(), types, written: total },
+        summary: `Automatski uvoz FIDE rejtinga (${types.join(", ")}, izvor ${izvor}): ${total} vrijednosti`,
+        after: { listDate: listDate.toISOString(), types, izvor, written: total },
       },
     });
   }
