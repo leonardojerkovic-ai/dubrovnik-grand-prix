@@ -37,7 +37,30 @@ npm run fide:import -- --dry-run     # provjera, bez upisa
 npm run fide:import                  # upis, preko Lichessa
 npm run fide:import -- --izvor=fide  # sa službenih lista, samo od kuće
 npm run fide:import -- --type=RAPID  # jedan tempo
+npm run fide:import -- --usporedi    # usporedi oba izvora, bez upisa
 ```
+
+## Kad se izvori raziđu
+
+Lichess je izvedeni izvor i zna odstupiti od službene liste.
+
+**Poznat slučaj, 4. listopada 2026.** Od 175 vrijednosti poklapalo se 174.
+Jedina razlika bio je igrač kojemu je FIDE povukao rapid rejting — službena
+lista ga nije imala, a Lichess je vrijednost i dalje vraćao. Razlika je bila
+oko 20 bodova, ali kriva vrijednost ulazi u F_R (čl. 24) i rejtinšku
+kategoriju (čl. 22) jednako kao i ispravna.
+
+Zato postoji usporedba:
+
+```powershell
+npm run fide:import -- --usporedi
+```
+
+Povlači oba izvora i ispisuje samo ono što se razlikuje. Ništa ne upisuje.
+Traži službene liste, pa radi samo s kućnog priključka.
+
+Pokreni je svakih nekoliko mjeseci, ili kad neka brojka izgleda čudno.
+**Mjerodavna je službena lista**; gdje se razlikuju, uvezi s `--izvor=fide`.
 
 ## Datum liste
 

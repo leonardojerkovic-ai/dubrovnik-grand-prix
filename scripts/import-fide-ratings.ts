@@ -19,6 +19,7 @@
  *   npm run fide:import -- --type=RAPID
  *   npm run fide:import -- --date=2026-10-01
  *   npm run fide:import -- --izvor=fide      — sa službenih lista, lokalno
+ *   npm run fide:import -- --usporedi        — usporedi oba izvora, bez upisa
  */
 
 import { unzipSync } from "fflate";
@@ -333,10 +334,71 @@ async function upisiTempo(
   return written;
 }
 
+/**
+ * Uspoređuje oba izvora i ispisuje samo ono što se razlikuje.
+ *
+ * Lichess je izvedeni izvor i zna odstupiti od službene liste. Poznat
+ * slučaj: igraču kojemu je FIDE povukao rejting Lichess je vrijednost i
+ * dalje vraćao. Razlika je bila mala, ali kriva vrijednost ulazi u F_R
+ * (čl. 24) i rejtinšku kategoriju (čl. 22) jednako kao i ispravna.
+ *
+ * Ništa ne upisuje. Traži službene liste, pa radi samo s kućnog priključka.
+ */
+async function usporedi(
+  imena: Map<string, string>,
+  types: FideRatingType[]
+): Promise<void> {
+  const fideIds = [...imena.keys()];
+
+  const sLichessaPodaci = await sLichessa(fideIds);
+  const sFidePodaci = await sFideListi(fideIds, types);
+
+  const razlike: {
+    ime: string;
+    tempo: FideRatingType;
+    lichess: number | null;
+    fide: number | null;
+  }[] = [];
+
+  for (const fideId of fideIds) {
+    for (const tempo of types) {
+      const lichess = sLichessaPodaci.get(fideId)?.[tempo] ?? null;
+      const fide = sFidePodaci.get(fideId)?.[tempo] ?? null;
+      if (lichess !== fide) {
+        razlike.push({ ime: imena.get(fideId) ?? fideId, tempo, lichess, fide });
+      }
+    }
+  }
+
+  const ukupno = fideIds.length * types.length;
+  console.log(`\nUsporedio ${ukupno} vrijednosti (${fideIds.length} igrača × ${types.length} tempa).`);
+
+  if (razlike.length === 0) {
+    console.log("Izvori se poklapaju u svemu.");
+    return;
+  }
+
+  const prazno = (x: number | null) => (x === null ? "—" : String(x));
+
+  console.log(`\nRAZLIKA: ${razlike.length}\n`);
+  console.log("  igrač                          tempo      Lichess   FIDE");
+  console.log("  " + "-".repeat(62));
+  for (const r of razlike.sort((a, b) => a.ime.localeCompare(b.ime, "hr"))) {
+    console.log(
+      `  ${r.ime.padEnd(30).slice(0, 30)} ${r.tempo.padEnd(10)} ` +
+        `${prazno(r.lichess).padStart(7)}   ${prazno(r.fide).padStart(5)}`
+    );
+  }
+  console.log(
+    "\nMjerodavna je službena lista. Gdje se razlikuju, uvezi s --izvor=fide."
+  );
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");
   const typeArg = args.find((a) => a.startsWith("--type="))?.split("=")[1];
+  const samoUsporedi = args.includes("--usporedi");
   const izvorArg = args.find((a) => a.startsWith("--izvor="))?.split("=")[1];
   const izvor: Izvor = (izvorArg ?? "lichess").toLowerCase() as Izvor;
 
@@ -361,11 +423,16 @@ async function main() {
 
   const players = await prisma.player.findMany({
     where: { fideId: { not: null } },
-    select: { id: true, fideId: true },
+    select: { id: true, fideId: true, firstName: true, lastName: true },
   });
 
   const withId = players.filter(
-    (p): p is { id: string; fideId: string } => Boolean(p.fideId)
+    (p): p is {
+      id: string;
+      fideId: string;
+      firstName: string;
+      lastName: string;
+    } => Boolean(p.fideId)
   );
 
   if (withId.length === 0) {
@@ -376,6 +443,15 @@ async function main() {
 
   const byFideId = new Map<string, string>();
   for (const igrac of withId) byFideId.set(igrac.fideId, igrac.id);
+
+  if (samoUsporedi) {
+    const imena = new Map<string, string>();
+    for (const igrac of withId) {
+      imena.set(igrac.fideId, `${igrac.lastName} ${igrac.firstName}`);
+    }
+    await usporedi(imena, types);
+    return;
+  }
   const prikupljeno = await prikupi(izvor, [...byFideId.keys()], types);
 
   console.log("");
