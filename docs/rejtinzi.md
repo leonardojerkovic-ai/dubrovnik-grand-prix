@@ -62,6 +62,13 @@ Traži službene liste, pa radi samo s kućnog priključka.
 Pokreni je svakih nekoliko mjeseci, ili kad neka brojka izgleda čudno.
 **Mjerodavna je službena lista**; gdje se razlikuju, uvezi s `--izvor=fide`.
 
+## Nepoznate zastavice
+
+Skripta **odbija** zastavicu koju ne poznaje i ne upisuje ništa. Prije je
+takvu preskakala, pa je `--usporedi`, upisana prije nego je ta mogućnost
+uvedena, pokrenula pravi uvoz i upisala vrijednosti u bazu. Jednu od njih
+trebalo je naknadno brisati ručno.
+
 ## Datum liste
 
 Vrijednosti se u bazu spremaju pod datumom liste, a taj datum odlučuje koji

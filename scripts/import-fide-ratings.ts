@@ -394,8 +394,48 @@ async function usporedi(
   );
 }
 
+/**
+ * Zastavice koje skripta poznaje.
+ *
+ * Nepoznata se ODBIJA, ne preskače. Tiho preskakanje znači da skripta radi
+ * nešto drugo nego što je traženo, i to bez ijedne riječi: zastavica
+ * --usporedi, upisana prije nego je uvedena, pokrenula je pravi uvoz i
+ * upisala vrijednosti u bazu.
+ */
+const POZNATE_ZASTAVICE = [
+  "--dry-run",
+  "--usporedi",
+  "--type=",
+  "--date=",
+  "--izvor=",
+];
+
+function provjeriZastavice(args: string[]): void {
+  const nepoznate = args.filter(
+    (a) => !POZNATE_ZASTAVICE.some((z) => (z.endsWith("=") ? a.startsWith(z) : a === z))
+  );
+
+  if (nepoznate.length > 0) {
+    throw new Error(
+      [
+        `Nepoznata zastavica: ${nepoznate.join(", ")}`,
+        "",
+        "Dopušteno:",
+        "  --dry-run              bez upisa u bazu",
+        "  --usporedi             usporedi oba izvora, bez upisa",
+        "  --type=STANDARD        samo jedan tempo",
+        "  --date=GGGG-MM-DD      datum liste",
+        "  --izvor=lichess|fide   odakle se povlači",
+        "",
+        "Ništa nije upisano.",
+      ].join("\n")
+    );
+  }
+}
+
 async function main() {
   const args = process.argv.slice(2);
+  provjeriZastavice(args);
   const dryRun = args.includes("--dry-run");
   const typeArg = args.find((a) => a.startsWith("--type="))?.split("=")[1];
   const samoUsporedi = args.includes("--usporedi");
