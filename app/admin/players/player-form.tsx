@@ -170,7 +170,7 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
           label="Član do"
           name="memberUntil"
           error={state.errors?.memberUntil}
-          hint="Ostavi prazno dok je igrač član."
+          hint="Ostavi prazno dok je igrač član. Kad skidaš kvačicu „Član Kluba“ igraču koji ima datum učlanjenja, ovaj datum je obavezan."
         >
           <input
             type="date"

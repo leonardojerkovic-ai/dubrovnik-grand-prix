@@ -26,6 +26,13 @@ function startOfDay(d: Date): number {
  * Ako memberSince nije upisan, ne može se tvrditi da je članstvo postojalo
  * na neki raniji datum, pa se pada natrag na trenutno stanje. To je jedini
  * slučaj u kojemu rezultat ovisi o sadašnjosti — vidi needsMembershipDate().
+ *
+ * Uz upisan memberSince kvačica se namjerno NE gleda: odgovor mora ovisiti o
+ * datumima, inače bi naknadni ispisi iz Kluba retroaktivno mijenjali već
+ * odigrane turnire (čl. 4). Da to ne znači „član zauvijek", playerSchema ne
+ * dopušta skinutu kvačicu uz upisan memberSince bez memberUntil — vidi
+ * lib/validation/player.ts. Promijeni li se to pravilo, ova funkcija
+ * ponovno postaje rupa.
  */
 export function wasClubMemberOn(
   player: MembershipFields,
