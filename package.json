@@ -15,7 +15,8 @@
     "prisma:studio": "prisma studio",
     "typecheck": "tsc --noEmit",
     "fide:import": "tsx scripts/import-fide-ratings.ts",
-    "fide:provjeri": "tsx scripts/provjeri-rejtinge.ts"
+    "fide:provjeri": "tsx scripts/provjeri-rejtinge.ts",
+    "fide:lichess": "tsx scripts/provjeri-lichess.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.18.0",
