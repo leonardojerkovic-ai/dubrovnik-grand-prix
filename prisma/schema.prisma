@@ -272,14 +272,11 @@ model PlayerRatingCurrent {
 model PlayerRatingSnapshot {
   id           String     @id @default(cuid())
   playerId     String
-  /// Restrict, a NE Cascade: rezultat je povijesni podatak turnira, ne
-  /// igrača. Brisanjem igrača nestao bi njegov redak, ali on je bio dio
-  /// broja igrača (N) iz kojega su računati bodovi SVIMA ostalima i
-  /// njegovo mjesto određivalo je njihove plasmane. U bazi bi ostao turnir
-  /// s rupom u poretku i bodovima koji se više ne mogu provjeriti.
-  /// Igrača koji je nastupao ne briše se — vidi polje `deceased` i
-  /// `memberUntil` za način da nestane s popisa uz zadržanu povijest.
-  player       Player     @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  /// Cascade: snimak rejtinga je podatak O IGRAČU, ne o turniru. Nitko se
+  /// drugi na njega ne poziva, pa s igračem može i nestati. (Rejting koji je
+  /// stvarno ušao u izračun bodova zapisan je u TournamentResult
+  /// .ratingSnapshotUsed i ostaje i kad snimci nema.)
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
   ratingType   RatingType
   ratingValue  Int
   snapshotDate DateTime // datum na koji je vrijednost bila važeća (npr. 1. u mjesecu)
@@ -411,8 +408,18 @@ model TournamentResult {
   // Cascade: rezultat bez turnira nema smisla — brisanjem turnira brišu se i njegovi rezultati.
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   playerId     String
-  // Cascade: brisanje igrača (rijetka, svjesna admin radnja) briše i njegove rezultate.
-  player       Player     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  /// Restrict, a NE Cascade: rezultat je povijesni podatak turnira, ne
+  /// igrača. Brisanjem igrača nestao bi njegov redak, ali on je bio dio
+  /// broja igrača (N) iz kojega su računati bodovi SVIMA ostalima i
+  /// njegovo mjesto određivalo je njihove plasmane. U bazi bi ostao turnir
+  /// s rupom u poretku i bodovima koji se više ne mogu provjeriti.
+  /// Igrača koji je nastupao ne briše se — vidi polje `deceased` i
+  /// `memberUntil` za način da nestane s popisa uz zadržanu povijest.
+  ///
+  /// U bazi je RESTRICT od migracije 20260903100000. Shema je do sada tu
+  /// pisala Cascade, pa bi prvi `prisma migrate dev` tu zaštitu vratio na
+  /// CASCADE i tiho je ukinuo. Ovo dvoje mora ostati usklađeno.
+  player       Player     @relation(fields: [playerId], references: [id], onDelete: Restrict)
 
   rank        Int     // R — konačni plasman
   gamesPlayed Boolean @default(true) // false = igrač nije odigrao nijednu partiju -> ne ulazi u N
