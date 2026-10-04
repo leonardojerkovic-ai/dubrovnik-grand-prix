@@ -9,6 +9,8 @@ export interface ManagedPlayer {
   firstName: string;
   lastName: string;
   birthYear: number;
+  /** Nečlanovima se profil ne objavljuje, pa im ime ne vodi nikamo. */
+  isClubMember: boolean;
   /** true = vlastiti profil vlasnika računa, false = dijete pod skrbništvom. */
   isSelf: boolean;
 }
@@ -26,12 +28,24 @@ export async function getManagedPlayers(): Promise<ManagedPlayer[]> {
     where: { email },
     select: {
       player: {
-        select: { id: true, firstName: true, lastName: true, birthYear: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          birthYear: true,
+          isClubMember: true,
+        },
       },
       guardianOf: {
         select: {
           player: {
-            select: { id: true, firstName: true, lastName: true, birthYear: true },
+            select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          birthYear: true,
+          isClubMember: true,
+        },
           },
         },
         orderBy: { player: { firstName: "asc" } },

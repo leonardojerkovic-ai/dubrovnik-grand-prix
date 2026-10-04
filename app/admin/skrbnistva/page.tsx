@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PlayerLink } from "@/components/player-link";
 import { prisma } from "@/lib/prisma";
 import { needsGuardian, SELF_ACCOUNT_AGE } from "@/lib/guardian-rules";
 import { AddGuardianshipForm } from "./add-form";
@@ -50,7 +50,13 @@ export default async function GuardianshipsPage() {
       createdAt: true,
       guardian: { select: { email: true } },
       player: {
-        select: { id: true, firstName: true, lastName: true, birthYear: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          birthYear: true,
+          isClubMember: true,
+        },
       },
     },
   });
@@ -94,12 +100,13 @@ export default async function GuardianshipsPage() {
           <div className="divide-y divide-navy/[0.07] rounded-lg border border-crimson/30 bg-white">
             {adults.map((l) => (
               <div key={l.id} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm">
-                <Link
-                  href={`/igraci/${l.player.id}`}
-                  className="font-medium text-navy hover:text-crimson hover:underline"
+                <PlayerLink
+                  id={l.player.id}
+                  isClubMember={l.player.isClubMember}
+                  className="font-medium text-navy hover:text-crimson"
                 >
                   {l.player.lastName} {l.player.firstName} ({l.player.birthYear}.)
-                </Link>
+                </PlayerLink>
                 <span className="flex items-center gap-3 text-ink/60">
                   {l.guardian.email}
                   <RemoveGuardianshipButton
@@ -124,12 +131,13 @@ export default async function GuardianshipsPage() {
         <div className="divide-y divide-navy/[0.07] rounded-lg border border-navy/10 bg-white">
           {minors.map((l) => (
             <div key={l.id} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm">
-              <Link
-                href={`/igraci/${l.player.id}`}
-                className="font-medium text-navy hover:text-crimson hover:underline"
+              <PlayerLink
+                id={l.player.id}
+                isClubMember={l.player.isClubMember}
+                className="font-medium text-navy hover:text-crimson"
               >
                 {l.player.lastName} {l.player.firstName} ({l.player.birthYear}.)
-              </Link>
+              </PlayerLink>
               <span className="flex items-center gap-3 text-ink/60">
                 {l.guardian.email}
                 <RemoveGuardianshipButton

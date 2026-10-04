@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PlayerLink } from "@/components/player-link";
 
 /**
  * Prvih nekoliko mjesta ljestvice, za naslovnicu.
@@ -13,6 +14,7 @@ export interface StandingsPreviewRow {
   playerId: string;
   name: string;
   title: string;
+  isClubMember: boolean;
   total: number;
 }
 
@@ -66,9 +68,10 @@ export function StandingsPreview({
               >
                 {place}
               </span>
-              <Link
-                href={`/igraci/${row.playerId}`}
-                className="min-w-0 flex-1 truncate text-navy hover:underline"
+              <PlayerLink
+                id={row.playerId}
+                isClubMember={row.isClubMember}
+                className="min-w-0 flex-1 truncate text-navy"
               >
                 {row.title !== "NONE" && (
                   <span className="mr-1 text-[10px] font-semibold text-ink/50">
@@ -76,7 +79,7 @@ export function StandingsPreview({
                   </span>
                 )}
                 {row.name}
-              </Link>
+              </PlayerLink>
               <span className="shrink-0 font-mono tabular-nums font-semibold text-navy">
                 {row.total}
               </span>

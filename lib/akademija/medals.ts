@@ -101,6 +101,8 @@ export interface TournamentMedalView {
   place: number;
   playerId: string;
   playerName: string;
+  /** Vodi li ime na profil — nečlanovima se profil ne objavljuje. */
+  playerIsClubMember: boolean;
   manual: boolean;
   note: string | null;
   /** Medalja nije pripala prvom igraču svoje kategorije — vidi wasTransferred. */
@@ -123,7 +125,9 @@ export async function getTournamentMedals(
       where: { tournamentId },
       orderBy: [{ category: "asc" }, { place: "asc" }],
       include: {
-        player: { select: { firstName: true, lastName: true } },
+        player: {
+          select: { firstName: true, lastName: true, isClubMember: true },
+        },
       },
     }),
   ]);
@@ -158,6 +162,7 @@ export async function getTournamentMedals(
     place: m.place,
     playerId: m.playerId,
     playerName: `${m.player.lastName} ${m.player.firstName}`,
+    playerIsClubMember: m.player.isClubMember,
     manual: m.manual,
     note: m.note,
     transferred: wasTransferred(
@@ -309,6 +314,8 @@ export interface SeasonMedalView {
   place: number;
   playerId: string;
   playerName: string;
+  /** Vodi li ime na profil — nečlanovima se profil ne objavljuje. */
+  playerIsClubMember: boolean;
 }
 
 /** Medalje za konačni poredak sezone — za Hall of Fame. */
@@ -318,7 +325,11 @@ export async function getSeasonMedals(
   const medals = await prisma.medal.findMany({
     where: { seasonId, tournamentId: null },
     orderBy: [{ category: "asc" }, { place: "asc" }],
-    include: { player: { select: { firstName: true, lastName: true } } },
+    include: {
+      player: {
+        select: { firstName: true, lastName: true, isClubMember: true },
+      },
+    },
   });
 
   return medals.map((m) => ({
@@ -326,5 +337,6 @@ export async function getSeasonMedals(
     place: m.place,
     playerId: m.playerId,
     playerName: `${m.player.lastName} ${m.player.firstName}`,
+    playerIsClubMember: m.player.isClubMember,
   }));
 }

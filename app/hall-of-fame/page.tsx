@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import { PlayerName } from "@/components/player-name";
+import { PlayerLink } from "@/components/player-link";
 import { MedalDisc } from "@/components/medal-disc";
 import { MEDAL_PRIORITY } from "@/lib/scoring/akademija/medals";
 
@@ -35,7 +35,14 @@ export default async function HallOfFamePage() {
     orderBy: [{ seasonId: "desc" }, { place: "asc" }],
     include: {
       season: { select: { id: true, yearLabel: true, system: true } },
-      player: { select: { id: true, firstName: true, lastName: true } },
+      player: {
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          isClubMember: true,
+        },
+      },
     },
   });
 
@@ -86,12 +93,13 @@ export default async function HallOfFamePage() {
                     className="flex items-center gap-3 px-4 py-2 text-sm"
                   >
                     <MedalDisc category={m.category} place={m.place} />
-                    <Link
-                      href={`/igraci/${m.player.id}`}
-                      className="min-w-0 flex-1 truncate font-medium text-navy hover:underline"
+                    <PlayerLink
+                      id={m.player.id}
+                      isClubMember={m.player.isClubMember}
+                      className="min-w-0 flex-1 truncate font-medium text-navy"
                     >
                       {m.player.lastName} {m.player.firstName}
-                    </Link>
+                    </PlayerLink>
                     <span className="shrink-0 text-xs text-ink/60">
                       {m.category === "UKUPNO"
                         ? `${m.place}. mjesto`

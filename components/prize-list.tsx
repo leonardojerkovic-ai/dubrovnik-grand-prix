@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PlayerLink } from "@/components/player-link";
 import { AwardDisc } from "@/components/medal-disc";
 
 /**
@@ -16,6 +16,7 @@ export interface PrizeListItem {
   place: number;
   playerId: string;
   playerName: string;
+  playerIsClubMember: boolean;
   transferred: boolean;
   note: string | null;
 }
@@ -32,12 +33,13 @@ export function PrizeList({ items }: { items: PrizeListItem[] }) {
         >
           <AwardDisc label={item.shortLabel} place={item.place} />
           <div className="min-w-0">
-            <Link
-              href={`/igraci/${item.playerId}`}
-              className="font-medium text-navy hover:underline"
+            <PlayerLink
+              id={item.playerId}
+              isClubMember={item.playerIsClubMember}
+              className="font-medium text-navy"
             >
               {item.playerName}
-            </Link>
+            </PlayerLink>
             <p className="text-xs text-ink/70">
               {item.label}
               {item.place > 1 && ` — ${item.place}. mjesto`}

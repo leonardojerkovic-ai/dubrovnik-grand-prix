@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PlayerLink } from "@/components/player-link";
 import type { MedalCategory } from "@prisma/client";
 import { MedalDisc, awardLabel } from "@/components/medal-disc";
 
@@ -15,6 +15,7 @@ export interface MedalListItem {
   place: number;
   playerId: string;
   playerName: string;
+  playerIsClubMember: boolean;
   transferred: boolean;
   note: string | null;
 }
@@ -31,12 +32,13 @@ export function MedalList({ items }: { items: MedalListItem[] }) {
         >
           <MedalDisc category={item.category} place={item.place} />
           <div className="min-w-0">
-            <Link
-              href={`/igraci/${item.playerId}`}
-              className="font-medium text-navy hover:underline"
+            <PlayerLink
+              id={item.playerId}
+              isClubMember={item.playerIsClubMember}
+              className="font-medium text-navy"
             >
               {item.playerName}
-            </Link>
+            </PlayerLink>
             <p className="text-xs text-ink/70">
               {awardLabel(item.category, item.place)}
             </p>

@@ -15,7 +15,13 @@ const PREVIEW_SIZE = 8;
 
 function toPreviewRows(
   rows: {
-    player: { id: string; firstName: string; lastName: string; title: string };
+    player: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      title: string;
+      isClubMember: boolean;
+    };
     total: number;
   }[]
 ): StandingsPreviewRow[] {
@@ -23,6 +29,7 @@ function toPreviewRows(
     playerId: row.player.id,
     name: `${row.player.lastName} ${row.player.firstName}`,
     title: row.player.title,
+    isClubMember: row.player.isClubMember,
     total: row.total,
   }));
 }

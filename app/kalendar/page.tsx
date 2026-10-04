@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
+import { PlayerLink } from "@/components/player-link";
 import { RegisterButton } from "@/components/register-button";
 import { CalendarSubscribe } from "@/components/calendar-subscribe";
 import { seasonSlug } from "@/lib/standings/slugs";
@@ -82,7 +83,14 @@ export default async function KalendarPage(props: {
             where: { rank: 1 },
             take: 1,
             include: {
-              player: { select: { id: true, firstName: true, lastName: true } },
+              player: {
+                select: {
+                  id: true,
+                  firstName: true,
+                  lastName: true,
+                  isClubMember: true,
+                },
+              },
             },
           },
         },
@@ -277,12 +285,13 @@ export default async function KalendarPage(props: {
                               </td>
                               <td className="px-4 py-3">
                                 {winner ? (
-                                  <Link
-                                    href={`/igraci/${winner.id}`}
-                                    className="text-navy hover:underline"
+                                  <PlayerLink
+                                    id={winner.id}
+                                    isClubMember={winner.isClubMember}
+                                    className="text-navy"
                                   >
                                     {winner.lastName} {winner.firstName}
-                                  </Link>
+                                  </PlayerLink>
                                 ) : (
                                   <span className="text-xs text-ink/40">
                                     rezultati još nisu uneseni

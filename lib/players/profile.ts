@@ -74,6 +74,22 @@ export interface PlayerProfile {
   seasons: ProfileSeason[];
 }
 
+/**
+ * Profil igrača, ili null ako profila nema — i ako se ne smije objaviti.
+ *
+ * Objavljuje se članovima Kluba i onima koji su to bili: igrač koji je
+ * napustio klub ili je preminuo ostaje u Hall of Fameu i na ljestvicama
+ * odigranih sezona, pa mu profil ostaje dostupan. Djeci izvan Kluba, koja na
+ * kvalifikacijskim turnirima Akademije igraju po čl. 6, profil se ne
+ * objavljuje — vidi PlayerLink i Politiku privatnosti (pogl. 6 i 22).
+ *
+ * Provjera stoji OVDJE, a ne samo na poveznicama: dok je stajala samo na
+ * njima, /igraci/<id> otvarao se upisom adrese za svakoga.
+ *
+ * `wasClubMember` na rezultatu, a ne samo `isClubMember` na igraču: članstvo
+ * se bilježi na dan turnira (čl. 4) i to je jedini zapis koji ne nestaje
+ * naknadnom izmjenom.
+ */
 export async function getPlayerProfile(
   playerId: string
 ): Promise<PlayerProfile | null> {
@@ -90,6 +106,10 @@ export async function getPlayerProfile(
   });
 
   if (!player) return null;
+
+  const biloKadaClan =
+    player.isClubMember || player.results.some((r) => r.wasClubMember);
+  if (!biloKadaClan) return null;
 
   // Sezone u kojima igrač ima barem jedan rezultat.
   const seasonIds = Array.from(

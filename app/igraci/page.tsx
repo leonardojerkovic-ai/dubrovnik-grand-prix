@@ -195,6 +195,7 @@ export default async function PlayersPage(props: {
                       firstName={p.firstName}
                       lastName={p.lastName}
                       title={p.title}
+                      isClubMember={p.isClubMember}
                     />
                   </td>
                   <td

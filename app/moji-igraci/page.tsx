@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { PlayerLink } from "@/components/player-link";
 import type { Metadata } from "next";
 import { getManagedPlayers } from "@/lib/guardian";
 import { needsGuardian } from "@/lib/guardian-rules";
@@ -36,12 +36,13 @@ export default async function MyPlayersPage() {
         {self && (
           <div className="flex items-center justify-between gap-3 px-4 py-3">
             <div>
-              <Link
-                href={`/igraci/${self.id}`}
-                className="font-medium text-navy hover:text-crimson hover:underline"
+              <PlayerLink
+                id={self.id}
+                isClubMember={self.isClubMember}
+                className="font-medium text-navy hover:text-crimson"
               >
                 {self.lastName} {self.firstName}
-              </Link>
+              </PlayerLink>
               <p className="text-xs text-ink/50">tvoj profil · {self.birthYear}.</p>
             </div>
           </div>
@@ -50,12 +51,13 @@ export default async function MyPlayersPage() {
         {children.map((c) => (
           <div key={c.id} className="flex items-center justify-between gap-3 px-4 py-3">
             <div>
-              <Link
-                href={`/igraci/${c.id}`}
-                className="font-medium text-navy hover:text-crimson hover:underline"
+              <PlayerLink
+                id={c.id}
+                isClubMember={c.isClubMember}
+                className="font-medium text-navy hover:text-crimson"
               >
                 {c.lastName} {c.firstName}
-              </Link>
+              </PlayerLink>
               <p className="text-xs text-ink/50">
                 {c.birthYear}.
                 {!needsGuardian(c.birthYear) && " · može voditi vlastiti račun"}

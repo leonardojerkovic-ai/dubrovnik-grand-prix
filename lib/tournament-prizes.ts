@@ -115,6 +115,8 @@ export interface TournamentPrizeView {
   place: number;
   playerId: string;
   playerName: string;
+  /** Vodi li ime na profil — nečlanovima se profil ne objavljuje. */
+  playerIsClubMember: boolean;
   manual: boolean;
   note: string | null;
   transferred: boolean;
@@ -132,7 +134,9 @@ export async function getTournamentPrizes(
     prisma.tournamentPrizeAward.findMany({
       where: { tournamentId },
       include: {
-        player: { select: { firstName: true, lastName: true } },
+        player: {
+          select: { firstName: true, lastName: true, isClubMember: true },
+        },
       },
     }),
     prisma.tournamentResult.findMany({
@@ -169,6 +173,7 @@ export async function getTournamentPrizes(
         place: award.place,
         playerId: award.playerId,
         playerName: `${award.player.lastName} ${award.player.firstName}`,
+        playerIsClubMember: award.player.isClubMember,
         manual: award.manual,
         note: award.note,
         transferred: wasPrizeTransferred(
