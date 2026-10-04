@@ -26,6 +26,32 @@ function model(ime: string): string {
   return m[1];
 }
 
+/**
+ * Parcijalni jedinstveni indeksi na medaljama (čl. 19 st. 4) ne mogu se
+ * izraziti u Prismi, pa postoje SAMO u SQL-u migracije. Ako ta migracija
+ * nestane ili se okrne, jedina zaštita od dvije medalje istom igraču nestaje
+ * bez poruke.
+ */
+describe("parcijalni jedinstveni indeksi na medaljama", () => {
+  const sql = readFileSync(
+    join(__dirname, "migrations", "20260919090000_medalje_akademije", "migration.sql"),
+    "utf-8"
+  );
+
+  for (const ime of [
+    "medals_tournament_category_place_key",
+    "medals_tournament_player_key",
+    "medals_season_category_place_key",
+    "medals_season_player_key",
+  ]) {
+    it(`${ime} se i dalje stvara`, () => {
+      expect(sql).toContain(ime);
+      // Bez WHERE uvjeta indeks ne radi ono zbog čega postoji.
+      expect(sql).toMatch(new RegExp(`${ime}[\\s\\S]{0,200}WHERE`));
+    });
+  }
+});
+
 describe("brisanje igrača u shemi", () => {
   it("rezultati turnira se NE brišu s igračem (RESTRICT, čl. 5 — N i plasmani ostalih)", () => {
     const red = model("TournamentResult")

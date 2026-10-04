@@ -390,7 +390,6 @@ model Tournament {
   medals Medal[]
   prizes TournamentPrize[]
 
-  @@index([seasonId])
   updatedAt DateTime @updatedAt
 
   results       TournamentResult[]
@@ -592,6 +591,9 @@ model Document {
 
   createdAt DateTime @default(now())
 
+  /// Postoji u bazi od migracije 20260902100000 — dokumenti se listaju po
+  /// sezoni. Bez ovog zapisa `prisma migrate dev` obrisao bi ga.
+  @@index([seasonId])
   @@map("documents")
 }
 
@@ -673,6 +675,11 @@ model Medal {
   ///   - (tournamentId, category, place) i (tournamentId, playerId) za turnire
   ///   - (seasonId, category, place) i (seasonId, playerId) za konačni poredak
   /// Druga dva para su ugrađena čl. 19 st. 4: jedan igrač, jedna medalja.
+  ///
+  /// Zato ih `prisma migrate diff` ne vidi u shemi i `migrate dev` ponudit će
+  /// da ih obriše. NE pristajati: time bi nestala jedina zaštita od dvije
+  /// medalje istom igraču. Nakon svake takve migracije provjeri da ta četiri
+  /// indeksa i dalje stoje (migracija 20260919090000 ima njihov SQL).
   @@index([seasonId])
   @@index([playerId])
   @@index([tournamentId])
