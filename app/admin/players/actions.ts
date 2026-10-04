@@ -138,6 +138,9 @@ export async function updatePlayer(
   }
 
   revalidatePath("/admin/players");
+  // Izmjena igrača mijenja i javne stranice — prije svega kvačica „član",
+  // od koje ovisi postoji li profil i vodi li ime na njega.
+  revalidatePlayers(playerId);
   redirect("/admin/players");
 }
 

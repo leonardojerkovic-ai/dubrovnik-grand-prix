@@ -86,9 +86,17 @@ export interface PlayerProfile {
  * Provjera stoji OVDJE, a ne samo na poveznicama: dok je stajala samo na
  * njima, /igraci/<id> otvarao se upisom adrese za svakoga.
  *
- * `wasClubMember` na rezultatu, a ne samo `isClubMember` na igraču: članstvo
- * se bilježi na dan turnira (čl. 4) i to je jedini zapis koji ne nestaje
- * naknadnom izmjenom.
+ * „Bio član" se prepoznaje po četiri znaka, jer nijedan sam nije dovoljan:
+ *  - `isClubMember` — član danas;
+ *  - `memberSince` / `memberUntil` — upisano članstvo, makar i isteklo. Bez
+ *    njih bi igrač kojemu admin skine kvačicu ostao bez profila, a klupska
+ *    ga povijest i dalje spominje. Većina članova u bazi još nema ni jedan
+ *    rezultat iz aplikacije, pa bi ih to pogodilo gotovo sve;
+ *  - rezultat s `wasClubMember` — članstvo zabilježeno na dan turnira
+ *    (čl. 4); jedini znak koji naknadna izmjena ne može izbrisati.
+ *
+ * Igrači izvan Kluba nemaju nijedan od njih: dijete s kvalifikacijskog
+ * turnira nema ni datume članstva ni rezultat označen kao član.
  */
 export async function getPlayerProfile(
   playerId: string
@@ -108,7 +116,10 @@ export async function getPlayerProfile(
   if (!player) return null;
 
   const biloKadaClan =
-    player.isClubMember || player.results.some((r) => r.wasClubMember);
+    player.isClubMember ||
+    player.memberSince !== null ||
+    player.memberUntil !== null ||
+    player.results.some((r) => r.wasClubMember);
   if (!biloKadaClan) return null;
 
   // Sezone u kojima igrač ima barem jedan rezultat.

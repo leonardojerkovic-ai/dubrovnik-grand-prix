@@ -36,10 +36,23 @@ export function revalidateStandings(tournamentId?: string): void {
   }
 }
 
-/** Stranice koje ovise o podacima o igračima. */
+/**
+ * Stranice koje ovise o podacima o igračima.
+ *
+ * Ime igrača i poveznica na njegov profil stoje i izvan popisa igrača: na
+ * naslovnici (pregled ljestvice), u kalendaru (pobjednik), u Hall of Fameu i
+ * na stranicama turnira (rezultati, medalje, nagrade). Poveznica se prikazuje
+ * samo članovima, pa promjena članstva mijenja SVE te stranice — bez ovoga je
+ * ondje do minute (na arhivskim ljestvicama do sata) stajala stara poveznica,
+ * a profil je već vraćao 404.
+ */
 export function revalidatePlayers(playerId?: string): void {
+  revalidatePath("/");
   revalidatePath("/igraci");
+  revalidatePath("/kalendar");
+  revalidatePath("/hall-of-fame");
   revalidatePath("/ljestvice", "layout");
+  revalidatePath("/turniri", "layout");
   if (playerId) {
     revalidatePath(`/igraci/${playerId}`);
   }
