@@ -52,6 +52,12 @@ type PlayerEntry = SortablePlayerEntry & {
   isClubMember: boolean;
   rank: number | null;
   gpPoints: number | null;
+  /**
+   * Prikazani rejting NIJE onaj s kojim je računat F_R: pri unosu rezultata
+   * polje je ostalo prazno, pa je u prosjek ušlo 1400 (čl. 7). Uz broj stoji
+   * zvjezdica, jer bi inače prikaz tvrdio nešto što nije ušlo u izračun.
+   */
+  neocijenjenUIzracunu: boolean;
 };
 
 export async function generateMetadata(props: {
@@ -136,6 +142,7 @@ export default async function TournamentDetailPage(props: {
         bezNule(r.player.ratingsCurrent?.[ratingField]),
       rank: null,
       gpPoints: null,
+      neocijenjenUIzracunu: false,
     });
   }
 
@@ -149,6 +156,12 @@ export default async function TournamentDetailPage(props: {
       rating: rejtingZa(res.player.id, res.ratingSnapshotUsed),
       rank: res.rank,
       gpPoints: res.gpPoints,
+      // Samo GP: u Akademiji rejting ne ulazi u formulu (čl. 5 Akademije),
+      // pa se ni ne može razilaziti s izračunom.
+      neocijenjenUIzracunu:
+        tournament.season.system === "GP" &&
+        bezNule(res.ratingSnapshotUsed) === null &&
+        rejtinziTada.get(res.player.id) != null,
     });
   }
 
@@ -284,6 +297,11 @@ export default async function TournamentDetailPage(props: {
                   </td>
                   <td className="px-4 py-2 text-right font-mono tabular-nums">
                     {p.rating ?? "—"}
+                    {p.neocijenjenUIzracunu && (
+                      <span className="ml-0.5 text-crimson" title="U izračun bodova ušao kao neocijenjen (1400, čl. 7).">
+                        *
+                      </span>
+                    )}
                   </td>
                   {hasAnyResults && (
                     <td className="px-4 py-2 text-right font-mono tabular-nums">
@@ -295,6 +313,15 @@ export default async function TournamentDetailPage(props: {
             </tbody>
           </table>
         </div>
+      )}
+
+      {displayPlayers.some((p) => p.neocijenjenUIzracunu) && (
+        <p className="mt-2 text-xs text-ink/70">
+          <span className="text-crimson">*</span> Rejting je uz ime prikazan s
+          liste koja je vrijedila na dan turnira, ali u izračun bodova igrač je
+          ušao kao neocijenjen (1400, čl. 7) — pri unosu rezultata polje je
+          ostalo prazno.
+        </p>
       )}
 
       {/*

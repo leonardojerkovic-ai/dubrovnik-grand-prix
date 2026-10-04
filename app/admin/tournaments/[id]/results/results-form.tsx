@@ -2,8 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { saveTournamentResults, type ResultRow } from "./actions";
+import { bezNule } from "@/lib/ratings/vrijednost";
 
-type PlayerOption = { id: string; label: string };
+type PlayerOption = {
+  id: string;
+  label: string;
+  /** Rejting na dan turnira — predlaže se pri odabiru igrača. */
+  predlozeniRejting: number | null;
+};
 
 export function ResultsForm({
   tournamentId,
@@ -29,6 +35,28 @@ export function ResultsForm({
     setRows((prev) => prev.map((r, i) => (i === index ? { ...r, ...patch } : r)));
   }
 
+  const predlogZa = new Map(
+    players.map((p) => [p.id, p.predlozeniRejting] as const)
+  );
+
+  /**
+   * Odabir igrača puni rejting iz snimka s dana turnira — ali samo u prazno
+   * polje. Vrijednost koju je admin upisao ne prepisuje se nikad.
+   */
+  function odaberiIgraca(index: number, playerId: string) {
+    setRows((prev) =>
+      prev.map((r, i) => {
+        if (i !== index) return r;
+        const predlog = predlogZa.get(playerId) ?? null;
+        return {
+          ...r,
+          playerId,
+          rating: r.rating === null ? predlog : r.rating,
+        };
+      })
+    );
+  }
+
   function addRow() {
     setRows((prev) => [
       ...prev,
@@ -44,7 +72,11 @@ export function ResultsForm({
     e.preventDefault();
     setFeedback(null);
 
-    const cleaned = rows.filter((r) => r.playerId);
+    const cleaned = rows
+      .filter((r) => r.playerId)
+      // Nula iz Swiss-Managera znači „nema rejtinga", ne rejting nula.
+      // Server to normalizira isto, ovo je samo da se vidi i prije predaje.
+      .map((r) => ({ ...r, rating: bezNule(r.rating) }));
     if (cleaned.length === 0) {
       setFeedback({ ok: false, text: "Dodaj barem jednog igrača." });
       return;
@@ -98,7 +130,7 @@ export function ResultsForm({
                 <td className="px-3 py-2">
                   <select
                     value={row.playerId}
-                    onChange={(e) => updateRow(i, { playerId: e.target.value })}
+                    onChange={(e) => odaberiIgraca(i, e.target.value)}
                     className="input w-full"
                   >
                     <option value="">— odaberi igrača —</option>
@@ -168,10 +200,13 @@ export function ResultsForm({
       </div>
 
       <p className="text-xs text-ink/50">
-        Rejting: ostavi prazno ako igrač nema rejting odgovarajućeg tempa —
-        interno se tada koristi 1400 (čl. 7), a na profilu će se prikazivati
-        kao 0. &quot;Odigrao&quot; neoznačeno = igrač nije odigrao nijednu
-        partiju i ne ulazi u N (čl. 5).
+        Rejting se pri odabiru igrača predlaže iz zadnje liste do dana
+        turnira; prepiši ga ako je na turniru vrijedio drugi. Ostavi prazno
+        samo ako igrač tada nije imao rejting u ovom tempu — u GP-u takav
+        ulazi u prosjek za F_R kao 1400 (čl. 7) i vodi se kao neocijenjen, a u
+        Akademiji „bez rejtinga&quot; znači pravo na bodove (čl. 3). Nula
+        znači isto što i prazno. &quot;Odigrao&quot; neoznačeno = igrač nije
+        odigrao nijednu partiju i ne ulazi u N (čl. 5).
       </p>
     </form>
   );

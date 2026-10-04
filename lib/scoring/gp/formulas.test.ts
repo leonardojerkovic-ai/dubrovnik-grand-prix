@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { calculateFN, calculateFR, calculateGpPoints } from "./formulas";
+import {
+  calculateAverageRating,
+  calculateFN,
+  calculateFR,
+  calculateGpPoints,
+} from "./formulas";
 
 describe("GP calculateFN (čl. 6)", () => {
   it("odgovara orijentacijskoj tablici za većinu N (napomena: N=10,16,20,40,80,106 u dokumentu odstupaju za ±0.001-0.003, vjerojatno ručna pogreška u pravilniku)", () => {
@@ -89,5 +94,26 @@ describe("GP calculateGpPoints — rubni slučajevi", () => {
     });
     // FN=1.5, FR=1.3(cap), FC=1.5, FT=1.0 -> umnožak bi bio 2.925, cappan na 2.50
     expect(pts).toBe(250); // 100 * 1^1.35 * 2.50 = 250, maksimalan mogući rezultat (čl. 9)
+  });
+});
+
+describe("GP calculateAverageRating (čl. 7) — nula znači „nema rejtinga“", () => {
+  it("prazno (null/undefined) ulazi kao 1400", () => {
+    expect(calculateAverageRating([1600, null, undefined, 1600])).toBeCloseTo(
+      1500,
+      6
+    );
+  });
+
+  it("nula se ne računa kao rejting nula, nego kao 1400", () => {
+    expect(calculateAverageRating([1600, 0])).toBeCloseTo(1500, 6);
+  });
+
+  it("jedan prepisan 0 ne ruši prosjek turnira", () => {
+    const rejtinzi = [
+      1600, 1600, 1600, 1600, 1600, 1600, 1600, 1600, 1600, 0,
+    ];
+    // Bez ispravka bio bi 1440; s ispravkom je kao da je polje prazno.
+    expect(calculateAverageRating(rejtinzi)).toBeCloseTo(1580, 6);
   });
 });

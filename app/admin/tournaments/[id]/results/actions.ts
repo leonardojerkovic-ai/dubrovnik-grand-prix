@@ -27,6 +27,7 @@ import { syncTournamentMedals } from "@/lib/akademija/medals";
 import { syncTournamentPrizes } from "@/lib/tournament-prizes";
 import { wasClubMemberOn } from "@/lib/membership";
 import { validateRanks } from "@/lib/scoring/ranks";
+import { bezNule } from "@/lib/ratings/vrijednost";
 import {
   getLockStatus,
   lockedMessage,
@@ -74,7 +75,14 @@ export async function saveTournamentResults(
     return { error: lockedMessage(lock.objectionDeadline) };
   }
 
-  const playedRows = rows.filter((r) => r.gamesPlayed);
+  // Nula je „nema rejtinga", ne rejting nula — tako je pišu FIDE liste i
+  // izvozi iz Swiss-Managera, odakle se vrijednosti i prepisuju u obrazac.
+  // Normalizira se OVDJE, na ulazu, da dalje nitko ne mora o tome misliti:
+  // 0 i prazno polje znače istu stvar i u F_R (čl. 7) i u provjeri prava na
+  // bodove (čl. 3).
+  const playedRows = rows
+    .filter((r) => r.gamesPlayed)
+    .map((r) => ({ ...r, rating: bezNule(r.rating) }));
   const N = playedRows.length;
 
   if (N === 0) {
@@ -104,6 +112,15 @@ export async function saveTournamentResults(
     >();
     const ineligiblePlayers: string[] = [];
     const recomputedPlayers: string[] = [];
+    /**
+     * Igrači spremljeni bez rejtinga. U GP-u takav ulazi u prosjek kao 1400
+     * (čl. 7) i vodi se kao neocijenjen pri nagradama tipa U1800; u
+     * Akademiji „bez rejtinga" znači da ima pravo na bodove (čl. 3). Oboje
+     * može biti točno — ali admin to mora vidjeti, a ne pogoditi.
+     */
+    const withoutRatingIds = playedRows
+      .filter((r) => r.rating === null)
+      .map((r) => r.playerId);
     const ruleVersion = tournament.season.rulebookVersion;
 
     // Članstvo NA DAN TURNIRA (čl. 4) — zapisuje se uz rezultat i poslije se
@@ -265,7 +282,9 @@ export async function saveTournamentResults(
             gamesPlayed: true,
             wasClubMember: memberOnDate(row.playerId),
             ratingSnapshotUsed: calc.ratingUsed,
-            ratingOverridden: true,
+            // Ručno unesena vrijednost — ako je polje bilo prazno, ništa
+            // nije nadglasano, pa ni oznaka ne stoji.
+            ratingOverridden: calc.ratingUsed !== null,
             gpPoints: calc.points,
             scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
           },
@@ -274,6 +293,7 @@ export async function saveTournamentResults(
             gamesPlayed: true,
             wasClubMember: memberOnDate(row.playerId),
             ratingSnapshotUsed: calc.ratingUsed,
+            ratingOverridden: calc.ratingUsed !== null,
             gpPoints: calc.points,
             scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
           },
@@ -332,6 +352,18 @@ export async function saveTournamentResults(
       if (medals.keptManual > 0) {
         message += ` Ručno unesenih zadržano: ${medals.keptManual}.`;
       }
+    }
+    if (withoutRatingIds.length > 0) {
+      const bez = await prisma.player.findMany({
+        where: { id: { in: withoutRatingIds } },
+        select: { firstName: true, lastName: true },
+        orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+      });
+      const imena = bez.map((p) => `${p.lastName} ${p.firstName}`).join(", ");
+      message +=
+        tournament.season.system === "GP"
+          ? ` Bez unesenog rejtinga (u prosjek za F_R ulaze kao 1400, čl. 7, i vode se kao neocijenjeni): ${imena}.`
+          : ` Bez unesenog rejtinga (po čl. 3 to znači „bez rejtinga", pa imaju pravo na bodove): ${imena}.`;
     }
     if (ineligiblePlayers.length > 0) {
       message += ` Bez prava na bodove (čl. 3 — godište ili rapid rejting): ${ineligiblePlayers.join(", ")}.`;

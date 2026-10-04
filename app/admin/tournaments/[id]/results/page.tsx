@@ -6,6 +6,7 @@ import { LockBanner } from "./lock-banner";
 import { getLockStatus } from "@/lib/scoring/results-lock";
 import { CopyTextButton } from "@/components/copy-text-button";
 import { buildResultsAnnouncement } from "@/lib/whatsapp";
+import { rejtinziNaDatum } from "@/lib/ratings/na-datum";
 
 export default async function TournamentResultsPage(props: {
   params: Promise<{ id: string }>;
@@ -24,9 +25,25 @@ export default async function TournamentResultsPage(props: {
 
   if (!tournament) notFound();
 
+  /**
+   * Rejting na dan turnira, za predlaganje pri unosu.
+   *
+   * Dok se polje punilo samo ručno, prazno polje bilo je najlakši ishod — a
+   * ono nije bezopasno: u GP-u igrač tada ulazi u prosjek za F_R kao 1400
+   * (čl. 7) i vodi se kao neocijenjen, a u Akademiji „bez rejtinga" znači
+   * pravo na bodove (čl. 3). Predlaže se zadnji snimak do dana turnira; admin
+   * ga svakako može prepisati ili izbrisati.
+   */
+  const predlozeniRejtinzi = await rejtinziNaDatum({
+    playerIds: players.map((p) => p.id),
+    tempo: tournament.tempo,
+    datum: tournament.date,
+  });
+
   const playerOptions = players.map((p) => ({
     id: p.id,
     label: `${p.lastName} ${p.firstName}`,
+    predlozeniRejting: predlozeniRejtinzi.get(p.id) ?? null,
   }));
 
   const initialRows = tournament.results.map((r) => ({

@@ -109,6 +109,12 @@ export function calculateGpPoints(input: GpPointsInput): number {
 /**
  * Izračunava prosječni rejting sudionika za potrebe FR — čl. 7.
  * Igraču bez važećeg rejtinga odgovarajućeg tempa pripisuje se 1400.
+ *
+ * Nula je „nema rejtinga", ne rejting nula: tako je pišu i FIDE liste i
+ * izvozi iz Swiss-Managera, pa takva dospije i u unos. Bez ovoga jedan
+ * prepisan 0 umjesto praznog polja spusti prosjek cijelog turnira (kod 10
+ * igrača prosjeka 1600 za 140 bodova) i svima umanji bodove — a nigdje se ne
+ * vidi da je nešto pošlo po zlu.
  */
 export function calculateAverageRating(
   ratings: Array<number | null | undefined>
@@ -116,7 +122,7 @@ export function calculateAverageRating(
   if (ratings.length === 0) {
     throw new Error("Popis rejtinga ne smije biti prazan.");
   }
-  const effective = ratings.map((r) => (r == null ? 1400 : r));
+  const effective = ratings.map((r) => (r == null || r === 0 ? 1400 : r));
   const sum = effective.reduce((acc, r) => acc + r, 0);
   return sum / effective.length;
 }
