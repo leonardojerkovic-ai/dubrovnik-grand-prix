@@ -57,3 +57,20 @@ export function wasClubMemberOn(
 export function needsMembershipDate(player: MembershipFields): boolean {
   return player.isClubMember && !player.memberSince;
 }
+
+/**
+ * Igrač nije član, ali ima upisan datum članstva — i samo zbog toga mu je
+ * profil javan (vidi lib/players/profile.ts).
+ *
+ * Upisan datum uzima se kao dokaz da je članstvo postojalo, jer bivšem članu
+ * profil treba ostati. Ali datum upisan greškom — djetetu s kvalifikacijskog
+ * turnira, koje po čl. 6 nikad nije bilo član — čini isto, i to trajno. Iz
+ * podatka se te dvije stvari ne mogu razlikovati, pa odluka pripada adminu:
+ * ovo postojanje stanja samo iznosi na vidjelo, da se vidi ZAŠTO je profil
+ * javan i da se greška može ispraviti brisanjem datuma.
+ */
+export function javanProfilZbogDatuma(player: MembershipFields): boolean {
+  return (
+    !player.isClubMember && (!!player.memberSince || !!player.memberUntil)
+  );
+}

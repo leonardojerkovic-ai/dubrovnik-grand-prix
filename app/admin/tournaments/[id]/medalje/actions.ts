@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAwards } from "@/lib/revalidate";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
@@ -59,7 +60,7 @@ export async function setMedalManually(
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/medalje`);
-  revalidatePath(`/turniri/${tournamentId}`);
+  revalidateAwards(tournamentId);
 }
 
 /**
@@ -88,7 +89,7 @@ export async function clearManualMedal(
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/medalje`);
-  revalidatePath(`/turniri/${tournamentId}`);
+  revalidateAwards(tournamentId);
 }
 
 export async function recomputeMedals(tournamentId: string): Promise<void> {
@@ -105,5 +106,5 @@ export async function recomputeMedals(tournamentId: string): Promise<void> {
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/medalje`);
-  revalidatePath(`/turniri/${tournamentId}`);
+  revalidateAwards(tournamentId);
 }

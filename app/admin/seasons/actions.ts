@@ -215,4 +215,6 @@ export async function recomputeSeasonMedals(seasonId: string): Promise<void> {
 
   revalidatePath(`/admin/seasons/${seasonId}`);
   revalidatePath("/hall-of-fame");
+  // Medalje konačnog poretka stoje i na profilu igrača.
+  revalidatePath("/igraci", "layout");
 }

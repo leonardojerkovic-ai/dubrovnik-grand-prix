@@ -5,6 +5,7 @@ import { useFormStatus } from "react-dom";
 import { TITLES } from "@/lib/validation/player";
 import type { ActionState } from "./actions";
 import { FormErrorSummary } from "@/components/form-error-summary";
+import { javanProfilZbogDatuma } from "@/lib/membership";
 import { RetainedValues } from "@/components/retained-values";
 
 type PlayerFormProps = {
@@ -151,6 +152,19 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
         />
         Član ŠK Dubrovnik
       </label>
+
+      {javanProfilZbogDatuma({
+        isClubMember: defaultValues.isClubMember ?? false,
+        memberSince: defaultValues.memberSince ?? null,
+        memberUntil: defaultValues.memberUntil ?? null,
+      }) && (
+        <p className="rounded-md border border-navy/15 bg-paper px-3 py-2 text-xs text-ink/80">
+          Igrač nije označen kao član, ali ima upisane datume članstva — i zbog
+          njih mu je profil na stranici javan, jer se upisani datum uzima kao
+          dokaz da je članstvo postojalo. Ako nikad nije bio član (dijete s
+          kvalifikacijskog turnira, čl. 6), izbriši oba datuma.
+        </p>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
         <Field

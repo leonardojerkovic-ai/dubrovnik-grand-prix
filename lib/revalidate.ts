@@ -37,6 +37,19 @@ export function revalidateStandings(tournamentId?: string): void {
 }
 
 /**
+ * Stranice koje ovise o dodijeljenim medaljama i nagradama.
+ *
+ * Osim stranice turnira, dodjela se vidi i na profilu igrača (odjeljci
+ * „Medalje" i „Nagrade"), pa se profili moraju osvježiti zajedno s njom —
+ * inače ručna izmjena stoji na turniru, a na profilu je nema do minute.
+ */
+export function revalidateAwards(tournamentId: string): void {
+  revalidatePath(`/turniri/${tournamentId}`);
+  revalidatePath("/igraci", "layout");
+  revalidatePath("/hall-of-fame");
+}
+
+/**
  * Stranice koje ovise o podacima o igračima.
  *
  * Ime igrača i poveznica na njegov profil stoje i izvan popisa igrača: na

@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidateAwards } from "@/lib/revalidate";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
@@ -76,7 +77,7 @@ export async function createPrize(
 
   const result = await syncTournamentPrizes(tournamentId);
   revalidatePath(`/admin/tournaments/${tournamentId}/nagrade`);
-  revalidatePath(`/turniri/${tournamentId}`);
+  revalidateAwards(tournamentId);
 
   return { message: `Nagrada dodana. Dodijeljeno ukupno: ${result.awarded}.` };
 }
@@ -101,7 +102,7 @@ export async function deletePrize(prizeId: string): Promise<void> {
 
   await syncTournamentPrizes(before.tournamentId);
   revalidatePath(`/admin/tournaments/${before.tournamentId}/nagrade`);
-  revalidatePath(`/turniri/${before.tournamentId}`);
+  revalidateAwards(before.tournamentId);
 }
 
 /**
@@ -149,7 +150,7 @@ export async function movePrize(
 
   await syncTournamentPrizes(prize.tournamentId);
   revalidatePath(`/admin/tournaments/${prize.tournamentId}/nagrade`);
-  revalidatePath(`/turniri/${prize.tournamentId}`);
+  revalidateAwards(prize.tournamentId);
 }
 
 /** Ponovni izračun na zahtjev — npr. nakon ispravka rezultata. */
@@ -167,5 +168,5 @@ export async function recomputePrizes(tournamentId: string): Promise<void> {
   });
 
   revalidatePath(`/admin/tournaments/${tournamentId}/nagrade`);
-  revalidatePath(`/turniri/${tournamentId}`);
+  revalidateAwards(tournamentId);
 }

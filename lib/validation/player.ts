@@ -77,7 +77,7 @@ export const playerSchema = z.object({
    */
   .refine((v) => v.isClubMember || !v.memberSince || !!v.memberUntil, {
     message:
-      "Igrač nije označen kao član, a ima upisan datum učlanjenja — upiši i datum prestanka članstva („Član do“). Bez njega se ne može znati od kada više nije član, pa bi na turnirima i dalje ulazio kao član (čl. 4).",
+      "Igrač nije označen kao član, a ima upisan datum učlanjenja. Bez datuma prestanka ne zna se od kada više nije član, pa bi na turnirima i dalje ulazio kao član (čl. 4). Dvije ispravke, ovisno o tome što je istina: ako je bio član, upiši „Član do“ (ne znaš li točan dan, upiši posljednji dan sezone u kojoj je otišao); ako NIKAD nije bio član — primjerice dijete s kvalifikacijskog turnira Akademije (čl. 6) kojemu je datum upisan greškom — izbriši „Član od“, jer bi mu upisani datumi inače trajno držali profil javnim.",
     path: ["memberUntil"],
   });
 
