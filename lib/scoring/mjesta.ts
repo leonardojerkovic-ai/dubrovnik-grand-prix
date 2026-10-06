@@ -29,22 +29,29 @@ export function mjestaIzPoretka<T>(
   poredani: T[],
   usporedi: (a: T, b: T) => number
 ): Mjesto[] {
-  const n = poredani.length;
-  const mjesta: number[] = new Array(n);
+  const mjesta: number[] = [];
 
-  let i = 0;
-  while (i < n) {
-    // Koliko ih je jednako ovome
-    let j = i + 1;
-    while (j < n && usporedi(poredani[i], poredani[j]) === 0) j++;
-    for (let k = i; k < j; k++) mjesta[k] = i + 1;
-    i = j;
-  }
+  // Prolazi se jednom: novo mjesto počinje tek kad komparator vrati nešto
+  // različito od nule. Dijeljeni se tako svi upišu s mjestom prvoga u
+  // skupini, a sljedeća skupina dobije mjesto po svojem položaju u nizu —
+  // odatle 1, 2, 2, 4.
+  let prethodni: T | undefined;
+  let mjestoSkupine = 0;
+
+  poredani.forEach((element, idx) => {
+    if (
+      idx === 0 ||
+      prethodni === undefined ||
+      usporedi(prethodni, element) !== 0
+    ) {
+      mjestoSkupine = idx + 1;
+      prethodni = element;
+    }
+    mjesta.push(mjestoSkupine);
+  });
 
   return mjesta.map((mjesto, idx) => ({
     mjesto,
-    dijeljeno:
-      (idx > 0 && mjesta[idx - 1] === mjesto) ||
-      (idx < n - 1 && mjesta[idx + 1] === mjesto),
+    dijeljeno: mjesta[idx - 1] === mjesto || mjesta[idx + 1] === mjesto,
   }));
 }

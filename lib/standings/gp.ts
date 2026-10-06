@@ -159,7 +159,7 @@ export async function getGpStandings(
   const mjesta = mjestaIzPoretka(poredani, compareStandings);
   return poredani.map((row, i) => ({
     ...row,
-    place: mjesta[i].mjesto,
-    sharedPlace: mjesta[i].dijeljeno,
+    place: mjesta[i]?.mjesto ?? i + 1,
+    sharedPlace: mjesta[i]?.dijeljeno ?? false,
   }));
 }
