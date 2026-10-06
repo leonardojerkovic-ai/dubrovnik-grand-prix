@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { revalidateSchedule, revalidateStandings } from "@/lib/revalidate";
+import { odbij } from "@/lib/admin-odbijanje";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { seasonSchema } from "@/lib/validation/season";
@@ -182,7 +183,8 @@ export async function deleteSeason(seasonId: string): Promise<void> {
       "code" in err &&
       (err as { code?: string }).code === "P2003"
     ) {
-      throw new Error(
+      odbij(
+        "/admin/seasons",
         "Ova sezona ima turnire — prvo obriši sve turnire te sezone, pa onda sezonu."
       );
     }

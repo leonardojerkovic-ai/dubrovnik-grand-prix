@@ -2,8 +2,13 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { deletePlayer } from "./actions";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
+import { AdminNotice } from "@/components/admin-notice";
+import { porukaIzAdrese } from "@/lib/admin-odbijanje";
 
-export default async function AdminPlayersPage() {
+export default async function AdminPlayersPage(props: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const greska = porukaIzAdrese(await props.searchParams);
   const players = await prisma.player.findMany({
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     include: { ratingsCurrent: true },
@@ -11,6 +16,7 @@ export default async function AdminPlayersPage() {
 
   return (
     <div>
+      <AdminNotice message={greska} />
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-display text-lg font-bold text-navy">
           Igrači ({players.length})

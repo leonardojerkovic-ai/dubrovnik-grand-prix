@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { odbij } from "@/lib/admin-odbijanje";
 
 export async function updateUserRole(
   userId: string,
@@ -52,10 +53,11 @@ export async function linkUserToPlayer(userId: string, playerId: string) {
   ]);
 
   if (!user || !player) {
-    throw new Error("Korisnik ili igrač nije pronađen.");
+    odbij("/admin/users", "Korisnik ili igrač nije pronađen.");
   }
   if (player.userId && player.userId !== userId) {
-    throw new Error(
+    odbij(
+      "/admin/users",
       "Taj igrački profil već je povezan s drugim računom. Prvo razriješi tu vezu."
     );
   }
@@ -115,7 +117,7 @@ export async function unlinkUserFromPlayer(userId: string) {
   });
 
   if (!player) {
-    throw new Error("Taj račun nije povezan ni s jednim igračem.");
+    odbij("/admin/users", "Taj račun nije povezan ni s jednim igračem.");
   }
 
   const user = await prisma.user.findUnique({

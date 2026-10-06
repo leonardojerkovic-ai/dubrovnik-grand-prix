@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { revalidatePlayers } from "@/lib/revalidate";
+import { odbij } from "@/lib/admin-odbijanje";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { playerSchema } from "@/lib/validation/player";
@@ -156,7 +157,8 @@ export async function deletePlayer(playerId: string): Promise<void> {
   // plasmane svih ostalih na tim turnirima. Poruka nudi ono što se stvarno
   // želi postići.
   if (before && before._count.results > 0) {
-    throw new Error(
+    odbij(
+      "/admin/players",
       `Igrač ima ${before._count.results} unesenih rezultata i ne može se obrisati — ` +
         "njegovi nastupi određuju broj igrača i plasmane ostalih na tim turnirima. " +
         "Ako je napustio klub, upiši mu datum u polje „Član do\u201c. " +
@@ -181,7 +183,8 @@ export async function deletePlayer(playerId: string): Promise<void> {
       "code" in err &&
       (err as { code?: string }).code === "P2003"
     ) {
-      throw new Error(
+      odbij(
+        "/admin/players",
         "Ovaj igrač ima Hall of Fame zapis — obriši prvo taj zapis (Admin → Hall of Fame) ako stvarno želiš izbrisati igrača."
       );
     }

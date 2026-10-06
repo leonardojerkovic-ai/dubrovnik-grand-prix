@@ -3,8 +3,13 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { RoleSelect } from "./role-select";
 import { PlayerLink } from "./player-link";
+import { AdminNotice } from "@/components/admin-notice";
+import { porukaIzAdrese } from "@/lib/admin-odbijanje";
 
-export default async function AdminUsersPage() {
+export default async function AdminUsersPage(props: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const greska = porukaIzAdrese(await props.searchParams);
   const session = await getServerSession(authOptions);
   const currentRole = (session?.user as { role?: string } | undefined)?.role;
 
@@ -25,6 +30,7 @@ export default async function AdminUsersPage() {
 
   return (
     <div>
+      <AdminNotice message={greska} />
       <h2 className="font-display text-lg font-bold text-navy mb-1">
         Korisnici i uloge
       </h2>
