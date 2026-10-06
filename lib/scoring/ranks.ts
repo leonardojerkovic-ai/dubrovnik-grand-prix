@@ -16,6 +16,29 @@ export interface RankedRow {
   playerId: string;
 }
 
+/**
+ * Igrači koji se u unosu pojavljuju više puta.
+ *
+ * Plasman je jedinstven, ali igrač je u padajućem izborniku odabran dvaput —
+ * recimo na 7. i 12. mjestu. Niz 1..N je tada ispravan, pa validateRanks sve
+ * propusti. Posljedice se ne vide: N se računa iz broja redaka, pa svi dobiju
+ * bodove po pogrešnom N, drugi upsert prepiše prvi (jedinstven je
+ * (tournamentId, playerId)), a u bazi ostane N−1 redaka i rupa na mjestu
+ * koje je prepisano. Poruka pri spremanju glasi „Spremljeno".
+ *
+ * Vraća ID-eve, ne poruku: imena zna samo pozivatelj, a bez imena poruka
+ * adminu ne znači ništa.
+ */
+export function duplicatePlayerIds(rows: RankedRow[]): string[] {
+  const broj = new Map<string, number>();
+  for (const row of rows) {
+    broj.set(row.playerId, (broj.get(row.playerId) ?? 0) + 1);
+  }
+  return [...broj.entries()]
+    .filter(([, n]) => n > 1)
+    .map(([playerId]) => playerId);
+}
+
 /** Vraća poruku o grešci na hrvatskom, ili null ako je poredak ispravan. */
 export function validateRanks(rows: RankedRow[]): string | null {
   const n = rows.length;

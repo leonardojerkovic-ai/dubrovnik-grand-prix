@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { saveTournamentResults, type ResultRow } from "./actions";
 import { bezNule } from "@/lib/ratings/vrijednost";
+import { duplicatePlayerIds } from "@/lib/scoring/ranks";
 
 type PlayerOption = {
   id: string;
@@ -79,6 +80,23 @@ export function ResultsForm({
       .map((r) => ({ ...r, rating: bezNule(r.rating) }));
     if (cleaned.length === 0) {
       setFeedback({ ok: false, text: "Dodaj barem jednog igrača." });
+      return;
+    }
+
+    // Isti igrač u dva reda. Server to odbija svakako, ali ovdje se vidi
+    // odmah i bez čekanja — a upravo je to greška koja se u padajućem
+    // izborniku s pedesetak imena napravi najlakše.
+    const ponovljeni = duplicatePlayerIds(
+      cleaned.filter((r) => r.gamesPlayed)
+    );
+    if (ponovljeni.length > 0) {
+      const imena = ponovljeni
+        .map((id) => players.find((p) => p.id === id)?.label ?? id)
+        .join(", ");
+      setFeedback({
+        ok: false,
+        text: `Isti igrač je unesen više puta: ${imena}. Svaki igrač smije stajati samo u jednom redu.`,
+      });
       return;
     }
 

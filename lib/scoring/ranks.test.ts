@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateRanks } from "./ranks";
+import { duplicatePlayerIds, validateRanks } from "./ranks";
 
 const row = (rank: number, id = `p${rank}`) => ({ rank, playerId: id });
 
@@ -42,5 +42,39 @@ describe("validateRanks", () => {
 
   it("prazan popis ne prijavljuje grešku (obrađuje se ranije)", () => {
     expect(validateRanks([])).toBeNull();
+  });
+});
+
+describe("duplicatePlayerIds", () => {
+  it("prazno kad je svaki igrač unesen jednom", () => {
+    expect(
+      duplicatePlayerIds([
+        { rank: 1, playerId: "a" },
+        { rank: 2, playerId: "b" },
+        { rank: 3, playerId: "c" },
+      ])
+    ).toEqual([]);
+  });
+
+  it("nalazi igrača unesenog dvaput, premda su plasmani ispravan niz", () => {
+    const rows = [
+      { rank: 1, playerId: "a" },
+      { rank: 2, playerId: "b" },
+      { rank: 3, playerId: "a" },
+    ];
+    // Plasmani 1..3 su jedinstveni, pa validateRanks ne vidi ništa.
+    expect(validateRanks(rows)).toBeNull();
+    expect(duplicatePlayerIds(rows)).toEqual(["a"]);
+  });
+
+  it("nalazi više ponovljenih igrača", () => {
+    expect(
+      duplicatePlayerIds([
+        { rank: 1, playerId: "a" },
+        { rank: 2, playerId: "b" },
+        { rank: 3, playerId: "a" },
+        { rank: 4, playerId: "b" },
+      ])
+    ).toEqual(["a", "b"]);
   });
 });

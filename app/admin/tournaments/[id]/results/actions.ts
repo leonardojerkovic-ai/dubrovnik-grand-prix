@@ -26,7 +26,7 @@ import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
 import { syncTournamentMedals } from "@/lib/akademija/medals";
 import { syncTournamentPrizes } from "@/lib/tournament-prizes";
 import { wasClubMemberOn } from "@/lib/membership";
-import { validateRanks } from "@/lib/scoring/ranks";
+import { duplicatePlayerIds, validateRanks } from "@/lib/scoring/ranks";
 import { bezNule } from "@/lib/ratings/vrijednost";
 import {
   getLockStatus,
@@ -97,6 +97,27 @@ export async function saveTournamentResults(
   const rankError = validateRanks(playedRows);
   if (rankError) {
     return { error: rankError };
+  }
+
+  // Isti igrač u dva reda: plasmani su ispravan niz 1..N, pa validateRanks to
+  // ne vidi, a posljedice su tihe — N je prevelik za jedan, svi dobiju bodove
+  // po pogrešnom N, drugi upsert prepiše prvi i u bazi ostane rupa.
+  const ponovljeni = duplicatePlayerIds(playedRows);
+  if (ponovljeni.length > 0) {
+    const igraci = await prisma.player.findMany({
+      where: { id: { in: ponovljeni } },
+      select: { firstName: true, lastName: true },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+    });
+    const imena = igraci
+      .map((p) => `${p.lastName} ${p.firstName}`)
+      .join(", ");
+    return {
+      error:
+        `Isti igrač je unesen više puta: ${imena}. ` +
+        "Svaki igrač smije stajati samo u jednom redu — ostavi ga na pravom " +
+        "mjestu, a drugi red ukloni ili u njemu odaberi drugog igrača.",
+    };
   }
 
   try {
@@ -256,49 +277,76 @@ export async function saveTournamentResults(
       }
     }
 
-    // Igrači koji su maknuti s popisa ili prebačeni u "nije odigrao" ne smiju
-    // ostati u bazi sa starim plasmanom — inače bi iskrivili ljestvicu i
-    // sudarili se s jedinstvenim indeksom na (tournamentId, rank).
     const keepPlayerIds = playedRows.map((r) => r.playerId);
-    await prisma.tournamentResult.deleteMany({
-      where: { tournamentId, playerId: { notIn: keepPlayerIds } },
-    });
 
-    // Upsert svakog rezultata (omogućava naknadnu korekciju prije zaključavanja)
+    /**
+     * Brisanje, parkiranje i upsertovi moraju biti JEDNA transakcija.
+     *
+     * Brisanje je dosad stajalo izvan nje, pa je neuspjeli upsert ostavljao
+     * turnir bez igrača koje je admin istim spremanjem uklonio — podatak je
+     * već bio obrisan, a ostatak vraćen.
+     *
+     * Parkiranje rješava zamjenu mjesta. Indeks (tournamentId, rank) je
+     * običan UNIQUE i provjerava se po naredbi, nije odgodiv. Zamijeniš li
+     * 3. i 4. mjesto, prvi upsert postavlja igrača A na 4. dok ga B još drži
+     * — i spremanje pada sa sirovom engleskom Prisma porukom. Zato se svim
+     * postojećim redovima plasman najprije pretvori u negativan: izvorni
+     * plasmani su jedinstveni, pa su i negativni jedinstveni, a s konačnima
+     * (uvijek pozitivnima) ne mogu se sudariti.
+     *
+     * Isti postupak već stoji u movePrize (nagrade/actions.ts).
+     */
     await prisma.$transaction(
-      playedRows.map((row) => {
-        const calc = pointsByPlayer.get(row.playerId)!;
-        return prisma.tournamentResult.upsert({
-          where: {
-            tournamentId_playerId: {
+      async (tx) => {
+        await tx.tournamentResult.deleteMany({
+          where: { tournamentId, playerId: { notIn: keepPlayerIds } },
+        });
+
+        await tx.$executeRaw`
+          UPDATE "tournament_results"
+             SET "rank" = -"rank"
+           WHERE "tournamentId" = ${tournamentId}
+             AND "rank" > 0
+        `;
+
+        for (const row of playedRows) {
+          const calc = pointsByPlayer.get(row.playerId)!;
+          await tx.tournamentResult.upsert({
+            where: {
+              tournamentId_playerId: {
+                tournamentId,
+                playerId: row.playerId,
+              },
+            },
+            create: {
               tournamentId,
               playerId: row.playerId,
+              rank: row.rank,
+              gamesPlayed: true,
+              wasClubMember: memberOnDate(row.playerId),
+              ratingSnapshotUsed: calc.ratingUsed,
+              // Ručno unesena vrijednost — ako je polje bilo prazno, ništa
+              // nije nadglasano, pa ni oznaka ne stoji.
+              ratingOverridden: calc.ratingUsed !== null,
+              gpPoints: calc.points,
+              scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
             },
-          },
-          create: {
-            tournamentId,
-            playerId: row.playerId,
-            rank: row.rank,
-            gamesPlayed: true,
-            wasClubMember: memberOnDate(row.playerId),
-            ratingSnapshotUsed: calc.ratingUsed,
-            // Ručno unesena vrijednost — ako je polje bilo prazno, ništa
-            // nije nadglasano, pa ni oznaka ne stoji.
-            ratingOverridden: calc.ratingUsed !== null,
-            gpPoints: calc.points,
-            scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
-          },
-          update: {
-            rank: row.rank,
-            gamesPlayed: true,
-            wasClubMember: memberOnDate(row.playerId),
-            ratingSnapshotUsed: calc.ratingUsed,
-            ratingOverridden: calc.ratingUsed !== null,
-            gpPoints: calc.points,
-            scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
-          },
-        });
-      })
+            update: {
+              rank: row.rank,
+              gamesPlayed: true,
+              wasClubMember: memberOnDate(row.playerId),
+              ratingSnapshotUsed: calc.ratingUsed,
+              ratingOverridden: calc.ratingUsed !== null,
+              gpPoints: calc.points,
+              scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,
+            },
+          });
+        }
+      },
+      // Unos od 30 igrača je 30 upserta jedan za drugim; zadanih 5 s je
+      // premalo na usporijoj vezi, a prekid na pola ostavlja parkirane
+      // negativne plasmane.
+      { timeout: 30_000 }
     );
 
     // Prva objava pokreće rok za prigovor (čl. 29). Kasnije izmjene unutar
