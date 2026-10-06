@@ -176,7 +176,7 @@ export async function movePrize(
 export async function recomputePrizes(tournamentId: string): Promise<void> {
   const actor = await requireAdmin();
   await provjeriZakljucanost(tournamentId);
-  const result = await syncTournamentPrizes(tournamentId);
+  const result = await syncTournamentPrizes(tournamentId, "izricito");
 
   await logAudit({
     actor,

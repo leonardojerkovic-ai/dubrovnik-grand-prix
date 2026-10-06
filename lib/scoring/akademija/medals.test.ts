@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   assignMedals,
   medalEventForTournament,
+  sporneMedalje,
   wasTransferred,
 } from "./medals";
-import type { MedalCandidate } from "./medals";
+import type { MedalAward, MedalCandidate } from "./medals";
 import { getAkademijaAgeCategories } from "./categories";
 
 const G = 2026;
@@ -163,5 +164,61 @@ describe("wasTransferred", () => {
     const small = assignMedals(mixed, "KVALIFIKACIJSKI");
     const u12 = small.find((a) => a.category === "U12");
     expect(u12).toBeUndefined();
+  });
+});
+
+describe("sporneMedalje — dijeljeno mjesto blokira samo svoju kategoriju", () => {
+  const u8: MedalCandidate = {
+    playerId: "a",
+    rank: 9,
+    ageCategories: ["U08", "U10", "U12"],
+    isFemale: false,
+  };
+  const u12: MedalCandidate = {
+    playerId: "b",
+    rank: 9,
+    ageCategories: ["U12"],
+    isFemale: false,
+  };
+  const ranking = [u8, u12];
+  const mjestoPo = new Map([
+    ["a", 9],
+    ["b", 9],
+  ]);
+  const dijeli = new Map([
+    ["a", true],
+    ["b", true],
+  ]);
+
+  it("zlato u U08 nije sporno kad drugi izjednačeni nije U08", () => {
+    const dodjele: MedalAward[] = [
+      { playerId: "a", category: "U08", place: 1, rank: 9 },
+    ];
+    expect(sporneMedalje(dodjele, ranking, mjestoPo, dijeli)).toEqual([]);
+  });
+
+  it("zlato u U12 JE sporno jer su oba izjednačena U12", () => {
+    const dodjele: MedalAward[] = [
+      { playerId: "a", category: "U12", place: 1, rank: 9 },
+    ];
+    expect(sporneMedalje(dodjele, ranking, mjestoPo, dijeli)).toHaveLength(1);
+  });
+
+  it("UKUPNO je sporno jer joj svi pripadaju", () => {
+    const dodjele: MedalAward[] = [
+      { playerId: "a", category: "UKUPNO", place: 3, rank: 9 },
+    ];
+    expect(sporneMedalje(dodjele, ranking, mjestoPo, dijeli)).toHaveLength(1);
+  });
+
+  it("igrač koji mjesto ne dijeli nikad nije sporan", () => {
+    const sam = new Map([
+      ["a", false],
+      ["b", true],
+    ]);
+    const dodjele: MedalAward[] = [
+      { playerId: "a", category: "UKUPNO", place: 3, rank: 9 },
+    ];
+    expect(sporneMedalje(dodjele, ranking, mjestoPo, sam)).toEqual([]);
   });
 });

@@ -5,7 +5,6 @@ import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { odbij } from "@/lib/admin-odbijanje";
 
 export async function updateUserRole(
   userId: string,
@@ -41,7 +40,15 @@ export async function updateUserRole(
  * Provjerava da profil već nema drugog vlasnika, jer je 1:1 veza i tiho
  * preuzimanje tuđeg profila je upravo ono što ovaj postupak sprječava.
  */
-export async function linkUserToPlayer(userId: string, playerId: string) {
+/**
+ * Vraća { error }, a NE preusmjerava: poziva je klijentska komponenta
+ * (player-link.tsx) koja poruku prikazuje na mjestu, uz sam redak korisnika.
+ * Preusmjeravanje bi tu bilo i gore od iznimke — odvelo bi admina s popisa.
+ */
+export async function linkUserToPlayer(
+  userId: string,
+  playerId: string
+): Promise<{ error?: string }> {
   const actor = await requireAdmin();
 
   const [user, player] = await Promise.all([
@@ -53,13 +60,13 @@ export async function linkUserToPlayer(userId: string, playerId: string) {
   ]);
 
   if (!user || !player) {
-    odbij("/admin/users", "Korisnik ili igrač nije pronađen.");
+    return { error: "Korisnik ili igrač nije pronađen." };
   }
   if (player.userId && player.userId !== userId) {
-    odbij(
-      "/admin/users",
-      "Taj igrački profil već je povezan s drugim računom. Prvo razriješi tu vezu."
-    );
+    return {
+      error:
+        "Taj igrački profil već je povezan s drugim računom. Prvo razriješi tu vezu.",
+    };
   }
 
   await prisma.$transaction([
@@ -80,6 +87,7 @@ export async function linkUserToPlayer(userId: string, playerId: string) {
   });
 
   revalidatePath("/admin/users");
+  return {};
 }
 
 /** Odbija zahtjev za povezivanje — račun ostaje bez igračkog profila. */
@@ -108,7 +116,9 @@ export async function dismissPlayerLink(userId: string) {
 }
 
 /** Uklanja vezu između korisničkog računa i igračkog profila. */
-export async function unlinkUserFromPlayer(userId: string) {
+export async function unlinkUserFromPlayer(
+  userId: string
+): Promise<{ error?: string }> {
   const actor = await requireAdmin();
 
   const player = await prisma.player.findFirst({
@@ -117,7 +127,7 @@ export async function unlinkUserFromPlayer(userId: string) {
   });
 
   if (!player) {
-    odbij("/admin/users", "Taj račun nije povezan ni s jednim igračem.");
+    return { error: "Taj račun nije povezan ni s jednim igračem." };
   }
 
   const user = await prisma.user.findUnique({
@@ -140,4 +150,5 @@ export async function unlinkUserFromPlayer(userId: string) {
   });
 
   revalidatePath("/admin/users");
+  return {};
 }

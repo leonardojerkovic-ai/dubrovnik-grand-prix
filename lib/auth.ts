@@ -106,14 +106,18 @@ export const authOptions: AuthOptions = {
          *
          * Provjera ide u istom upitu kao i rola, pa u najgorem slučaju
          * zaostaje ROLE_REFRESH_MS (minutu) — umjesto 30 dana, koliko je
-         * takva sesija dosad živjela. Tokeni izdani prije ove izmjene nemaju
-         * `prijavljenOd`; njih se ne poništava, da promjena nikoga ne izbaci
-         * bez razloga.
+         * takva sesija dosad živjela.
+         *
+         * Token izdan prije ove izmjene nema `prijavljenOd`, pa se računa kao
+         * najstariji mogući (0). Prvo sam ga ostavljao na miru „da promjena
+         * nikoga ne izbaci bez razloga", ali taj razlog ne stoji:
+         * sessionsValidFrom je prazan svima dok sami ne resetiraju lozinku,
+         * pa se poništava samo onome kome je to i cilj — a upravo je stara
+         * sesija ono što je napadač mogao preuzeti prije ove izmjene.
          */
         const prijavljenOd =
-          typeof token.prijavljenOd === "number" ? token.prijavljenOd : null;
+          typeof token.prijavljenOd === "number" ? token.prijavljenOd : 0;
         if (
-          prijavljenOd !== null &&
           dbUser?.sessionsValidFrom &&
           prijavljenOd < dbUser.sessionsValidFrom.getTime()
         ) {

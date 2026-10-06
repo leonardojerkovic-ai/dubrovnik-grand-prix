@@ -40,11 +40,25 @@ export function PlayerLink({
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
-  const run = (fn: () => Promise<unknown>) => {
+  /**
+   * Akcije odbijanje javljaju vracenim { error }, ne iznimkom: u produkciji
+   * Next zamijeni error.message opcom engleskom porukom, pa je ovaj catch
+   * godinama mogao prikazati samo nju. Catch ostaje za stvarne greske
+   * (prekid veze, pad servera).
+   */
+  const run = (fn: () => Promise<{ error?: string } | unknown>) => {
     setError(null);
     startTransition(async () => {
       try {
-        await fn();
+        const rezultat = await fn();
+        const greska =
+          rezultat && typeof rezultat === "object" && "error" in rezultat
+            ? (rezultat as { error?: string }).error
+            : undefined;
+        if (greska) {
+          setError(greska);
+          return;
+        }
         setOpen(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Radnja nije uspjela.");

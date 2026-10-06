@@ -193,6 +193,8 @@ export async function deleteSeason(seasonId: string): Promise<void> {
   revalidatePath("/admin/seasons");
   revalidateSchedule();
   revalidateStandings();
+  // Isto kao kod igraca: cisti ?greska= od prethodnog odbijenog brisanja.
+  redirect("/admin/seasons");
 }
 
 /**

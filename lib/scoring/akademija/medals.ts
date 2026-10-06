@@ -86,7 +86,12 @@ export interface MedalAward {
   rank: number;
 }
 
-function belongsTo(
+/**
+ * Pripada li kandidat kategoriji. Izvezeno jer je ista provjera potrebna i
+ * izvan dodjele: dijeljeno mjesto na UKUPNOJ ljestvici ne smije blokirati
+ * medalju u kategoriji u kojoj izjednačenja nema (vidi syncSeasonMedals).
+ */
+export function belongsTo(
   candidate: MedalCandidate,
   category: AkademijaMedalCategory
 ): boolean {
@@ -163,4 +168,34 @@ export function wasTransferred(
   const members = ranking.filter((c) => belongsTo(c, award.category));
   const expected = members[award.place - 1];
   return expected !== undefined && expected.playerId !== award.playerId;
+}
+
+/**
+ * Medalje oko kojih izjednačenje na ljestvici stvarno postoji.
+ *
+ * `dijeliMjesto` govori o izjednačenju na UKUPNOJ ljestvici, a medalje se
+ * dodjeljuju i po dobnim kategorijama i ženama. Dvoje koji dijele 9. mjesto
+ * ukupno ne spore se oko zlata u U8 ako je samo jedan od njih U8 — pa mu se
+ * to zlato ne smije uzeti. Sporna je samo dodjela u kojoj igrač s kojim je
+ * izjednačen pripada ISTOJ kategoriji: tek je tada pravilnikom nerazlučivo
+ * kome medalja pripada (čl. 15 st. 6 kaže da dijele mjesto, ne i čija je
+ * medalja).
+ */
+export function sporneMedalje(
+  dodjele: MedalAward[],
+  ranking: MedalCandidate[],
+  mjestoPo: Map<string, number>,
+  dijeliMjesto: Map<string, boolean>
+): MedalAward[] {
+  return dodjele.filter((a) => {
+    if (!dijeliMjesto.get(a.playerId)) return false;
+    const mjesto = mjestoPo.get(a.playerId);
+    const kategorija = a.category as AkademijaMedalCategory;
+    return ranking.some(
+      (c) =>
+        c.playerId !== a.playerId &&
+        mjestoPo.get(c.playerId) === mjesto &&
+        belongsTo(c, kategorija)
+    );
+  });
 }

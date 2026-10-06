@@ -10,6 +10,11 @@ import { prisma } from "@/lib/prisma";
  *
  * "izricito" — admin je sam pokrenuo izračun. Tada se primjenjuje bez
  * pitanja; to je svjesna odluka i stoji u auditu.
+ *
+ * ZADANA je "pri-unosu", namjerno: prva verzija ovoga imala je zadano
+ * "izricito", pa je uručena nagrada i dalje tiho prelazila na drugog igrača —
+ * samo drugim putem, preko dodavanja, brisanja ili pomicanja nagrade nakon
+ * turnira. Tko želi prepisati dodjelu, mora to reći izrijekom.
  */
 export type NacinDodjele = "pri-unosu" | "izricito";
 

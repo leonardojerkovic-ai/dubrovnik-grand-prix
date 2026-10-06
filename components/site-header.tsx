@@ -53,6 +53,10 @@ export function SiteHeader() {
             jedini put do njih. Sada ga otvara i klik (ili Enter/Space na
             gumbu), zatvara Escape i odabir, a aria-expanded čitaču zaslona
             kaže u kojem je stanju. Hover je ostao kakav je bio.
+
+            focus-within:flex je izbačen: iz zatvorenog stanja nikad ne bi ni
+            proradio (skrivene poveznice nisu fokusirljive), a otvoreni je
+            izbornik držao otvorenim i kad ga Escape zatvori.
           */}
           <div
             className="group relative"
@@ -74,7 +78,7 @@ export function SiteHeader() {
               id="izbornik-ljestvice"
               className={`absolute left-0 top-full ${
                 ljestviceOpen ? "flex" : "hidden"
-              } group-hover:flex focus-within:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]`}
+              } group-hover:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]`}
             >
               {LJESTVICE.map((item) => (
                 <Link

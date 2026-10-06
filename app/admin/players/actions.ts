@@ -192,4 +192,7 @@ export async function deletePlayer(playerId: string): Promise<void> {
   }
   revalidatePath("/admin/players");
   revalidatePlayers(playerId);
+  // Bez preusmjeravanja bi nakon uspjesnog brisanja na ekranu ostala stara
+  // crvena poruka iz ?greska= od prethodnog, odbijenog brisanja.
+  redirect("/admin/players");
 }

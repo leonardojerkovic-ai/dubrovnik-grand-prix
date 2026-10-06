@@ -20,7 +20,7 @@ import {
  */
 export async function syncTournamentPrizes(
   tournamentId: string,
-  nacin: NacinDodjele = "izricito"
+  nacin: NacinDodjele = "pri-unosu"
 ): Promise<{
   awarded: number;
   keptManual: number;

@@ -121,7 +121,7 @@ export async function clearManualMedal(
 export async function recomputeMedals(tournamentId: string): Promise<void> {
   const actor = await requireAdmin();
   await provjeriZakljucanost(tournamentId);
-  const result = await syncTournamentMedals(tournamentId);
+  const result = await syncTournamentMedals(tournamentId, "izricito");
 
   await logAudit({
     actor,

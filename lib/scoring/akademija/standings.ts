@@ -78,6 +78,14 @@ export function isEligibleForFinal(input: {
  *   5. bolji plasman na posljednjem zajednički odigranom turniru
  *   6. dijeljeno mjesto
  *
+ * Kriterij 5 nije tranzitivan, i to je svojstvo pravila, ne koda: svaki par
+ * gleda SVOJ posljednji zajednički turnir, pa je moguće da A bude ispred B,
+ * B ispred C, a C ispred A. Tada poredak među njima ovisi o redoslijedu u
+ * nizu. Za to nema ispravka bez mijenjanja čl. 15; uvjet je rijedak (traži
+ * tri igrača izjednačena kroz prva četiri kriterija i različite parove
+ * zajedničkih turnira), a ako se pojavi, medalje se ionako ne dodjeljuju
+ * automatski — vidi syncSeasonMedals.
+ *
  * Kriterij 5 traži datum turnira, pa ga `AkademijaTournamentResult` nosi u
  * polju `dan`. Prije je bio izostavljen, s napomenom da se „rješava na
  * servisnom sloju" — a nije se rješavao nigdje, pa su dva igrača ostajala

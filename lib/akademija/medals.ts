@@ -6,6 +6,7 @@ import {
 import {
   assignMedals,
   medalEventForTournament,
+  sporneMedalje,
   wasTransferred,
   type MedalCandidate,
 } from "@/lib/scoring/akademija/medals";
@@ -38,7 +39,7 @@ import type { MedalCategory } from "@prisma/client";
  */
 export async function syncTournamentMedals(
   tournamentId: string,
-  nacin: NacinDodjele = "izricito"
+  nacin: NacinDodjele = "pri-unosu"
 ): Promise<{
   awarded: number;
   keptManual: number;
@@ -340,6 +341,7 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
   // getAkademijaStandings, pa se ovdje ne smije ponovno sortirati. Mjesto se
   // uzima iz ljestvice (row.place), ne iz rednog broja u nizu: dijeljeno
   // mjesto ponavlja isti broj.
+  const mjestoPo = new Map(standings.map((row) => [row.player.id, row.place]));
   const dijeliMjesto = new Map(
     standings.map((row) => [row.player.id, row.sharedPlace])
   );
@@ -370,7 +372,14 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
    * ne i kome pripada medalja — pa to ostaje odluka Kluba, kroz ručnu dodjelu
    * (koja je zabilježena u auditu i nosi obrazloženje).
    */
-  const nerazrijesene = computed.filter((a) => dijeliMjesto.get(a.playerId));
+  // Blokira se samo medalja oko koje izjednačenje stvarno postoji — vidi
+  // sporneMedalje u lib/scoring/akademija/medals.ts.
+  const nerazrijesene = sporneMedalje(
+    computed,
+    ranking,
+    mjestoPo,
+    dijeliMjesto
+  );
 
   const manual = await prisma.medal.findMany({
     where: { seasonId, tournamentId: null, manual: true },
@@ -378,9 +387,12 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
   const takenSlots = new Set(manual.map((m) => `${m.category}/${m.place}`));
   const takenPlayers = new Set(manual.map((m) => m.playerId));
 
+  const sporne = new Set(
+    nerazrijesene.map((a) => `${a.category}/${a.place}/${a.playerId}`)
+  );
   const toCreate = computed.filter(
     (a) =>
-      !dijeliMjesto.get(a.playerId) &&
+      !sporne.has(`${a.category}/${a.place}/${a.playerId}`) &&
       !takenSlots.has(`${a.category}/${a.place}`) &&
       !takenPlayers.has(a.playerId)
   );
