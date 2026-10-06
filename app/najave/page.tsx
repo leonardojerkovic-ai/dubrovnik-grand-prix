@@ -30,7 +30,7 @@ const GENERAL_NOTICE_DAYS = 60;
 function AnnouncementCard({ a }: { a: Announcement }) {
   return (
     <article className="rounded-lg border border-navy/10 bg-white p-5">
-      <p className="mb-1 text-xs text-ink/50">
+      <p className="mb-1 text-xs text-ink/60">
         {a.publishedAt.toLocaleDateString("hr-HR", {
           day: "numeric",
           month: "long",

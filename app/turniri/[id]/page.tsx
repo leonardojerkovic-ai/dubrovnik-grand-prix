@@ -217,7 +217,7 @@ export default async function TournamentDetailPage(props: {
 
       <dl className="mb-8 grid grid-cols-2 gap-4 rounded-lg border border-navy/10 bg-white p-4 text-sm md:grid-cols-4">
         <div>
-          <dt className="text-xs uppercase tracking-wide text-ink/40">Datum</dt>
+          <dt className="text-xs uppercase tracking-wide text-ink/60">Datum</dt>
           <dd className="font-medium text-navy">
             {tournament.date.toLocaleDateString("hr-HR", {
               day: "numeric",
@@ -229,22 +229,22 @@ export default async function TournamentDetailPage(props: {
         </div>
         {tournament.venue && (
           <div>
-            <dt className="text-xs uppercase tracking-wide text-ink/40">Mjesto</dt>
+            <dt className="text-xs uppercase tracking-wide text-ink/60">Mjesto</dt>
             <dd className="font-medium text-navy">{tournament.venue}</dd>
           </div>
         )}
         {tournament.level && (
           <div>
-            <dt className="text-xs uppercase tracking-wide text-ink/40">Razina</dt>
+            <dt className="text-xs uppercase tracking-wide text-ink/60">Razina</dt>
             <dd className="font-medium text-navy">{LEVEL_LABELS[tournament.level]}</dd>
           </div>
         )}
         <div>
-          <dt className="text-xs uppercase tracking-wide text-ink/40">Tempo</dt>
+          <dt className="text-xs uppercase tracking-wide text-ink/60">Tempo</dt>
           <dd className="font-medium text-navy">{TEMPO_LABELS[tournament.tempo]}</dd>
         </div>
         <div>
-          <dt className="text-xs uppercase tracking-wide text-ink/40">
+          <dt className="text-xs uppercase tracking-wide text-ink/60">
             Vrijeme razmišljanja
           </dt>
           <dd className="font-medium text-navy font-mono">
@@ -270,11 +270,11 @@ export default async function TournamentDetailPage(props: {
       </h2>
 
       {displayPlayers.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
           Još nema prijava za ovaj turnir.
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
               <tr>
@@ -289,7 +289,7 @@ export default async function TournamentDetailPage(props: {
             <tbody className="divide-y divide-navy/10">
               {displayPlayers.map((p, i) => (
                 <tr key={p.id}>
-                  <td className="px-3 py-2 text-ink/50 font-mono">
+                  <td className="px-3 py-2 text-ink/60 font-mono">
                     {p.rank ?? i + 1}.
                   </td>
                   <td className="px-4 py-2 font-medium text-navy">
@@ -376,7 +376,7 @@ export default async function TournamentDetailPage(props: {
             Gosti izvan kluba redovito pitaju zašto ih nema na ljestvici.
             Bodovi im se računaju (čl. 4), ali se ljestvica vodi za članove.
           */}
-          <p className="text-xs text-ink/55">
+          <p className="text-xs text-ink/60">
             Bodovi se računaju svim igračima, ali se na službenoj ljestvici
             prikazuju samo članovi ŠK Dubrovnik (čl. 4).
           </p>

@@ -126,7 +126,7 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
           />
           Preminuo
         </label>
-        <p className="mt-1 text-xs text-ink/55">
+        <p className="mt-1 text-xs text-ink/60">
           Igrač nestaje s javnog popisa igrača i iz odabira za buduće turnire.
           Rezultati, ljestvice i Hall of Fame ostaju netaknuti.
         </p>
@@ -216,7 +216,7 @@ function Field({
     <label className="grid gap-1 text-sm font-medium text-navy">
       {label}
       {children}
-      {hint && <span className="text-xs font-normal text-ink/50">{hint}</span>}
+      {hint && <span className="text-xs font-normal text-ink/60">{hint}</span>}
       {error && <span className="text-xs font-normal text-crimson">{error[0]}</span>}
     </label>
   );

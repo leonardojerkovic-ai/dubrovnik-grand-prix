@@ -45,13 +45,13 @@ export function PrizeList({ items }: { items: PrizeListItem[] }) {
               {item.place > 1 && ` — ${item.place}. mjesto`}
             </p>
             {item.transferred && (
-              <p className="mt-0.5 text-xs text-ink/55">
+              <p className="mt-0.5 text-xs text-ink/60">
                 Prenesena — igrači ispred u ovoj skupini već su primili višu
                 nagradu.
               </p>
             )}
             {item.note && (
-              <p className="mt-0.5 text-xs text-ink/55">{item.note}</p>
+              <p className="mt-0.5 text-xs text-ink/60">{item.note}</p>
             )}
           </div>
         </li>

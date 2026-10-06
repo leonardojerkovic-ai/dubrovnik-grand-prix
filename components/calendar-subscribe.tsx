@@ -66,7 +66,7 @@ export function CalendarSubscribe() {
             </button>
           </div>
 
-          <p className="mt-3 text-xs text-ink/50">
+          <p className="mt-3 text-xs text-ink/60">
             Na mobitelu je najlakše prvi gumb. Ako ne otvori kalendar, kopiraj
             poveznicu i dodaj je ručno kao pretplatu na kalendar.
           </p>

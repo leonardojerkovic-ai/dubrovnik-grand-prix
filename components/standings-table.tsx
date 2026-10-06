@@ -17,14 +17,14 @@ type Row = {
 export function StandingsTable({ rows }: { rows: Row[] }) {
   if (rows.length === 0) {
     return (
-      <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+      <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
         Za ovu ljestvicu još nema unesenih rezultata.
       </p>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+    <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
       <table className="w-full text-sm">
         <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
           <tr>

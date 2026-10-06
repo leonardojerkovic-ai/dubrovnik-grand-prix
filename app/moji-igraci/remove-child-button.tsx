@@ -18,7 +18,7 @@ export function RemoveChildButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="text-xs text-ink/50 hover:text-crimson"
+        className="text-xs text-ink/60 hover:text-crimson"
       >
         ukloni
       </button>
@@ -43,7 +43,7 @@ export function RemoveChildButton({
       <button
         type="button"
         onClick={() => setConfirming(false)}
-        className="text-ink/50 hover:text-navy"
+        className="text-ink/60 hover:text-navy"
       >
         ne
       </button>

@@ -33,7 +33,7 @@ export function CopyTextButton({
 
       {open && (
         <div className="mt-2 rounded-lg border border-navy/10 bg-white p-3">
-          {hint && <p className="mb-2 text-xs text-ink/55">{hint}</p>}
+          {hint && <p className="mb-2 text-xs text-ink/60">{hint}</p>}
 
           <pre className="max-h-72 overflow-auto whitespace-pre-wrap rounded bg-paper px-3 py-2.5 text-sm text-ink">
             {text}

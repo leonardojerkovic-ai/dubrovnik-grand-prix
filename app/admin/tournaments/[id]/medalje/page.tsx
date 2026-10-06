@@ -96,7 +96,7 @@ export default async function AdminMedalsPage(props: {
         <h2 className="font-display text-lg font-bold text-navy">
           Medalje — {tournament.name}
         </h2>
-        <p className="text-xs text-ink/55">
+        <p className="text-xs text-ink/60">
           {tournament.isFinal ? "Prvenstvo Akademije" : "Kvalifikacijski turnir"}{" "}
           · {results.length} igrača
         </p>
@@ -108,7 +108,7 @@ export default async function AdminMedalsPage(props: {
         poništiš. Obrazloženje se prikazuje uz medalju na javnoj stranici.
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
             <tr>
@@ -147,13 +147,13 @@ export default async function AdminMedalsPage(props: {
                             </span>
                           )}
                           {medal.note && (
-                            <span className="mt-0.5 block text-xs text-ink/55">
+                            <span className="mt-0.5 block text-xs text-ink/60">
                               {medal.note}
                             </span>
                           )}
                         </>
                       ) : (
-                        <span className="text-xs text-ink/40">
+                        <span className="text-xs text-ink/60">
                           nije dodijeljena
                         </span>
                       )}

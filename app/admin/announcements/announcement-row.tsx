@@ -46,7 +46,7 @@ export function AnnouncementRow({
       <div className="mb-1 flex items-start justify-between gap-4">
         <div>
           <p className="font-semibold text-navy">{title}</p>
-          <p className="text-xs text-ink/50">{meta}</p>
+          <p className="text-xs text-ink/60">{meta}</p>
         </div>
         <div className="flex items-center gap-3">
           <button

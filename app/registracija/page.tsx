@@ -70,7 +70,7 @@ export default function RegistracijaPage() {
           />
           <span>
             Registriram se samo kao roditelj ili skrbnik, ne igram sam/a
-            <span className="mt-0.5 block text-xs text-ink/55">
+            <span className="mt-0.5 block text-xs text-ink/60">
               Tvom računu se neće stvoriti igrački profil. Djecu mlađu od 16
               godina svejedno vodiš ti — to se određuje prema njihovoj dobi,
               bez obzira na ovu kvačicu. Djecu možeš dodati i kasnije u
@@ -154,7 +154,7 @@ function Field({
     <label className="grid gap-1 text-sm font-medium text-navy">
       {label}
       {children}
-      {hint && <span className="text-xs font-normal text-ink/50">{hint}</span>}
+      {hint && <span className="text-xs font-normal text-ink/60">{hint}</span>}
       {error && <span className="text-xs font-normal text-crimson">{error[0]}</span>}
     </label>
   );

@@ -60,7 +60,7 @@ export default async function SeasonOverviewPage(props: {
       </div>
 
       {!overview ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
           Nema unesenih sezona.
         </p>
       ) : (
@@ -110,7 +110,7 @@ export default async function SeasonOverviewPage(props: {
               <h3 className="mb-2 text-sm font-semibold text-navy">
                 Ljestvice i kvote
               </h3>
-              <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+              <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
                 <table className="w-full text-sm">
                   <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
                     <tr>
@@ -138,7 +138,7 @@ export default async function SeasonOverviewPage(props: {
                   </tbody>
                 </table>
               </div>
-              <p className="mt-2 text-xs text-ink/50">
+              <p className="mt-2 text-xs text-ink/60">
                 Kvota je polovica redovnih turnira, zaokruženo naviše, najmanje
                 5 (čl. 16 i čl. 20 st. 3).
               </p>
@@ -150,7 +150,7 @@ export default async function SeasonOverviewPage(props: {
               Turniri i ljestvice u koje ulaze
             </h3>
             {overview.tournaments.length === 0 ? (
-              <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+              <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
                 U ovoj sezoni još nema unesenih turnira.
               </p>
             ) : (
@@ -164,7 +164,7 @@ export default async function SeasonOverviewPage(props: {
                       >
                         {t.name}
                       </Link>
-                      <span className="text-xs text-ink/50">
+                      <span className="text-xs text-ink/60">
                         {fmt(t.date)} · {TEMPO[t.tempo] ?? t.tempo}
                         {t.level ? ` · ${LEVEL[t.level]}` : ""}
                         {t.isFinal ? " · završni" : ""}
@@ -173,7 +173,7 @@ export default async function SeasonOverviewPage(props: {
                     </div>
                     <p
                       className={`mt-1 text-xs ${
-                        t.standings.length === 0 ? "text-crimson" : "text-ink/55"
+                        t.standings.length === 0 ? "text-crimson" : "text-ink/60"
                       }`}
                     >
                       {t.standings.length === 0

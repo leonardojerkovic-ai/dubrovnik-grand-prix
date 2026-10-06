@@ -68,7 +68,7 @@ export default async function EditSeasonPage(props: {
                 ))}
             </ul>
           ) : (
-            <p className="mb-3 text-sm text-ink/50">
+            <p className="mb-3 text-sm text-ink/60">
               Medalje konačnog poretka još nisu izračunate.
             </p>
           )}

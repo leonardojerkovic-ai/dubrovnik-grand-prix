@@ -312,7 +312,7 @@ export function NovcaneNagradeAlat() {
               <button
                 type="button"
                 onClick={obrisi}
-                className="text-xs text-ink/50 hover:text-crimson"
+                className="text-xs text-ink/60 hover:text-crimson"
               >
                 obriši
               </button>
@@ -337,7 +337,7 @@ export function NovcaneNagradeAlat() {
         </label>
 
         <fieldset className="rounded-md border border-navy/10 bg-paper/60 px-3 py-2.5">
-          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-ink/50">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-ink/60">
             Kad su iznosi jednaki
           </legend>
           <div className="grid gap-1 text-sm text-ink">
@@ -373,7 +373,7 @@ export function NovcaneNagradeAlat() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] text-sm">
-            <thead className="text-left text-xs uppercase tracking-wide text-ink/50">
+            <thead className="text-left text-xs uppercase tracking-wide text-ink/60">
               <tr>
                 <th className="pb-1 pr-2 font-medium">Naziv</th>
                 <th className="pb-1 pr-2 font-medium">Iznos €</th>
@@ -532,7 +532,7 @@ export function NovcaneNagradeAlat() {
                     <button
                       type="button"
                       onClick={() => setRedci((prev) => prev.filter((x) => x.id !== r.id))}
-                      className="text-xs text-ink/50 hover:text-crimson"
+                      className="text-xs text-ink/60 hover:text-crimson"
                     >
                       ukloni
                     </button>
@@ -573,7 +573,7 @@ export function NovcaneNagradeAlat() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-wide text-ink/50">
+                <thead className="text-left text-xs uppercase tracking-wide text-ink/60">
                   <tr>
                     <th className="pb-1 pr-3 font-medium">Nagrada</th>
                     <th className="pb-1 pr-3 font-medium">Iznos</th>
@@ -587,7 +587,7 @@ export function NovcaneNagradeAlat() {
                       <td className="py-1.5 pr-3 text-navy">
                         {d.naziv}
                         {d.primjerak > 1 && (
-                          <span className="text-ink/50"> ({d.primjerak}.)</span>
+                          <span className="text-ink/60"> ({d.primjerak}.)</span>
                         )}
                       </td>
                       <td className="py-1.5 pr-3 tabular-nums">{eur(d.iznos)}</td>
@@ -605,7 +605,7 @@ export function NovcaneNagradeAlat() {
                             )}
                           </>
                         ) : (
-                          <span className="text-ink/50">nitko ne zadovoljava uvjete</span>
+                          <span className="text-ink/60">nitko ne zadovoljava uvjete</span>
                         )}
                       </td>
                       <td className="py-1.5 tabular-nums text-ink/70">{d.mjesto ?? "—"}</td>

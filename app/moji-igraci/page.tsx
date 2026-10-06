@@ -43,7 +43,7 @@ export default async function MyPlayersPage() {
               >
                 {self.lastName} {self.firstName}
               </PlayerLink>
-              <p className="text-xs text-ink/50">tvoj profil · {self.birthYear}.</p>
+              <p className="text-xs text-ink/60">tvoj profil · {self.birthYear}.</p>
             </div>
           </div>
         )}
@@ -58,7 +58,7 @@ export default async function MyPlayersPage() {
               >
                 {c.lastName} {c.firstName}
               </PlayerLink>
-              <p className="text-xs text-ink/50">
+              <p className="text-xs text-ink/60">
                 {c.birthYear}.
                 {!needsGuardian(c.birthYear) && " · može voditi vlastiti račun"}
               </p>
@@ -68,7 +68,7 @@ export default async function MyPlayersPage() {
         ))}
 
         {managed.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-ink/50">
+          <p className="px-4 py-8 text-center text-sm text-ink/60">
             Još nemaš nijedan povezan profil.
           </p>
         )}

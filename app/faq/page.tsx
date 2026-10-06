@@ -44,7 +44,7 @@ export default function FaqPage() {
             <summary className="cursor-pointer list-none font-semibold text-navy marker:content-none">
               <span className="flex items-center justify-between">
                 {item.q}
-                <span className="text-ink/30 transition-transform group-open:rotate-45">+</span>
+                <span className="text-ink/60 transition-transform group-open:rotate-45">+</span>
               </span>
             </summary>
             <p className="mt-2 text-sm text-ink/70">{item.a}</p>

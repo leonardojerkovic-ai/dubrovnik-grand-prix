@@ -81,7 +81,7 @@ export default async function GuardianshipsPage() {
           Dodaj skrbništvo
         </h3>
         <AddGuardianshipForm accounts={accounts} childOptions={childOptions} />
-        <p className="mt-3 text-xs text-ink/50">
+        <p className="mt-3 text-xs text-ink/60">
           Ponuđeni su samo igrači mlađi od {SELF_ACCOUNT_AGE} godina. Isto
           dijete može voditi više skrbnika, primjerice oba roditelja.
         </p>
@@ -124,7 +124,7 @@ export default async function GuardianshipsPage() {
         Aktivna skrbništva ({minors.length})
       </h3>
       {minors.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-sm text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-sm text-ink/60">
           Nema zabilježenih skrbništava.
         </p>
       ) : (

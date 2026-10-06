@@ -246,7 +246,7 @@ export default async function HomePage() {
                   <div className="font-hero text-xl leading-none text-navy">
                     {t.date.getDate()}
                   </div>
-                  <div className="mt-1 text-[10px] uppercase tracking-widest text-ink/45">
+                  <div className="mt-1 text-[10px] uppercase tracking-widest text-ink/60">
                     {t.date.toLocaleDateString("hr-HR", { month: "short" })}
                   </div>
                 </div>
@@ -257,7 +257,7 @@ export default async function HomePage() {
                   >
                     {t.name}
                   </Link>
-                  <p className="text-xs text-ink/50">
+                  <p className="text-xs text-ink/60">
                     {[
                       t.startTime ?? null,
                       t.venue ?? null,

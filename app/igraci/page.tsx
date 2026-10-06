@@ -142,13 +142,13 @@ export default async function PlayersPage(props: {
       </form>
 
       {players.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
           {q
             ? `Nema igrača koji odgovaraju pojmu „${q}".`
             : "Još nema unesenih članova."}
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
               <tr>

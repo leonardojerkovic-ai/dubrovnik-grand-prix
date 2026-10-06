@@ -76,7 +76,7 @@ export default async function AdminPrizesPage(props: {
         <h2 className="font-display text-lg font-bold text-navy">
           Nagrade — {tournament.name}
         </h2>
-        <p className="text-xs text-ink/55">
+        <p className="text-xs text-ink/60">
           Sezona {tournament.season.yearLabel} · {tournament._count.results}{" "}
           unesenih rezultata
         </p>
@@ -98,12 +98,12 @@ export default async function AdminPrizesPage(props: {
       </div>
 
       {prizes.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
           Za ovaj turnir još nije unesena nijedna nagrada.
         </p>
       ) : (
         <>
-          <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+          <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
             <table className="w-full text-sm">
               <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
                 <tr>
@@ -158,7 +158,7 @@ export default async function AdminPrizesPage(props: {
                         {prize.label}
                       </span>
                       {prize.count > 1 && (
-                        <span className="ml-2 text-xs text-ink/55">
+                        <span className="ml-2 text-xs text-ink/60">
                           ×{prize.count}
                         </span>
                       )}
@@ -173,20 +173,20 @@ export default async function AdminPrizesPage(props: {
                     </td>
                     <td className="px-4 py-3">
                       {(winnersByPrize.get(prize.id) ?? []).length === 0 ? (
-                        <span className="text-xs text-ink/40">—</span>
+                        <span className="text-xs text-ink/60">—</span>
                       ) : (
                         <ul className="space-y-0.5">
                           {(winnersByPrize.get(prize.id) ?? []).map((a) => (
                             <li key={a.place} className="text-navy">
                               {prize.count > 1 && (
-                                <span className="mr-1 text-ink/50">
+                                <span className="mr-1 text-ink/60">
                                   {a.place}.
                                 </span>
                               )}
                               {a.playerName}
                               {a.transferred && (
                                 <span
-                                  className="ml-1 text-xs text-ink/50"
+                                  className="ml-1 text-xs text-ink/60"
                                   title="Igrači ispred u ovoj skupini već su primili višu nagradu"
                                 >
                                   (prenesena)
@@ -227,7 +227,7 @@ export default async function AdminPrizesPage(props: {
               Preračunaj dodjelu
             </button>
           </form>
-          <p className="mt-2 text-xs text-ink/55">
+          <p className="mt-2 text-xs text-ink/60">
             Dodjela se preračunava sama pri svakom spremanju rezultata i pri
             izmjeni nagrada. Ovaj gumb treba samo ako želiš provjeriti stanje.
           </p>

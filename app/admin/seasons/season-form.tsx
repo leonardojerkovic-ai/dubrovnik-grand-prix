@@ -119,7 +119,7 @@ export function SeasonForm({ action, defaultValues = {} }: SeasonFormProps) {
         />
         Aktivna sezona (prikazuje se kao trenutna na naslovnici)
       </label>
-      <p className="text-xs text-ink/50 -mt-2">
+      <p className="text-xs text-ink/60 -mt-2">
         Postavljanje ove sezone kao aktivne automatski deaktivira druge
         sezone istog sustava (GP ili Akademija).
       </p>
@@ -144,7 +144,7 @@ function Field({
     <label className="grid gap-1 text-sm font-medium text-navy">
       {label}
       {children}
-      {hint && <span className="text-xs font-normal text-ink/50">{hint}</span>}
+      {hint && <span className="text-xs font-normal text-ink/60">{hint}</span>}
       {error && <span className="text-xs font-normal text-crimson">{error[0]}</span>}
     </label>
   );

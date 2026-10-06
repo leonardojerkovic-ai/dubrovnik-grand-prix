@@ -29,7 +29,7 @@ export default async function PrijavePage() {
       </h1>
 
       {tournaments.length === 0 && (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
           Trenutno nema turnira otvorenih za prijavu.
         </p>
       )}

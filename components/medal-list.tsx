@@ -43,13 +43,13 @@ export function MedalList({ items }: { items: MedalListItem[] }) {
               {awardLabel(item.category, item.place)}
             </p>
             {item.transferred && (
-              <p className="mt-0.5 text-xs text-ink/55">
+              <p className="mt-0.5 text-xs text-ink/60">
                 Prenesena — igrači ispred u ovoj kategoriji već su primili višu
                 medalju (čl. 19).
               </p>
             )}
             {item.note && (
-              <p className="mt-0.5 text-xs text-ink/55">{item.note}</p>
+              <p className="mt-0.5 text-xs text-ink/60">{item.note}</p>
             )}
           </div>
         </li>

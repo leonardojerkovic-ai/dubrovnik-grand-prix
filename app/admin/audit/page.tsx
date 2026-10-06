@@ -114,7 +114,7 @@ export default async function AdminAuditPage(props: {
           {entity || actor ? " za odabrani filtar." : " — trag počinje od uvođenja ove funkcije."}
         </p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+        <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
           <table className="w-full text-sm">
             <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
               <tr>
@@ -132,7 +132,7 @@ export default async function AdminAuditPage(props: {
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-navy">{e.actorEmail}</span>
-                    <span className="block text-xs text-ink/50">{e.actorRole}</span>
+                    <span className="block text-xs text-ink/60">{e.actorRole}</span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span
@@ -142,13 +142,13 @@ export default async function AdminAuditPage(props: {
                     >
                       {ACTION_LABELS[e.action] ?? e.action}
                     </span>
-                    <span className="block text-xs text-ink/50 mt-1">{e.entity}</span>
+                    <span className="block text-xs text-ink/60 mt-1">{e.entity}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-ink">{e.summary}</span>
                     {(e.before || e.after) && (
                       <details className="mt-1">
-                        <summary className="cursor-pointer text-xs text-ink/50 hover:text-navy">
+                        <summary className="cursor-pointer text-xs text-ink/60 hover:text-navy">
                           Detalji
                         </summary>
                         <pre className="mt-2 max-h-64 overflow-auto rounded bg-navy/5 p-2 text-[11px] leading-relaxed text-ink/80">
@@ -165,7 +165,7 @@ export default async function AdminAuditPage(props: {
       )}
 
       {entries.length === PAGE_SIZE && (
-        <p className="mt-3 text-xs text-ink/50">
+        <p className="mt-3 text-xs text-ink/60">
           Prikazano zadnjih {PAGE_SIZE} zapisa. Suzi filtar za starije.
         </p>
       )}

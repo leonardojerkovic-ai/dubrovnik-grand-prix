@@ -120,7 +120,7 @@ export default async function KalendarPage(props: {
 
       {allSeasons.length > 1 && (
         <nav className="mb-8 mt-6 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-ink/55">Sezona:</span>
+          <span className="text-ink/60">Sezona:</span>
           {allSeasons.map((s) => {
             const slug = seasonSlug(s.yearLabel);
             const active = selected
@@ -182,16 +182,16 @@ export default async function KalendarPage(props: {
               </h2>
 
               {season.tournaments.length === 0 && (
-                <p className="text-sm text-ink/50">Nema unesenih turnira.</p>
+                <p className="text-sm text-ink/60">Nema unesenih turnira.</p>
               )}
 
               {upcoming.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/55">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
                     Predstoji ({upcoming.length})
                   </h3>
-                  <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
-                    <table className="w-full text-sm">
+                  <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
+                    <table className="w-full min-w-[44rem] text-sm">
                       <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
                         <tr>
                           <th className="px-4 py-2">Naziv</th>
@@ -244,11 +244,11 @@ export default async function KalendarPage(props: {
 
               {played.length > 0 && (
                 <div>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/55">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
                     Odigrano ({played.length})
                   </h3>
-                  <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
-                    <table className="w-full text-sm">
+                  <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
+                    <table className="w-full min-w-[44rem] text-sm">
                       <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
                         <tr>
                           <th className="px-4 py-2">Naziv</th>
@@ -293,7 +293,7 @@ export default async function KalendarPage(props: {
                                     {winner.lastName} {winner.firstName}
                                   </PlayerLink>
                                 ) : (
-                                  <span className="text-xs text-ink/40">
+                                  <span className="text-xs text-ink/60">
                                     rezultati još nisu uneseni
                                   </span>
                                 )}

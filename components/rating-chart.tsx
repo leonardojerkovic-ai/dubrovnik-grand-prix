@@ -55,7 +55,7 @@ export function RatingChart({
 
   if (all.length < 2) {
     return (
-      <p className="rounded-lg border border-navy/10 bg-white px-4 py-6 text-sm text-ink/50">
+      <p className="rounded-lg border border-navy/10 bg-white px-4 py-6 text-sm text-ink/60">
         Još nema dovoljno zabilježenih rejtinga za prikaz krivulje.
       </p>
     );

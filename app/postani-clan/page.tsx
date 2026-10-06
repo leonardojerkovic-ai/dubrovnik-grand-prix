@@ -112,19 +112,19 @@ export default function PostaniClanPage() {
           <p className="font-medium text-navy">Podaci za uplatu</p>
           <dl className="mt-2 grid gap-1 text-ink/75">
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/50">Primatelj:</dt>
+              <dt className="text-ink/60">Primatelj:</dt>
               <dd>Šahovski klub Dubrovnik, Liechtensteinov put 12, 20000 Dubrovnik</dd>
             </div>
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/50">IBAN:</dt>
+              <dt className="text-ink/60">IBAN:</dt>
               <dd className="font-mono">HR8224070001100022033</dd>
             </div>
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/50">Poziv na broj:</dt>
+              <dt className="text-ink/60">Poziv na broj:</dt>
               <dd className="font-mono">00 1-2026</dd>
             </div>
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/50">Opis:</dt>
+              <dt className="text-ink/60">Opis:</dt>
               <dd>ime i prezime osobe za koju se članarina uplaćuje</dd>
             </div>
           </dl>

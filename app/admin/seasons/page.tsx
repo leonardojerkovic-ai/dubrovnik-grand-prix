@@ -29,7 +29,7 @@ export default async function AdminSeasonsPage(props: {
         </Link>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
             <tr>
@@ -61,7 +61,7 @@ export default async function AdminSeasonsPage(props: {
                   {s.isActive ? (
                     <span className="badge-title">Aktivna</span>
                   ) : (
-                    <span className="text-ink/30">—</span>
+                    <span className="text-ink/60">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -87,7 +87,7 @@ export default async function AdminSeasonsPage(props: {
             ))}
             {seasons.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">
+                <td colSpan={6} className="px-4 py-8 text-center text-ink/60">
                   Još nema unesenih sezona.
                 </td>
               </tr>

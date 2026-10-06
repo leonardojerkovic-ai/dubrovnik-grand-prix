@@ -122,7 +122,7 @@ export function ResultsForm({
         </p>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
             <tr>
@@ -217,7 +217,7 @@ export function ResultsForm({
         </button>
       </div>
 
-      <p className="text-xs text-ink/50">
+      <p className="text-xs text-ink/60">
         Rejting se pri odabiru igrača predlaže iz zadnje liste do dana
         turnira; prepiši ga ako je na turniru vrijedio drugi. Ostavi prazno
         samo ako igrač tada nije imao rejting u ovom tempu — u GP-u takav

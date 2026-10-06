@@ -55,7 +55,7 @@ export function CodeRow({
           {playerName}
         </span>
 
-        <span className="text-xs text-ink/50">
+        <span className="text-xs text-ink/60">
           {usedAt
             ? `iskorišten ${usedAt}`
             : hasCode
@@ -115,7 +115,7 @@ export function CodeRow({
 
       {code && (
         <div className="mt-2 rounded-md bg-paper px-3 py-2.5">
-          <p className="text-xs text-ink/55">
+          <p className="text-xs text-ink/60">
             Kod se prikazuje samo sada. Ako ga izgubiš, izdaj novi.
           </p>
           <p className="mt-1 font-mono text-lg tracking-widest text-navy">

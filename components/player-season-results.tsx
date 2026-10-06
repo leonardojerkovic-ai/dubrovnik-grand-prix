@@ -109,7 +109,7 @@ function ResultRow({ result }: { result: ProfileResult }) {
               {result.tournamentName}
             </span>
           </p>
-          <p className="text-xs text-ink/50">
+          <p className="text-xs text-ink/60">
             {meta}
             {note ? ` · ${note}` : ""}
           </p>
@@ -140,7 +140,7 @@ export function PlayerSeasonResults({ season }: { season: ProfileSeason }) {
       <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
         <h2 className="font-display text-lg font-bold text-navy">
           {season.yearLabel}
-          <span className="ml-2 text-sm font-normal text-ink/50">
+          <span className="ml-2 text-sm font-normal text-ink/60">
             {season.standingLabel}
           </span>
         </h2>
@@ -148,7 +148,7 @@ export function PlayerSeasonResults({ season }: { season: ProfileSeason }) {
 
       <div className="mb-3 grid grid-cols-3 gap-2">
         <div className="rounded-lg bg-paper px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wide text-ink/50">
+          <p className="text-[10px] uppercase tracking-wide text-ink/60">
             Ukupno
           </p>
           <p className="font-mono text-xl font-semibold text-navy">
@@ -156,7 +156,7 @@ export function PlayerSeasonResults({ season }: { season: ProfileSeason }) {
           </p>
         </div>
         <div className="rounded-lg bg-paper px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wide text-ink/50">
+          <p className="text-[10px] uppercase tracking-wide text-ink/60">
             Turnira
           </p>
           <p className="font-mono text-xl font-semibold text-navy">
@@ -164,7 +164,7 @@ export function PlayerSeasonResults({ season }: { season: ProfileSeason }) {
           </p>
         </div>
         <div className="rounded-lg bg-paper px-3 py-2">
-          <p className="text-[10px] uppercase tracking-wide text-ink/50">
+          <p className="text-[10px] uppercase tracking-wide text-ink/60">
             {season.quota === null ? "Broji se" : "Kvota"}
           </p>
           <p className="font-mono text-xl font-semibold text-navy">
@@ -173,7 +173,7 @@ export function PlayerSeasonResults({ season }: { season: ProfileSeason }) {
         </div>
       </div>
 
-      <p className="mb-3 text-xs leading-relaxed text-ink/50">
+      <p className="mb-3 text-xs leading-relaxed text-ink/60">
         {season.system === "GP" ? (
           <>
             U zbroj ulazi {season.quota} najboljih redovnih rezultata (čl. 16) i
@@ -188,7 +188,7 @@ export function PlayerSeasonResults({ season }: { season: ProfileSeason }) {
         )}
       </p>
 
-      <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <div className="flex bg-navy/5 px-4 py-2 text-[10px] uppercase tracking-wide text-ink/60">
           <span className="flex-1">Turnir</span>
           <span className="w-12 text-right">Mjesto</span>

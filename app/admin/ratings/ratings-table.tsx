@@ -66,7 +66,7 @@ export function RatingsTable({ players }: { players: PlayerRow[] }) {
         </p>
       )}
 
-      <div className="overflow-hidden rounded-lg border border-navy/10 bg-white">
+      <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
           <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
             <tr>
@@ -104,7 +104,7 @@ export function RatingsTable({ players }: { players: PlayerRow[] }) {
         >
           {isPending ? "Spremanje…" : "Spremi sve rejtinge"}
         </button>
-        <p className="mt-2 text-xs text-ink/50">
+        <p className="mt-2 text-xs text-ink/60">
           Prazno polje = bez promjene za taj tempo. Svaki spremljeni unos
           stvara i povijesni zapis (snapshot) s današnjim datumom, koristi se
           za izračun FR faktora GP bodova po datumu turnira (čl. 7).

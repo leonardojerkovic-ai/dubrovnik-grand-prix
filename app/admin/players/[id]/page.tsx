@@ -22,7 +22,7 @@ export default async function EditPlayerPage(props: {
       </h2>
 
       {/* Druga strana veze računa i profila; upravlja se u Admin → Korisnici. */}
-      <p className="mb-4 text-xs text-ink/55">
+      <p className="mb-4 text-xs text-ink/60">
         {player.user
           ? `Povezan korisnički račun: ${player.user.email}`
           : "Nema povezanog korisničkog računa."}{" "}

@@ -126,7 +126,7 @@ export function PrizeForm({
       <input type="hidden" name="tournamentId" value={tournamentId} />
 
       <div>
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/55">
+        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
           Gotove postavke
         </p>
         <div className="flex flex-wrap gap-2">
@@ -141,7 +141,7 @@ export function PrizeForm({
             </button>
           ))}
         </div>
-        <p className="mt-2 text-xs text-ink/55">
+        <p className="mt-2 text-xs text-ink/60">
           Postavka samo popuni polja ispod — sve se može dotjerati prije
           spremanja. Dobne granice računaju se za sezonu {seasonStartYear}.
         </p>
@@ -171,7 +171,7 @@ export function PrizeForm({
             placeholder="Ž, U1800, +50…"
             className="input"
           />
-          <span className="text-xs text-ink/55">
+          <span className="text-xs text-ink/60">
             Prazno za ukupni poredak — tada se prikazuje broj mjesta.
           </span>
         </label>
@@ -194,7 +194,7 @@ export function PrizeForm({
       </div>
 
       <fieldset className="grid gap-3 rounded-md border border-navy/10 p-3 md:grid-cols-3">
-        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-ink/55">
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-ink/60">
           Uvjeti (prazno = bez ograničenja)
         </legend>
 

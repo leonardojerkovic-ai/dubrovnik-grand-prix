@@ -235,7 +235,7 @@ export function TournamentForm({
           />
           <span>
             Samo igrači s pravom na bodove (čl. 3)
-            <span className="mt-0.5 block text-xs text-ink/55">
+            <span className="mt-0.5 block text-xs text-ink/60">
               Prijavu dopušta samo igračima odgovarajućeg godišta s rapid
               rejtingom nižim od 1600. Isključi ako želiš pustiti starije ili
               jače igrače da odigraju izvan konkurencije — bodove ionako ne

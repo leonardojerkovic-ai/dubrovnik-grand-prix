@@ -20,6 +20,7 @@ const LJESTVICE = [
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [ljestviceOpen, setLjestviceOpen] = useState(false);
 
   const { data: session, status } = useSession();
   const user = session?.user as
@@ -46,15 +47,40 @@ export function SiteHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden lg:flex items-center gap-5 text-sm font-medium text-navy">
-          <div className="group relative">
-            <button className="hover:text-crimson transition-colors">
+          {/*
+            Izbornik se dosad otvarao samo na group-hover, pa se tipkovnicom
+            do ljestvica nije moglo doći — a na zaslonima ≥1024 px ovo je
+            jedini put do njih. Sada ga otvara i klik (ili Enter/Space na
+            gumbu), zatvara Escape i odabir, a aria-expanded čitaču zaslona
+            kaže u kojem je stanju. Hover je ostao kakav je bio.
+          */}
+          <div
+            className="group relative"
+            onMouseLeave={() => setLjestviceOpen(false)}
+            onKeyDown={(e) => {
+              if (e.key === "Escape") setLjestviceOpen(false);
+            }}
+          >
+            <button
+              type="button"
+              aria-expanded={ljestviceOpen}
+              aria-controls="izbornik-ljestvice"
+              onClick={() => setLjestviceOpen((v) => !v)}
+              className="hover:text-crimson transition-colors"
+            >
               Ljestvice
             </button>
-            <div className="absolute left-0 top-full hidden group-hover:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]">
+            <div
+              id="izbornik-ljestvice"
+              className={`absolute left-0 top-full ${
+                ljestviceOpen ? "flex" : "hidden"
+              } group-hover:flex focus-within:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]`}
+            >
               {LJESTVICE.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
+                  onClick={() => setLjestviceOpen(false)}
                   className="rounded px-2 py-1 hover:bg-sky-light"
                 >
                   {item.label}
@@ -144,7 +170,7 @@ export function SiteHeader() {
       {/* Mobilni panel */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-navy/10 bg-paper px-4 py-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
             Ljestvice
           </p>
           <div className="mb-4 grid grid-cols-2 gap-1">
@@ -160,7 +186,7 @@ export function SiteHeader() {
             ))}
           </div>
 
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/40">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
             Stranice
           </p>
           <div className="mb-4 grid gap-1">
@@ -178,7 +204,7 @@ export function SiteHeader() {
 
           {signedIn ? (
             <div className="grid gap-2 border-t border-navy/10 pt-3">
-              <p className="px-2 text-xs text-ink/50">Prijavljeni ste kao</p>
+              <p className="px-2 text-xs text-ink/60">Prijavljeni ste kao</p>
               <p className="truncate px-2 text-sm font-medium text-navy">{label}</p>
               <Link
                 href="/moji-igraci"

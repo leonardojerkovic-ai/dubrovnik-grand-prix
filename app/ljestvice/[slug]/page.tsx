@@ -91,7 +91,7 @@ export default async function StandingsPage(props: {
 
       {(rows?.length ?? 0) > 0 && <ObjectionNote />}
 
-      <p className="mt-4 text-xs text-ink/55">
+      <p className="mt-4 text-xs text-ink/60">
         Ova adresa uvijek pokazuje aktivnu sezonu. Za trajnu poveznicu na ovaj
         poredak koristi{" "}
         <Link

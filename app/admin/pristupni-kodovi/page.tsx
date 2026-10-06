@@ -52,7 +52,7 @@ export default async function LinkCodesPage() {
       </div>
 
       {players.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/50">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
           Svi igrači imaju povezan korisnički račun.
         </p>
       ) : (
