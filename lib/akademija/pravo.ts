@@ -15,7 +15,11 @@ import { isEligibleForPoints } from "../scoring/akademija/formulas";
 
 export interface PostojecePravo {
   isEligible: boolean;
-  firstTournamentId: string;
+  /**
+   * Turnir na kojem je pravo utvrđeno. Može biti prazan: veza je
+   * onDelete: SetNull, pa brisanje turnira ostavi zapis bez njega.
+   */
+  firstTournamentId: string | null;
   firstTournamentDate: Date;
 }
 
@@ -82,11 +86,16 @@ export function odluciPravo(input: {
     rapidRatingAtFirstTournament: input.rapidRatingAtThisTournament,
   });
 
-  const status = !postojeci
-    ? "new"
-    : postojeci.firstTournamentId === tournamentId
-      ? "refreshed"
-      : "recomputed";
+  // Isti turnir prepoznajemo po ID-u; ako ga zapis nema (obrisan turnir),
+  // pada se na datum. Inače bi ponovno spremanje istog turnira izlazilo kao
+  // „unesen raniji turnir" i nosilo upozorenje za koje nema razloga.
+  const istiTurnir = postojeci
+    ? postojeci.firstTournamentId === tournamentId ||
+      (postojeci.firstTournamentId === null &&
+        postojeci.firstTournamentDate.getTime() === tournamentDate.getTime())
+    : false;
+
+  const status = !postojeci ? "new" : istiTurnir ? "refreshed" : "recomputed";
 
   return {
     playerId,

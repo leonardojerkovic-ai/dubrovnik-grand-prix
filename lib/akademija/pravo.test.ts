@@ -75,3 +75,32 @@ describe("odluciPravo — čl. 3", () => {
     expect(o.isEligible).toBe(false);
   });
 });
+
+describe("odluciPravo — zapis bez turnira (turnir obrisan)", () => {
+  it("isti datum znači isti turnir, pa je preračunavanje, ne 'raniji turnir'", () => {
+    const o = odluciPravo({
+      ...osnova,
+      postojeci: {
+        isEligible: true,
+        firstTournamentId: null,
+        firstTournamentDate: dan("2026-11-01"),
+      },
+      rapidRatingAtThisTournament: 1650,
+    });
+    expect(o.status).toBe("refreshed");
+  });
+
+  it("stroži datum i dalje zaključava", () => {
+    const o = odluciPravo({
+      ...osnova,
+      postojeci: {
+        isEligible: true,
+        firstTournamentId: null,
+        firstTournamentDate: dan("2026-09-01"),
+      },
+      rapidRatingAtThisTournament: 1650,
+    });
+    expect(o.status).toBe("locked");
+    expect(o.isEligible).toBe(true);
+  });
+});
