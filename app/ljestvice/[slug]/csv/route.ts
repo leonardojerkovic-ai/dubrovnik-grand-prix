@@ -45,8 +45,10 @@ export async function GET(
       "Odigrano turnira",
       "Rezultata u zbroju",
     ],
-    (rows ?? []).map((row, index) => [
-      index + 1,
+    (rows ?? []).map((row) => [
+      // Mjesto iz ljestvice, ne redni broj: dijeljeno mjesto ponavlja isti
+      // broj, kako ga i pravilnik objavljuje (čl. 18 GP / čl. 15 Akademije).
+      row.sharedPlace ? `${row.place}=` : row.place,
       row.player.title === "NONE" ? "" : row.player.title,
       `${row.player.lastName} ${row.player.firstName}`,
       row.total,

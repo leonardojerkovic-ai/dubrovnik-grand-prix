@@ -4,6 +4,7 @@ import {
   compareStandings,
   type AkademijaTournamentResult,
 } from "@/lib/scoring/akademija/standings";
+import { mjestaIzPoretka } from "@/lib/scoring/mjesta";
 
 export type AkademijaStandingRow = {
   player: {
@@ -16,6 +17,10 @@ export type AkademijaStandingRow = {
   total: number;
   countedResults: AkademijaTournamentResult[];
   allResults: AkademijaTournamentResult[];
+  /** Mjesto kako se objavljuje — jednako za igrače koji ga dijele (čl. 15). */
+  place: number;
+  /** Dijeli li ovo mjesto s nekim. */
+  sharedPlace: boolean;
 };
 
 /**
@@ -71,6 +76,7 @@ export async function getAkademijaStandings(
       };
       entry.results.push({
         tournamentId: t.id,
+        dan: t.date.getTime(),
         isFinal: t.isFinal,
         gpPoints: r.gpPoints ?? 0,
         rank: r.rank,
@@ -80,12 +86,19 @@ export async function getAkademijaStandings(
     }
   }
 
-  const standings: AkademijaStandingRow[] = Array.from(
+  type BezMjesta = Omit<AkademijaStandingRow, "place" | "sharedPlace">;
+  const standings: BezMjesta[] = Array.from(
     playerMap.entries()
   ).map(([playerId, { player, results }]) => {
     const built = buildPlayerStanding(playerId, results);
     return { player, ...built };
   });
 
-  return standings.sort(compareStandings);
+  const poredani = standings.sort(compareStandings);
+  const mjesta = mjestaIzPoretka(poredani, compareStandings);
+  return poredani.map((row, i) => ({
+    ...row,
+    place: mjesta[i].mjesto,
+    sharedPlace: mjesta[i].dijeljeno,
+  }));
 }

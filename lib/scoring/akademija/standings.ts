@@ -6,6 +6,13 @@
 export interface AkademijaTournamentResult {
   tournamentId: string;
   isFinal: boolean;
+  /**
+   * Dan turnira, kao broj (Date.getTime()). Potreban za čl. 15 st. 5 —
+   * „posljednji zajednički odigrani turnir" — koji se bez datuma ne može
+   * odrediti. Broj, a ne Date, da komparator ostane čista funkcija bez
+   * ovisnosti o vremenskoj zoni.
+   */
+  dan: number;
   gpPoints: number;
   /** Konačni plasman igrača na tom turniru — potreban za tie-break kriterije čl. 15 st. 2 i 4 */
   rank: number;
@@ -71,11 +78,10 @@ export function isEligibleForFinal(input: {
  *   5. bolji plasman na posljednjem zajednički odigranom turniru
  *   6. dijeljeno mjesto
  *
- * Kriterij 5. (posljednji zajednički odigrani turnir) zahtijeva podatak o
- * DATUMU turnira da bi se odredilo "posljednji" — ovdje se očekuje da je
- * `allResults` već filtriran/sortiran kronološki od strane pozivatelja
- * (uparivanje turnira koje su OBA igrača odigrala treba raditi izvan ove
- * funkcije, na razini servisa koji ima pristup punom kalendaru).
+ * Kriterij 5 traži datum turnira, pa ga `AkademijaTournamentResult` nosi u
+ * polju `dan`. Prije je bio izostavljen, s napomenom da se „rješava na
+ * servisnom sloju" — a nije se rješavao nigdje, pa su dva igrača ostajala
+ * izjednačena i mjesto među njima dijelio je redoslijed u memoriji.
  */
 export type ComparableAkademijaStanding = Pick<
   AkademijaStandingEntry,
@@ -108,10 +114,27 @@ export function compareStandings(
     return finalA.rank - finalB.rank; // manji rank = bolji plasman
   }
 
-  // Kriterij 5 (posljednji zajednički turnir) namjerno nije ovdje —
-  // vidi napomenu u JSDoc-u iznad, rješava se na servisnom sloju.
+  // Kriterij 5 — posljednji turnir koji su OBA igrača odigrala. Uzimaju se
+  // samo zajednički turniri: turnir na kojem je igrao jedan a drugi nije ne
+  // govori ništa o njihovu međusobnom odnosu.
+  const zajednicki = new Map<string, { a: number; b: number; dan: number }>();
+  const poTurniru = new Map(b.allResults.map((r) => [r.tournamentId, r]));
+  for (const ra of a.allResults) {
+    const rb = poTurniru.get(ra.tournamentId);
+    if (rb) {
+      zajednicki.set(ra.tournamentId, {
+        a: ra.rank,
+        b: rb.rank,
+        dan: ra.dan,
+      });
+    }
+  }
+  const posljednji = [...zajednicki.values()].sort((x, y) => y.dan - x.dan)[0];
+  if (posljednji && posljednji.a !== posljednji.b) {
+    return posljednji.a - posljednji.b; // manji rank = bolji plasman
+  }
 
-  return 0; // dijeljeno mjesto
+  return 0; // dijeljeno mjesto — čl. 15 st. 6
 }
 
 export function sortStandings(

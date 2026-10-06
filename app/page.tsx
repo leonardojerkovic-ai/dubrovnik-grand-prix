@@ -22,6 +22,8 @@ function toPreviewRows(
       title: string;
       isClubMember: boolean;
     };
+    place: number;
+    sharedPlace: boolean;
     total: number;
   }[]
 ): StandingsPreviewRow[] {
@@ -30,6 +32,8 @@ function toPreviewRows(
     name: `${row.player.lastName} ${row.player.firstName}`,
     title: row.player.title,
     isClubMember: row.player.isClubMember,
+    place: row.place,
+    sharedPlace: row.sharedPlace,
     total: row.total,
   }));
 }

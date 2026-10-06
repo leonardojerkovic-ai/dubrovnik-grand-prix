@@ -13,6 +13,7 @@ import {
   type GpVeteranCategory,
 } from "@/lib/scoring/gp/categories";
 import { tournamentEntersStanding } from "@/lib/scoring/gp/tournament-scope";
+import { mjestaIzPoretka } from "@/lib/scoring/mjesta";
 
 export type GpCategoryCode =
   | "OPCI"
@@ -33,6 +34,10 @@ export type GpStandingRow = {
   total: number;
   countedResults: PlayerTournamentResult[];
   allResults: PlayerTournamentResult[];
+  /** Mjesto kako se objavljuje — jednako za igrače koji ga dijele (čl. 18). */
+  place: number;
+  /** Dijeli li ovo mjesto s nekim. */
+  sharedPlace: boolean;
 };
 
 /**
@@ -142,12 +147,19 @@ export async function getGpStandings(
   const regularCount = relevantTournaments.filter((t) => !t.isFinal).length;
   const quota = calculateQuota(regularCount);
 
-  const standings: GpStandingRow[] = Array.from(playerMap.entries()).map(
+  type BezMjesta = Omit<GpStandingRow, "place" | "sharedPlace">;
+  const standings: BezMjesta[] = Array.from(playerMap.entries()).map(
     ([playerId, { player, results }]) => {
       const built = buildPlayerStanding(playerId, results, quota);
       return { player, ...built };
     }
   );
 
-  return standings.sort(compareStandings);
+  const poredani = standings.sort(compareStandings);
+  const mjesta = mjestaIzPoretka(poredani, compareStandings);
+  return poredani.map((row, i) => ({
+    ...row,
+    place: mjesta[i].mjesto,
+    sharedPlace: mjesta[i].dijeljeno,
+  }));
 }

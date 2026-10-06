@@ -15,6 +15,9 @@ export interface StandingsPreviewRow {
   name: string;
   title: string;
   isClubMember: boolean;
+  /** Mjesto iz ljestvice — dijeljeno mjesto ponavlja isti broj. */
+  place: number;
+  sharedPlace: boolean;
   total: number;
 }
 
@@ -54,8 +57,8 @@ export function StandingsPreview({
       </header>
 
       <ol className="divide-y divide-navy/[0.07]">
-        {rows.map((row, index) => {
-          const place = index + 1;
+        {rows.map((row) => {
+          const place = row.place;
           return (
             <li
               key={row.playerId}
@@ -67,6 +70,7 @@ export function StandingsPreview({
                 }`}
               >
                 {place}
+                {row.sharedPlace && "="}
               </span>
               <PlayerLink
                 id={row.playerId}

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { updateSeason, recomputeSeasonMedals } from "../actions";
 import { SeasonForm } from "../season-form";
 import { getSeasonMedals } from "@/lib/akademija/medals";
+import { getAkademijaStandings } from "@/lib/standings/akademija";
 import { MEDAL_PRIORITY } from "@/lib/scoring/akademija/medals";
 
 export default async function EditSeasonPage(props: {
@@ -16,6 +17,23 @@ export default async function EditSeasonPage(props: {
 
   const seasonMedals =
     season.system === "AKADEMIJA" ? await getSeasonMedals(season.id) : [];
+
+  /**
+   * Dijeljena mjesta na konačnoj ljestvici (čl. 15 st. 6).
+   *
+   * Izračun medalja takvo mjesto preskače — pravilnik kaže da igrači dijele
+   * mjesto, ali ne i kome pripada medalja. Zato ovdje stoji popis: admin vidi
+   * koga se tiče i može medalju dodijeliti ručno, uz obrazloženje.
+   */
+  const dijeljenaMjesta =
+    season.system === "AKADEMIJA"
+      ? ((await getAkademijaStandings(season.id)) ?? [])
+          .filter((row) => row.sharedPlace)
+          .map((row) => ({
+            place: row.place,
+            name: `${row.player.lastName} ${row.player.firstName}`,
+          }))
+      : [];
 
   return (
     <div>
@@ -71,6 +89,26 @@ export default async function EditSeasonPage(props: {
             <p className="mb-3 text-sm text-ink/60">
               Medalje konačnog poretka još nisu izračunate.
             </p>
+          )}
+
+          {dijeljenaMjesta.length > 0 && (
+            <div className="mb-3 rounded-md border border-gold/40 bg-gold/10 px-3 py-2 text-xs text-navy">
+              <p className="font-semibold">
+                Dijeljena mjesta — izračun ih preskače
+              </p>
+              <p className="mt-1 max-w-prose">
+                Po čl. 15 st. 6 ovi igrači dijele mjesto. Pravilnik ne kaže
+                kome u tom slučaju pripada medalja, pa je izračun ne
+                dodjeljuje; dodijeli je ručno ako Klub tako odluči.
+              </p>
+              <ul className="mt-1">
+                {dijeljenaMjesta.map((d) => (
+                  <li key={`${d.place}-${d.name}`}>
+                    {d.place}. mjesto — {d.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           <form

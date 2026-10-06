@@ -12,6 +12,9 @@ type Row = {
   total: number;
   countedResults: { gpPoints: number }[];
   allResults: { gpPoints: number }[];
+  /** Mjesto iz ljestvice — NE redni broj u nizu; dijeljeno mjesto ponavlja se. */
+  place: number;
+  sharedPlace: boolean;
 };
 
 export function StandingsTable({ rows }: { rows: Row[] }) {
@@ -35,10 +38,18 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
           </tr>
         </thead>
         <tbody className="divide-y divide-navy/10">
-          {rows.map((row, i) => (
+          {rows.map((row) => (
             <tr key={row.player.id}>
               <td className="px-3 py-3">
-                <RankBadge place={i + 1} />
+                <RankBadge place={row.place} />
+                {row.sharedPlace && (
+                  <span
+                    className="ml-1 text-xs text-ink/60"
+                    title="Dijeljeno mjesto — svi kriteriji pravilnika daju jednak rezultat."
+                  >
+                    =
+                  </span>
+                )}
               </td>
               <td className="px-4 py-3 font-medium text-navy">
                 <PlayerName {...row.player} />

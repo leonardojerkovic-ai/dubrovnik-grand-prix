@@ -236,18 +236,24 @@ export async function getPlayerMedals(
 export async function syncSeasonMedals(seasonId: string): Promise<{
   awarded: number;
   keptManual: number;
+  /**
+   * Medalje koje izračun NIJE dodijelio jer bi pripale igraču na dijeljenom
+   * mjestu. Čl. 15 st. 6 kaže da takvi igrači dijele mjesto, a ne koji od
+   * njih dobiva medalju — to odlučuje Klub, pa se dodjeljuje ručno.
+   */
+  unresolved: number;
   skipped: "not-akademija" | "no-standings" | null;
 }> {
   const season = await prisma.season.findUnique({ where: { id: seasonId } });
   if (!season || season.system !== "AKADEMIJA") {
-    return { awarded: 0, keptManual: 0, skipped: "not-akademija" };
+    return { awarded: 0, keptManual: 0, unresolved: 0, skipped: "not-akademija" };
   }
 
   const { getAkademijaStandings } = await import("@/lib/standings/akademija");
   const standings = await getAkademijaStandings(seasonId);
 
   if (!standings || standings.length === 0) {
-    return { awarded: 0, keptManual: 0, skipped: "no-standings" };
+    return { awarded: 0, keptManual: 0, unresolved: 0, skipped: "no-standings" };
   }
 
   const players = await prisma.player.findMany({
@@ -259,14 +265,19 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
   const seasonStartYear = season.startDate.getFullYear();
 
   // Redoslijed niza JE poredak — tie-break po čl. 15 već je primijenjen u
-  // getAkademijaStandings, pa se ovdje ne smije ponovno sortirati.
-  const ranking: MedalCandidate[] = standings.flatMap((row, index) => {
+  // getAkademijaStandings, pa se ovdje ne smije ponovno sortirati. Mjesto se
+  // uzima iz ljestvice (row.place), ne iz rednog broja u nizu: dijeljeno
+  // mjesto ponavlja isti broj.
+  const dijeliMjesto = new Map(
+    standings.map((row) => [row.player.id, row.sharedPlace])
+  );
+  const ranking: MedalCandidate[] = standings.flatMap((row) => {
     const player = byId.get(row.player.id);
     if (!player) return [];
     return [
       {
         playerId: row.player.id,
-        rank: index + 1,
+        rank: row.place,
         ageCategories: getAkademijaAgeCategories(
           player.birthYear,
           seasonStartYear
@@ -278,6 +289,17 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
 
   const computed = assignMedals(ranking, "KONACNI_POREDAK");
 
+  /**
+   * Medalja igraču na dijeljenom mjestu se NE dodjeljuje automatski.
+   *
+   * Dosad je o tome odlučivao redoslijed u memoriji: dva igrača s potpuno
+   * jednakim rezultatima prikazivala su se kao 3. i 4., a bronca je išla onome
+   * koji je slučajno bio prvi u nizu. Čl. 15 st. 6 kaže samo da dijele mjesto,
+   * ne i kome pripada medalja — pa to ostaje odluka Kluba, kroz ručnu dodjelu
+   * (koja je zabilježena u auditu i nosi obrazloženje).
+   */
+  const nerazrijesene = computed.filter((a) => dijeliMjesto.get(a.playerId));
+
   const manual = await prisma.medal.findMany({
     where: { seasonId, tournamentId: null, manual: true },
   });
@@ -286,6 +308,7 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
 
   const toCreate = computed.filter(
     (a) =>
+      !dijeliMjesto.get(a.playerId) &&
       !takenSlots.has(`${a.category}/${a.place}`) &&
       !takenPlayers.has(a.playerId)
   );
@@ -306,7 +329,12 @@ export async function syncSeasonMedals(seasonId: string): Promise<{
     }),
   ]);
 
-  return { awarded: toCreate.length, keptManual: manual.length, skipped: null };
+  return {
+    awarded: toCreate.length,
+    keptManual: manual.length,
+    unresolved: nerazrijesene.length,
+    skipped: null,
+  };
 }
 
 export interface SeasonMedalView {

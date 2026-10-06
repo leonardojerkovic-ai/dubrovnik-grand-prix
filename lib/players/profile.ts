@@ -275,6 +275,7 @@ function buildAkademijaSeason(
     own.map((r) => ({
       tournamentId: r.tournamentId,
       isFinal: r.tournament.isFinal,
+      dan: r.tournament.date.getTime(),
       gpPoints: r.gpPoints ?? 0,
       rank: r.rank,
       wasFirstPlace: r.rank === 1,
