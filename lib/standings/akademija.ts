@@ -104,12 +104,14 @@ export async function getAkademijaStandings(
   // Poredak I mjesta dolaze iz poredajAkademiju: kriterij 5 nije tranzitivan,
   // pa obično sortiranje ne bi dalo ni stabilan poredak ni ispravna dijeljena
   // mjesta (čl. 15 st. 6).
-  return poredajAkademiju(standings, (a, b) =>
-    `${a.player.lastName} ${a.player.firstName}`.localeCompare(
-      `${b.player.lastName} ${b.player.firstName}`,
-      "hr"
-    )
-  ).map(({ entry, mjesto, dijeljeno }) => ({
+  return poredajAkademiju(standings, (a, b) => {
+    // Prezime i ime, pa id kao zadnji ključ: dva igrača istog imena nisu
+    // rijetkost u klubu, a bez njega bi im redoslijed opet bio nedefiniran.
+    const po = (x: typeof a) =>
+      `${x.player.lastName} ${x.player.firstName}`;
+    const imena = po(a).localeCompare(po(b), "hr");
+    return imena !== 0 ? imena : a.player.id.localeCompare(b.player.id);
+  }).map(({ entry, mjesto, dijeljeno }) => ({
     ...entry,
     place: mjesto,
     sharedPlace: dijeljeno,

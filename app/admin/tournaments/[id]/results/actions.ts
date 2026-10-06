@@ -27,6 +27,7 @@ import {
   ucitajPrava,
   type ZapisPrava,
 } from "@/lib/akademija/eligibility";
+import { preracunajPrava } from "@/lib/akademija/preracunaj-prava";
 import { syncTournamentMedals } from "@/lib/akademija/medals";
 import { syncTournamentPrizes } from "@/lib/tournament-prizes";
 import { wasClubMemberOn } from "@/lib/membership";
@@ -341,102 +342,16 @@ export async function saveTournamentResults(
         /**
          * Igrač maknut s ovog turnira ne smije na njemu i dalje imati
          * zaključano pravo na bodove: po čl. 3 pravo se veže uz NASTUP, a on
-         * tu nije nastupio.
-         *
-         * Ali brisanje samo po sebi nije dovoljno: ako je igrač u sezoni
-         * igrao i druge turnire, pravo mu treba ODMAH utvrditi po najranijem
-         * preostalom nastupu. Bez toga bi ostao bez zapisa, pa bi mu se
-         * samoprijava ponovno vrednovala po današnjem rejtingu (to je bio
-         * nalaz 9), a novi zapis nastao bi tek kad admin slučajno prvi spremi
-         * neki njegov turnir — i zaključao bi pravo na tome, a ne na
-         * najranijem.
+         * tu nije nastupio. Pravo mu se odmah utvrđuje po najranijem
+         * preostalom nastupu — vidi lib/akademija/preracunaj-prava.ts.
          */
-        const izgubiliZapis = await tx.academyEligibility.findMany({
-          where: {
-            seasonId: tournament.seasonId,
-            firstTournamentId: tournamentId,
-            playerId: { notIn: keepPlayerIds },
-          },
-          select: { playerId: true, isEligible: true },
+        const prerac = await preracunajPrava(tx, {
+          seasonId: tournament.seasonId,
+          tournamentId,
+          preostaliIgraci: keepPlayerIds,
         });
-
-        if (izgubiliZapis.length > 0) {
-          await tx.academyEligibility.deleteMany({
-            where: {
-              seasonId: tournament.seasonId,
-              firstTournamentId: tournamentId,
-              playerId: { notIn: keepPlayerIds },
-            },
-          });
-
-          const ostaliNastupi = await tx.tournamentResult.findMany({
-            where: {
-              playerId: { in: izgubiliZapis.map((z) => z.playerId) },
-              gamesPlayed: true,
-              tournamentId: { not: tournamentId },
-              tournament: { seasonId: tournament.seasonId },
-            },
-            select: {
-              playerId: true,
-              ratingSnapshotUsed: true,
-              tournamentId: true,
-              tournament: { select: { date: true } },
-            },
-            orderBy: { tournament: { date: "asc" } },
-          });
-
-          const godisteBez = new Map(
-            (
-              await tx.player.findMany({
-                where: { id: { in: izgubiliZapis.map((z) => z.playerId) } },
-                select: {
-                  id: true,
-                  birthYear: true,
-                  firstName: true,
-                  lastName: true,
-                },
-              })
-            ).map((p) => [p.id, p])
-          );
-
-          for (const z of izgubiliZapis) {
-            const igrac = godisteBez.get(z.playerId);
-            const label = igrac
-              ? `${igrac.lastName} ${igrac.firstName}`
-              : z.playerId;
-
-            // Prvi u nizu je najraniji — upit je sortiran po datumu.
-            const najraniji = ostaliNastupi.find(
-              (o) => o.playerId === z.playerId
-            );
-
-            if (!najraniji) {
-              bezNastupaUSezoni.push(label);
-              continue;
-            }
-
-            const odluka = odluciPravo({
-              tournamentId: najraniji.tournamentId,
-              tournamentDate: najraniji.tournament.date,
-              playerId: z.playerId,
-              birthYear: igrac?.birthYear ?? 0,
-              seasonStartYear: tournament.season.startDate.getFullYear(),
-              rapidRatingAtThisTournament: bezNule(
-                najraniji.ratingSnapshotUsed
-              ),
-            });
-
-            if (odluka.zaUpis) {
-              await tx.academyEligibility.create({
-                data: { seasonId: tournament.seasonId, ...odluka.zaUpis },
-              });
-            }
-
-            if (odluka.isEligible !== z.isEligible) {
-              pravoPromijenjeno.push(label);
-            }
-          }
-        }
+        pravoPromijenjeno.push(...prerac.promijenjeno);
+        bezNastupaUSezoni.push(...prerac.bezNastupa);
 
         // Pravo na bodove (čl. 3) ide u istu transakciju kao i rezultati:
         // ako spremanje padne, ne smije ostati zaključano pravo s turnira

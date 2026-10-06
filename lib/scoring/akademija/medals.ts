@@ -171,15 +171,23 @@ export function wasTransferred(
 }
 
 /**
- * Medalje oko kojih izjednačenje na ljestvici stvarno postoji.
+ * Medalje koje izračun NE smije dodijeliti zbog izjednačenja na ljestvici.
  *
- * `dijeliMjesto` govori o izjednačenju na UKUPNOJ ljestvici, a medalje se
- * dodjeljuju i po dobnim kategorijama i ženama. Dvoje koji dijele 9. mjesto
- * ukupno ne spore se oko zlata u U8 ako je samo jedan od njih U8 — pa mu se
- * to zlato ne smije uzeti. Sporna je samo dodjela u kojoj igrač s kojim je
- * izjednačen pripada ISTOJ kategoriji: tek je tada pravilnikom nerazlučivo
- * kome medalja pripada (čl. 15 st. 6 kaže da dijele mjesto, ne i čija je
- * medalja).
+ * assignMedals ide redom po nizu, a igrač koji dobije medalju ispada iz svih
+ * ostalih kategorija (čl. 19 st. 4 — jedan igrač, jedna medalja). Unutar
+ * dijeljenog mjesta taj redoslijed ne određuje pravilnik, pa o njemu ne smije
+ * ovisiti nijedna dodjela — ni ona u kategoriji u kojoj izjednačenja nema.
+ *
+ * Primjer koji je prvu verziju ovoga srušio: A (U12) i B (U10) dijele 3.
+ * mjesto. Tko od njih dobije UKUPNO/3, ovisi o redoslijedu. Dobije li ga A,
+ * A ispada iz U12 i B uzima zlato u U10; dobije li ga B, A uzima zlato u U12.
+ * Prva verzija blokirala je samo UKUPNO/3 i time puštala da zlato u U10
+ * dodijeli abeceda. Ako Klub potom broncu da B-u, B ima dvije medalje.
+ *
+ * Zato: kad bi medalja pripala igraču koji dijeli mjesto, ne dodjeljuje se
+ * automatski NIŠTA u kategorijama u kojima se natječe bilo koji od igrača s
+ * tog dijeljenog mjesta. Admin te medalje dodjeljuje ručno, a popis
+ * dijeljenih mjesta na stranici sezone kaže kojih se tiče.
  */
 export function sporneMedalje(
   dodjele: MedalAward[],
@@ -187,15 +195,25 @@ export function sporneMedalje(
   mjestoPo: Map<string, number>,
   dijeliMjesto: Map<string, boolean>
 ): MedalAward[] {
-  return dodjele.filter((a) => {
-    if (!dijeliMjesto.get(a.playerId)) return false;
+  // Mjesta na kojima bi medalja pripala igraču koji to mjesto dijeli.
+  const spornaMjesta = new Set<number>();
+  for (const a of dodjele) {
+    if (!dijeliMjesto.get(a.playerId)) continue;
     const mjesto = mjestoPo.get(a.playerId);
-    const kategorija = a.category as AkademijaMedalCategory;
-    return ranking.some(
-      (c) =>
-        c.playerId !== a.playerId &&
-        mjestoPo.get(c.playerId) === mjesto &&
-        belongsTo(c, kategorija)
-    );
+    if (mjesto !== undefined) spornaMjesta.add(mjesto);
+  }
+  if (spornaMjesta.size === 0) return [];
+
+  // Svi igrači s tih mjesta, pa sve kategorije u kojima se natječu.
+  const pogodeni = ranking.filter((c) => {
+    const mjesto = mjestoPo.get(c.playerId);
+    return mjesto !== undefined && spornaMjesta.has(mjesto);
   });
+  const kategorije = new Set(
+    MEDAL_PRIORITY.filter((k) => pogodeni.some((c) => belongsTo(c, k)))
+  );
+
+  return dodjele.filter((a) =>
+    kategorije.has(a.category as AkademijaMedalCategory)
+  );
 }

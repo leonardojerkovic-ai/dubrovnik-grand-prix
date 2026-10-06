@@ -2,6 +2,11 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { deleteTournament } from "./actions";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
+import { AdminNotice } from "@/components/admin-notice";
+import {
+  napomenaIzAdrese,
+  porukaIzAdrese,
+} from "@/lib/admin-odbijanje";
 
 const STATUS_LABELS: Record<string, string> = {
   NAJAVA: "Najava",
@@ -10,7 +15,14 @@ const STATUS_LABELS: Record<string, string> = {
   ZAVRSEN: "Završen",
 };
 
-export default async function AdminTournamentsPage() {
+export default async function AdminTournamentsPage(props: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  // Brisanje turnira može preračunati pravo na bodove (čl. 3) i to javlja
+  // napomenom — vidi deleteTournament.
+  const parametri = await props.searchParams;
+  const greska = porukaIzAdrese(parametri);
+  const napomena = napomenaIzAdrese(parametri);
   const tournaments = await prisma.tournament.findMany({
     orderBy: { date: "desc" },
     include: { season: true, _count: { select: { results: true } } },
@@ -18,6 +30,8 @@ export default async function AdminTournamentsPage() {
 
   return (
     <div>
+      <AdminNotice message={greska} />
+      <AdminNotice message={napomena} tone="napomena" />
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-display text-lg font-bold text-navy">
           Turniri ({tournaments.length})

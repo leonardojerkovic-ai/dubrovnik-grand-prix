@@ -167,7 +167,7 @@ describe("wasTransferred", () => {
   });
 });
 
-describe("sporneMedalje — dijeljeno mjesto blokira samo svoju kategoriju", () => {
+describe("sporneMedalje — dijeljeno mjesto blokira sve kategorije tih igrača", () => {
   const u8: MedalCandidate = {
     playerId: "a",
     rank: 9,
@@ -190,31 +190,81 @@ describe("sporneMedalje — dijeljeno mjesto blokira samo svoju kategoriju", () 
     ["b", true],
   ]);
 
-  it("zlato u U08 nije sporno kad drugi izjednačeni nije U08", () => {
+  it("zlato u U08 je sporno premda drugi izjednačeni nije U08", () => {
+    // Jer tko od njih dvoje dobije medalju u UKUPNO, ovisi o redoslijedu, a
+    // igrač s medaljom ispada iz svih ostalih kategorija (čl. 19 st. 4).
     const dodjele: MedalAward[] = [
       { playerId: "a", category: "U08", place: 1, rank: 9 },
     ];
-    expect(sporneMedalje(dodjele, ranking, mjestoPo, dijeli)).toEqual([]);
-  });
-
-  it("zlato u U12 JE sporno jer su oba izjednačena U12", () => {
-    const dodjele: MedalAward[] = [
-      { playerId: "a", category: "U12", place: 1, rank: 9 },
-    ];
     expect(sporneMedalje(dodjele, ranking, mjestoPo, dijeli)).toHaveLength(1);
   });
 
-  it("UKUPNO je sporno jer joj svi pripadaju", () => {
+  it("blokira i medalju igrača koji NE dijeli mjesto, ako je u istoj kategoriji", () => {
+    const treci: MedalCandidate = {
+      playerId: "c",
+      rank: 3,
+      ageCategories: ["U12"],
+      isFemale: false,
+    };
     const dodjele: MedalAward[] = [
       { playerId: "a", category: "UKUPNO", place: 3, rank: 9 },
+      { playerId: "c", category: "U12", place: 1, rank: 3 },
     ];
-    expect(sporneMedalje(dodjele, ranking, mjestoPo, dijeli)).toHaveLength(1);
+    const sporne = sporneMedalje(
+      dodjele,
+      [...ranking, treci],
+      new Map([...mjestoPo, ["c", 3]]),
+      new Map([...dijeli, ["c", false]])
+    );
+    // Oba su u kategorijama kojih se izjednačenje tiče (UKUPNO i U12).
+    expect(sporne).toHaveLength(2);
   });
 
-  it("igrač koji mjesto ne dijeli nikad nije sporan", () => {
+  it("kategorija koje se izjednačenje ne tiče ostaje slobodna", () => {
+    const djevojcica: MedalCandidate = {
+      playerId: "d",
+      rank: 5,
+      ageCategories: ["U12"],
+      isFemale: true,
+    };
+    // Ni A ni B nisu djevojčice, pa ŽENE nisu sporne — ali U12 jesu.
+    const dodjele: MedalAward[] = [
+      { playerId: "a", category: "UKUPNO", place: 3, rank: 9 },
+      { playerId: "d", category: "ZENE", place: 1, rank: 5 },
+    ];
+    const sporne = sporneMedalje(
+      dodjele,
+      [...ranking, djevojcica],
+      new Map([...mjestoPo, ["d", 5]]),
+      new Map([...dijeli, ["d", false]])
+    );
+    expect(sporne.map((x) => x.category)).toEqual(["UKUPNO"]);
+  });
+
+  it("bez ijedne medalje igraču s dijeljenog mjesta nema ničega spornog", () => {
+    const treci: MedalCandidate = {
+      playerId: "c",
+      rank: 3,
+      ageCategories: ["U12"],
+      isFemale: false,
+    };
+    const dodjele: MedalAward[] = [
+      { playerId: "c", category: "UKUPNO", place: 1, rank: 3 },
+    ];
+    expect(
+      sporneMedalje(
+        dodjele,
+        [...ranking, treci],
+        new Map([...mjestoPo, ["c", 3]]),
+        new Map([...dijeli, ["c", false]])
+      )
+    ).toEqual([]);
+  });
+
+  it("igrač koji mjesto ne dijeli nikad sam ne čini dodjelu spornom", () => {
     const sam = new Map([
       ["a", false],
-      ["b", true],
+      ["b", false],
     ]);
     const dodjele: MedalAward[] = [
       { playerId: "a", category: "UKUPNO", place: 3, rank: 9 },

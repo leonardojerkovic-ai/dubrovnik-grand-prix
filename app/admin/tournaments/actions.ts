@@ -8,6 +8,11 @@ import { revalidateSchedule, revalidateStandings } from "@/lib/revalidate";
 import { Prisma } from "@prisma/client";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import {
+  preracunajPrava,
+  ucitajZapiseTurnira,
+} from "@/lib/akademija/preracunaj-prava";
+import { napomeni } from "@/lib/admin-odbijanje";
 import { tournamentSchema } from "@/lib/validation/tournament";
 import type { ActionState } from "../players/actions";
 import { fieldErrorsFrom, formValuesFrom } from "@/lib/validation/errors";
@@ -157,7 +162,37 @@ export async function deleteTournament(tournamentId: string): Promise<void> {
     where: { id: tournamentId },
     include: { _count: { select: { results: true } } },
   });
-  await prisma.tournament.delete({ where: { id: tournamentId } });
+
+  /**
+   * Brisanje turnira ostavljalo je zaključano pravo na bodove (čl. 3).
+   *
+   * Veza AcademyEligibility → Tournament je SetNull, pa je zapis preživio
+   * brisanje: ostao je s datumom obrisanog turnira i time i dalje zaključavao
+   * svaki kasniji turnir sezone. Igrač koji je na greškom unesenom turniru
+   * dobio „nema prava" nosio bi to do kraja sezone, i to bez ikakva traga.
+   *
+   * Zato se u istoj transakciji pravo preračunava po najranijem preostalom
+   * nastupu. Rezultati obrisanog turnira nestaju s njim (Cascade), pa upit
+   * više ne vidi ni njih.
+   */
+  const prerac = before
+    ? await prisma.$transaction(async (tx) => {
+        // Zapisi se čitaju PRIJE brisanja: veza je SetNull, pa bi nakon
+        // njega upit po firstTournamentId vratio prazno.
+        const zapisi = await ucitajZapiseTurnira(
+          tx,
+          before.seasonId,
+          tournamentId
+        );
+        await tx.tournament.delete({ where: { id: tournamentId } });
+        return preracunajPrava(tx, {
+          seasonId: before.seasonId,
+          tournamentId,
+          zapisi,
+        });
+      })
+    : { promijenjeno: [], bezNastupa: [] };
+
   await logAudit({
     actor,
     action: "DELETE",
@@ -165,10 +200,34 @@ export async function deleteTournament(tournamentId: string): Promise<void> {
     entityId: tournamentId,
     summary:
       `Obrisan turnir "${before?.name ?? tournamentId}"` +
-      (before?._count.results ? ` s ${before._count.results} rezultata` : ""),
+      (before?._count.results ? ` s ${before._count.results} rezultata` : "") +
+      (prerac.promijenjeno.length > 0
+        ? `; pravo na bodove preračunato i promijenjeno: ${prerac.promijenjeno.join(", ")}`
+        : "") +
+      (prerac.bezNastupa.length > 0
+        ? `; bez drugog nastupa u sezoni, zapis o pravu uklonjen: ${prerac.bezNastupa.join(", ")}`
+        : ""),
     before,
   });
   revalidatePath("/admin/tournaments");
   revalidateSchedule(tournamentId);
   revalidateStandings();
+
+  if (prerac.promijenjeno.length > 0 || prerac.bezNastupa.length > 0) {
+    const dijelovi: string[] = [];
+    if (prerac.promijenjeno.length > 0) {
+      dijelovi.push(
+        `pravo na bodove (čl. 3) preračunato je po najranijem preostalom nastupu i ODLUKA SE PROMIJENILA za: ${prerac.promijenjeno.join(", ")} — bodovi na njihovim turnirima ove sezone računati su po staroj odluci, spremi te turnire ponovno`
+      );
+    }
+    if (prerac.bezNastupa.length > 0) {
+      dijelovi.push(
+        `bez drugog nastupa u sezoni, pa je zapis o pravu uklonjen za: ${prerac.bezNastupa.join(", ")}`
+      );
+    }
+    napomeni(
+      "/admin/tournaments",
+      `Turnir je obrisan, ali ${dijelovi.join("; ")}.`
+    );
+  }
 }
