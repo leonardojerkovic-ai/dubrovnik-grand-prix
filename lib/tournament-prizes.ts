@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import {
+  opisiRazlikeDodjele,
+  type NacinDodjele,
+} from "@/lib/dodjela/razlike";
+import {
   assignPrizes,
   wasPrizeTransferred,
   type PrizeCandidate,
@@ -14,10 +18,16 @@ import {
  * turnira — naknadni ispravak jednog plasmana ne smije tiho promijeniti tko
  * je što već primio. Ručno unesene dodjele (manual) ostaju netaknute.
  */
-export async function syncTournamentPrizes(tournamentId: string): Promise<{
+export async function syncTournamentPrizes(
+  tournamentId: string,
+  nacin: NacinDodjele = "izricito"
+): Promise<{
   awarded: number;
   keptManual: number;
   prizeCount: number;
+  /** Razlike između dodijeljenog i novog izračuna, kad je dodjela zamrznuta. */
+  razlike: string[];
+  zamrznuto: boolean;
 }> {
   const [prizes, results] = await Promise.all([
     prisma.tournamentPrize.findMany({
@@ -34,7 +44,13 @@ export async function syncTournamentPrizes(tournamentId: string): Promise<{
   ]);
 
   if (prizes.length === 0 || results.length === 0) {
-    return { awarded: 0, keptManual: 0, prizeCount: prizes.length };
+    return {
+      awarded: 0,
+      keptManual: 0,
+      prizeCount: prizes.length,
+      razlike: [],
+      zamrznuto: false,
+    };
   }
 
   const ranking: PrizeCandidate[] = results.map((r) => ({
@@ -60,6 +76,34 @@ export async function syncTournamentPrizes(tournamentId: string): Promise<{
       !takenPlayers.has(a.playerId)
   );
 
+  // Nagrade se, kao i medalje, uručuju na turniru. Prvi izračun je ono što je
+  // uručeno; naknadni ispravak rezultata to ne mijenja tiho, nego javi razliku.
+  const dodijeljene = await prisma.tournamentPrizeAward.findMany({
+    where: { tournamentId, manual: false },
+    select: { prizeId: true, place: true, playerId: true },
+  });
+
+  if (nacin === "pri-unosu" && dodijeljene.length > 0) {
+    const oznaka = new Map(prizes.map((p) => [p.id, p.shortLabel ?? p.label]));
+    const razlike = await opisiRazlikeDodjele(
+      dodijeljene.map((a) => ({
+        kljuc: `${oznaka.get(a.prizeId) ?? a.prizeId}/${a.place}`,
+        playerId: a.playerId,
+      })),
+      computed.map((a) => ({
+        kljuc: `${oznaka.get(a.prizeId) ?? a.prizeId}/${a.place}`,
+        playerId: a.playerId,
+      }))
+    );
+    return {
+      awarded: 0,
+      keptManual: manual.length,
+      prizeCount: prizes.length,
+      razlike,
+      zamrznuto: true,
+    };
+  }
+
   await prisma.$transaction([
     prisma.tournamentPrizeAward.deleteMany({
       where: { tournamentId, manual: false },
@@ -79,6 +123,8 @@ export async function syncTournamentPrizes(tournamentId: string): Promise<{
     awarded: computed.length,
     keptManual: manual.length,
     prizeCount: prizes.length,
+    razlike: [],
+    zamrznuto: false,
   };
 }
 

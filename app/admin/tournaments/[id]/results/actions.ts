@@ -358,14 +358,19 @@ export async function saveTournamentResults(
       });
     }
 
-    // Medalje se računaju iz poretka, pa ih svaka izmjena rezultata mijenja
-    // (čl. 19 — kategorijska medalja prelazi na sljedećeg igrača). Za turnire
-    // glavnog GP-a servis ne radi ništa; medalje poznaje samo Akademija.
-    const medals = await syncTournamentMedals(tournamentId);
-
-    // Nagrade glavnog GP-a ovise o istom poretku, pa se preračunavaju
-    // zajedno s bodovima. Ako turnir nema unesenih nagrada, ne radi ništa.
-    const prizes = await syncTournamentPrizes(tournamentId);
+    /**
+     * Medalje i nagrade računaju se iz poretka, pa ih svaka izmjena rezultata
+     * mijenja (čl. 19 — kategorijska medalja prelazi na sljedećeg igrača).
+     * Ali one su na turniru fizički uručene, pa ih naknadni ispravak ne smije
+     * tiho premjestiti na drugo dijete.
+     *
+     * Zato „pri-unosu": prvi izračun se primjenjuje (to je ono što se uručuje),
+     * a svaki sljedeći se samo uspoređuje i razlike se jave niže u poruci.
+     * Ako ispravak treba i promijeniti dodjelu, admin to pokreće sam, s
+     * odgovarajuće stranice.
+     */
+    const medals = await syncTournamentMedals(tournamentId, "pri-unosu");
+    const prizes = await syncTournamentPrizes(tournamentId, "pri-unosu");
 
     // Najvažniji zapis u cijelom tragu: rezultati određuju bodove, a čl. 29
     // daje pravo prigovora. Snimaju se svi plasmani i izračunati bodovi.
@@ -400,6 +405,16 @@ export async function saveTournamentResults(
       if (medals.keptManual > 0) {
         message += ` Ručno unesenih zadržano: ${medals.keptManual}.`;
       }
+    }
+    const zamrznute = [
+      ...(medals.zamrznuto ? medals.razlike.map((r) => `medalja ${r}`) : []),
+      ...(prizes.zamrznuto ? prizes.razlike.map((r) => `nagrada ${r}`) : []),
+    ];
+    if (zamrznute.length > 0) {
+      message +=
+        " UPOZORENJE: izračun se razlikuje od već dodijeljenog, ali dodjela NIJE promijenjena —" +
+        ` ${zamrznute.join("; ")}.` +
+        " Ako dodjelu treba ispraviti, pokreni izračun sa stranice medalja/nagrada turnira.";
     }
     if (withoutRatingIds.length > 0) {
       const bez = await prisma.player.findMany({

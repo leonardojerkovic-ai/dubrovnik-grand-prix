@@ -227,9 +227,12 @@ export default async function AdminPrizesPage(props: {
               Preračunaj dodjelu
             </button>
           </form>
-          <p className="mt-2 text-xs text-ink/60">
-            Dodjela se preračunava sama pri svakom spremanju rezultata i pri
-            izmjeni nagrada. Ovaj gumb treba samo ako želiš provjeriti stanje.
+          <p className="mt-2 max-w-prose text-xs text-ink/60">
+            Prva dodjela izračuna se sama, pri spremanju rezultata — to je ono
+            što se na turniru uručuje. Kasniji ispravak rezultata je NE mijenja
+            nego samo javi razliku, da nagrada već predana igraču ne prijeđe
+            tiho na drugoga. Ovim gumbom dodjelu preračunavaš svjesno, i on je
+            prepisuje.
           </p>
         </>
       )}

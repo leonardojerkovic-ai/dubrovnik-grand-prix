@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import {
+  opisiRazlikeDodjele,
+  type NacinDodjele,
+} from "@/lib/dodjela/razlike";
+import {
   assignMedals,
   medalEventForTournament,
   wasTransferred,
@@ -20,9 +24,31 @@ import type { MedalCategory } from "@prisma/client";
  * Medalje postoje samo u Akademiji. Glavni GP pravilnik ih ne poznaje, pa se
  * za njegove turnire ne radi ništa.
  */
-export async function syncTournamentMedals(tournamentId: string): Promise<{
+/**
+ * `nacin` odlučuje smije li izračun promijeniti već dodijeljene medalje.
+ *
+ * "pri-unosu" — zove se iz spremanja rezultata. Ako automatske medalje za
+ * ovaj turnir već postoje, one su ono što je na turniru uručeno, pa se NE
+ * diraju: izračun se samo usporedi i razlike se vrate pozivatelju da ih
+ * javi adminu. Ako medalja još nema, prvi izračun se primjenjuje — on i jest
+ * ono što će se uručiti.
+ *
+ * "izricito" — admin je sam pritisnuo „Izračunaj medalje". Tada se primjenjuje
+ * bez pitanja; to je svjesna odluka i stoji u auditu.
+ */
+export async function syncTournamentMedals(
+  tournamentId: string,
+  nacin: NacinDodjele = "izricito"
+): Promise<{
   awarded: number;
   keptManual: number;
+  /**
+   * Razlike između uručenog i novog izračuna, kad je dodjela zamrznuta.
+   * Prazno znači da izračun daje isto što je već dodijeljeno.
+   */
+  razlike: string[];
+  /** Je li izračun samo uspoređen, bez upisa. */
+  zamrznuto: boolean;
   skipped: "not-akademija" | "no-results" | null;
 }> {
   const tournament = await prisma.tournament.findUnique({
@@ -31,7 +57,13 @@ export async function syncTournamentMedals(tournamentId: string): Promise<{
   });
 
   if (!tournament || tournament.season.system !== "AKADEMIJA") {
-    return { awarded: 0, keptManual: 0, skipped: "not-akademija" };
+    return {
+      awarded: 0,
+      keptManual: 0,
+      razlike: [],
+      zamrznuto: false,
+      skipped: "not-akademija",
+    };
   }
 
   const results = await prisma.tournamentResult.findMany({
@@ -43,7 +75,13 @@ export async function syncTournamentMedals(tournamentId: string): Promise<{
   });
 
   if (results.length === 0) {
-    return { awarded: 0, keptManual: 0, skipped: "no-results" };
+    return {
+      awarded: 0,
+      keptManual: 0,
+      razlike: [],
+      zamrznuto: false,
+      skipped: "no-results",
+    };
   }
 
   const seasonStartYear = tournament.season.startDate.getFullYear();
@@ -79,6 +117,32 @@ export async function syncTournamentMedals(tournamentId: string): Promise<{
       !takenPlayers.has(a.playerId)
   );
 
+  // Što je već dodijeljeno automatski — to je ono što je na turniru uručeno.
+  const dodijeljene = await prisma.medal.findMany({
+    where: { tournamentId, manual: false },
+    select: { category: true, place: true, playerId: true },
+  });
+
+  if (nacin === "pri-unosu" && dodijeljene.length > 0) {
+    const razlike = await opisiRazlikeDodjele(
+      dodijeljene.map((m) => ({
+        kljuc: `${m.category}/${m.place}`,
+        playerId: m.playerId,
+      })),
+      toCreate.map((a) => ({
+        kljuc: `${a.category}/${a.place}`,
+        playerId: a.playerId,
+      }))
+    );
+    return {
+      awarded: 0,
+      keptManual: manual.length,
+      razlike,
+      zamrznuto: true,
+      skipped: null,
+    };
+  }
+
   await prisma.$transaction([
     prisma.medal.deleteMany({ where: { tournamentId, manual: false } }),
     prisma.medal.createMany({
@@ -93,8 +157,16 @@ export async function syncTournamentMedals(tournamentId: string): Promise<{
     }),
   ]);
 
-  return { awarded: toCreate.length, keptManual: manual.length, skipped: null };
+  return {
+    awarded: toCreate.length,
+    keptManual: manual.length,
+    razlike: [],
+    zamrznuto: false,
+    skipped: null,
+  };
 }
+
+
 
 export interface TournamentMedalView {
   category: MedalCategory;

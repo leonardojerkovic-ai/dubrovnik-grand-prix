@@ -241,6 +241,12 @@ export default async function AdminMedalsPage(props: {
         >
           Preračunaj dodjelu
         </button>
+        <p className="mt-2 max-w-prose text-xs text-ink/60">
+          Prva dodjela izračuna se sama, pri spremanju rezultata — to je ono što
+          se na turniru uručuje. Kasniji ispravak rezultata je NE mijenja nego
+          samo javi razliku, da medalja već uručena djetetu ne prijeđe tiho na
+          drugo. Ovim gumbom dodjelu preračunavaš svjesno, i on je prepisuje.
+        </p>
       </form>
     </div>
   );
