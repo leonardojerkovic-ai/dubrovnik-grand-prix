@@ -140,6 +140,14 @@ model User {
   /// roditelj može i sam igrati, i ne mora.
   guardianOf GuardianLink[]
   passwordResetTokens PasswordResetToken[]
+
+  /// Sesije izdane PRIJE ovog trenutka više ne vrijede.
+  ///
+  /// Sesija je JWT i traje 30 dana, pa promjena lozinke sama po sebi ne
+  /// odjavljuje nikoga: tko je sesiju preuzeo, ostaje unutra. Reset lozinke
+  /// zato upisuje trenutak, a jwt callback (lib/auth.ts) poništava tokene
+  /// izdane prije njega. Prazno znači da se ništa nije poništavalo.
+  sessionsValidFrom DateTime?
   gdprConsentAt DateTime? // vremenski žig privole s Politikom privatnosti pri registraciji — dokaz privole
 
   /// Zahtjev za povezivanje s postojećim igračkim profilom, na čekanju.

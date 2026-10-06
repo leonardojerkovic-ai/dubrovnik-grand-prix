@@ -92,9 +92,16 @@ export async function removeChild(playerId: string): Promise<GuardianActionState
   });
   if (!user) return { error: "Korisnik nije pronađen." };
 
-  await prisma.guardianLink.deleteMany({
+  // Poruka mora odgovarati onome što se dogodilo: dosad je stajalo
+  // „Uklonjeno" i kad veze nije bilo (pogrešan playerId, dvostruki klik,
+  // tuđe dijete), pa je roditelj mislio da je nešto učinio.
+  const { count } = await prisma.guardianLink.deleteMany({
     where: { guardianUserId: user.id, playerId },
   });
+
+  if (count === 0) {
+    return { error: "Taj igrač nije na tvojem popisu." };
+  }
 
   revalidatePath("/moji-igraci");
   return { message: "Uklonjeno s popisa." };

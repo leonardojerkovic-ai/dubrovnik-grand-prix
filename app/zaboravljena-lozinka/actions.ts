@@ -81,16 +81,39 @@ export async function resetPassword(
 
   const passwordHash = await bcrypt.hash(password, 10);
 
+  const sada = new Date();
+
   await prisma.$transaction([
     prisma.user.update({
       where: { id: resetToken.userId },
-      data: { passwordHash },
+      data: {
+        passwordHash,
+        /**
+         * Promjena lozinke poništava sve postojeće sesije.
+         *
+         * Sesija je JWT i traje 30 dana, pa promjena lozinke sama po sebi
+         * nikoga ne odjavljuje: tko je sesiju preuzeo, ostaje unutra — a
+         * reset lozinke je upravo ono što čovjek učini kad posumnja da mu je
+         * račun u tuđim rukama. Vidi jwt callback u lib/auth.ts.
+         */
+        sessionsValidFrom: sada,
+      },
     }),
     prisma.passwordResetToken.update({
       where: { id: resetToken.id },
-      data: { usedAt: new Date() },
+      data: { usedAt: sada },
+    }),
+    // I svi ostali nepotrošeni tokeni za ovog korisnika prestaju vrijediti:
+    // tko je zatražio reset tuđe lozinke, ne smije ga moći ponoviti nakon
+    // što je pravi vlasnik lozinku već promijenio.
+    prisma.passwordResetToken.updateMany({
+      where: { userId: resetToken.userId, usedAt: null },
+      data: { usedAt: sada },
     }),
   ]);
 
-  return { message: "Lozinka je promijenjena. Sad se možeš prijaviti." };
+  return {
+    message:
+      "Lozinka je promijenjena, a sve prijave na drugim uređajima su odjavljene. Sad se možeš prijaviti.",
+  };
 }

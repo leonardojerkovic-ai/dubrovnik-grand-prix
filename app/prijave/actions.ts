@@ -142,10 +142,31 @@ export async function cancelRegistration(
   if ("error" in resolved) return { error: resolved.error };
   const player = resolved;
 
-  await prisma.tournamentRegistration.updateMany({
-    where: { tournamentId, playerId: player.id },
+  // Otkazivanje je imalo smisla samo dok prijave teku. Turnir u tijeku ili
+  // završen više se ne mijenja odjavom: parovi su već izvučeni, a nakon
+  // turnira bi otkazana prijava samo zamutila popis sudionika.
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { status: true },
+  });
+  if (!tournament) return { error: "Turnir nije pronađen." };
+  if (tournament.status === "U_TIJEKU" || tournament.status === "ZAVRSEN") {
+    return {
+      error:
+        tournament.status === "U_TIJEKU"
+          ? "Turnir je u tijeku — prijava se više ne može otkazati. Obrati se sudcu."
+          : "Turnir je završen, prijava se više ne može otkazati.",
+    };
+  }
+
+  const { count } = await prisma.tournamentRegistration.updateMany({
+    where: { tournamentId, playerId: player.id, status: { not: "OTKAZAN" } },
     data: { status: "OTKAZAN" },
   });
+
+  if (count === 0) {
+    return { error: "Prijava nije nađena ili je već otkazana." };
+  }
 
   revalidateRegistrations(tournamentId);
   return { message: "Prijava otkazana." };

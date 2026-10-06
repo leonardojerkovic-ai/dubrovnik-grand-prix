@@ -67,6 +67,15 @@ export const authOptions: AuthOptions = {
       // Prijava: rola dolazi izravno iz authorize()/adaptera.
       if (user) {
         token.role = (user as { role?: string }).role ?? "PLAYER";
+        /**
+         * Trenutak prijave, za poništavanje sesija pri promjeni lozinke.
+         *
+         * NE koristi se `iat` iz JWT-a: NextAuth token ponovno potpisuje pri
+         * svakom zahtjevu, pa je `iat` uvijek svjež i stara sesija bi se
+         * njime činila novom. Ovo polje se upisuje jednom, pri prijavi, i
+         * dalje se samo prenosi.
+         */
+        token.prijavljenOd = Date.now();
         // Namjerno se NE postavlja roleCheckedAt: ime i profil dohvaćaju se
         // pri prvom sljedećem osvježavanju tokena, odmah nakon prijave.
         return token;
@@ -85,11 +94,31 @@ export const authOptions: AuthOptions = {
           where: { email: token.email as string },
           select: {
             role: true,
+            sessionsValidFrom: true,
             // Ime i profil se dohvaćaju u istom upitu — zaglavlju trebaju,
             // a zaseban upit bi bio čisti trošak.
             player: { select: { id: true, firstName: true, lastName: true } },
           },
         });
+
+        /**
+         * Sesija izdana prije reseta lozinke više ne vrijedi.
+         *
+         * Provjera ide u istom upitu kao i rola, pa u najgorem slučaju
+         * zaostaje ROLE_REFRESH_MS (minutu) — umjesto 30 dana, koliko je
+         * takva sesija dosad živjela. Tokeni izdani prije ove izmjene nemaju
+         * `prijavljenOd`; njih se ne poništava, da promjena nikoga ne izbaci
+         * bez razloga.
+         */
+        const prijavljenOd =
+          typeof token.prijavljenOd === "number" ? token.prijavljenOd : null;
+        if (
+          prijavljenOd !== null &&
+          dbUser?.sessionsValidFrom &&
+          prijavljenOd < dbUser.sessionsValidFrom.getTime()
+        ) {
+          token.ponisteno = true;
+        }
         // Obrisan korisnik pada na PLAYER — nikad ne zadržava ovlasti.
         token.role = dbUser?.role ?? "PLAYER";
         token.playerId = dbUser?.player?.id ?? null;
@@ -102,6 +131,17 @@ export const authOptions: AuthOptions = {
       return token;
     },
     async session({ session, token }) {
+      /**
+       * Poništena sesija: korisniku se oduzima identitet, pa je svaka naša
+       * provjera (`session?.user?.email`) tretira kao neprijavljenog.
+       *
+       * NextAuth v4 nema način da iz callbacka izbriše kolačić, pa se token
+       * ostavlja da istekne sam — ali bez ičega u sebi ne otvara ništa.
+       */
+      if (token.ponisteno) {
+        return { ...session, user: {}, expires: new Date(0).toISOString() };
+      }
+
       if (session.user) {
         const u = session.user as {
           role?: string;
