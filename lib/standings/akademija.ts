@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import {
   buildPlayerStanding,
+  minuteIzVremena,
   poredajAkademiju,
   type AkademijaTournamentResult,
 } from "@/lib/scoring/akademija/standings";
@@ -40,6 +41,10 @@ export async function getAkademijaStandings(
     where: { id: seasonId },
     include: {
       tournaments: {
+        // Kronološki, da redoslijed ne dolazi iz baze. Komparator na njega
+        // više ne računa (vidi kriterij 5), ali nepredvidiv redoslijed nema
+        // nikakvu vrijednost.
+        orderBy: { date: "asc" },
         include: {
           results: {
             where: { gamesPlayed: true },
@@ -78,6 +83,7 @@ export async function getAkademijaStandings(
       entry.results.push({
         tournamentId: t.id,
         dan: t.date.getTime(),
+        pocetak: minuteIzVremena(t.startTime),
         isFinal: t.isFinal,
         gpPoints: r.gpPoints ?? 0,
         rank: r.rank,

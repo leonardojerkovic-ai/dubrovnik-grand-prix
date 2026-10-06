@@ -3,7 +3,10 @@ import {
   buildPlayerStanding as buildGpStanding,
   calculateQuota,
 } from "@/lib/scoring/gp/standings";
-import { buildPlayerStanding as buildAkademijaStanding } from "@/lib/scoring/akademija/standings";
+import {
+  buildPlayerStanding as buildAkademijaStanding,
+  minuteIzVremena,
+} from "@/lib/scoring/akademija/standings";
 import { tournamentEntersStanding } from "@/lib/scoring/gp/tournament-scope";
 
 /**
@@ -185,6 +188,7 @@ interface ResultWithTournament {
     id: string;
     name: string;
     date: Date;
+    startTime: string | null;
     tempo: string;
     level: string | null;
     isFinal: boolean;
@@ -276,6 +280,7 @@ function buildAkademijaSeason(
       tournamentId: r.tournamentId,
       isFinal: r.tournament.isFinal,
       dan: r.tournament.date.getTime(),
+      pocetak: minuteIzVremena(r.tournament.startTime),
       gpPoints: r.gpPoints ?? 0,
       rank: r.rank,
       wasFirstPlace: r.rank === 1,

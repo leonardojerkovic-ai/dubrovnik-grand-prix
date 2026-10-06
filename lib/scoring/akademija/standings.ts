@@ -14,6 +14,12 @@ export interface AkademijaTournamentResult {
    * ovisnosti o vremenskoj zoni.
    */
   dan: number;
+  /**
+   * Vrijeme početka u minutama od ponoći, ako je upisano (Tournament
+   * .startTime je neobavezan tekst „HH:MM"). Služi samo za razlučivanje dvaju
+   * turnira istog dana u kriteriju 5.
+   */
+  pocetak?: number | null;
   gpPoints: number;
   /** Konačni plasman igrača na tom turniru — potreban za tie-break kriterije čl. 15 st. 2 i 4 */
   rank: number;
@@ -97,9 +103,21 @@ export type ComparableAkademijaStanding = Pick<
 >;
 
 /**
- * Kriteriji 1–4. Odvojeni su jer su TRANZITIVNI — svaki je usporedba jednog
- * broja — pa po njima nastaju skupine igrača koje kriterij 5 pokušava
- * poredati. Vidi mjestaAkademije.
+ * Kriteriji 1–4: zbroj svih rezultata, broj prvih mjesta, broj odigranih
+ * turnira, plasman na Prvenstvu Akademije. Odvojeni su jer su TRANZITIVNI —
+ * svaki je usporedba jednog broja — pa po njima nastaju pravi razredi igrača,
+ * koje kriterij 5 onda pokušava poredati. Vidi poredajAkademiju.
+ *
+ * Kriterij 4 i za igrača koji NIJE nastupio na Prvenstvu daje broj: on nema
+ * plasman, pa je iza svakoga tko ga ima. Tako je Klub protumačio čl. 15 st. 4
+ * („bolji plasman na Prvenstvu Akademije"): finalist je ispred nefinalista, i
+ * izjednačenje se rješava već tu, bez prelaska na kriterij 5.
+ *
+ * Prije se kriterij 4 primjenjivao samo kad su OBA igrača igrala finale. To
+ * nije bilo tranzitivno: ako A i C igraju finale a B ne, tada je A = B i
+ * B = C, ali A < C — „jednakost" time nije relacija ekvivalencije, pa je
+ * podjela na razrede ovisila o tome koji igrač stigne prvi i isti su igrači
+ * davali tri različita poretka.
  */
 export function compareKriteriji1do4(
   a: ComparableAkademijaStanding,
@@ -121,11 +139,13 @@ export function compareKriteriji1do4(
     return b.allResults.length - a.allResults.length;
   }
 
-  const finalA = a.allResults.find((r) => r.isFinal);
-  const finalB = b.allResults.find((r) => r.isFinal);
-  if (finalA && finalB && finalA.rank !== finalB.rank) {
-    return finalA.rank - finalB.rank; // manji rank = bolji plasman
-  }
+  // Kriterij 4 — bolji plasman na Prvenstvu Akademije. Tko ga nije igrao,
+  // nema plasman, pa je iza svakoga tko jest; dvojica bez finala su jednaka.
+  const plasmanNaFinalu = (e: ComparableAkademijaStanding) =>
+    e.allResults.find((r) => r.isFinal)?.rank ?? Infinity;
+  const fA = plasmanNaFinalu(a);
+  const fB = plasmanNaFinalu(b);
+  if (fA !== fB) return fA < fB ? -1 : 1;
 
   return 0;
 }
@@ -137,24 +157,66 @@ export function compareStandings(
   const prvi = compareKriteriji1do4(a, b);
   if (prvi !== 0) return prvi;
 
-  // Kriterij 5 — posljednji turnir koji su OBA igrača odigrala. Uzimaju se
-  // samo zajednički turniri: turnir na kojem je igrao jedan a drugi nije ne
-  // govori ništa o njihovu međusobnom odnosu.
-  const zajednicki = new Map<string, { a: number; b: number; dan: number }>();
+  /**
+   * Kriterij 5 — posljednji turnir koji su OBA igrača odigrala. Uzimaju se
+   * samo zajednički turniri: turnir na kojem je igrao jedan a drugi nije ne
+   * govori ništa o njihovu međusobnom odnosu.
+   *
+   * Uzimaju se SVI zajednički turniri posljednjeg zajedničkog dana, ne jedan
+   * od njih. Dok se uzimao prvi nađeni, odgovor je ovisio o tome čiji se
+   * popis rezultata prolazi: za dva turnira istog dana, na jednom bolji A a
+   * na drugom B, compareStandings(a, b) i compareStandings(b, a) vraćali su
+   * oba negativan broj. Takav komparator nije antisimetričan, pa poredak
+   * ovisi o redoslijedu argumenata, a i podjela na komponente (vidi
+   * poredajAkademiju) počiva na tome da za svaki par barem jedan smjer
+   * vrijedi.
+   *
+   * Kad turniri istog dana ne pokazuju u istu stranu, kriterij 5 ne odlučuje
+   * ništa i prelazi se na st. 6 — igrači dijele mjesto. Isto kao kad nema
+   * zajedničkog turnira.
+   */
+  const zajednicki: {
+    a: number;
+    b: number;
+    dan: number;
+    pocetak: number | null;
+  }[] = [];
   const poTurniru = new Map(b.allResults.map((r) => [r.tournamentId, r]));
   for (const ra of a.allResults) {
     const rb = poTurniru.get(ra.tournamentId);
     if (rb) {
-      zajednicki.set(ra.tournamentId, {
+      zajednicki.push({
         a: ra.rank,
         b: rb.rank,
         dan: ra.dan,
+        pocetak: ra.pocetak ?? null,
       });
     }
   }
-  const posljednji = [...zajednicki.values()].sort((x, y) => y.dan - x.dan)[0];
-  if (posljednji && posljednji.a !== posljednji.b) {
-    return posljednji.a - posljednji.b; // manji rank = bolji plasman
+
+  if (zajednicki.length > 0) {
+    const posljednjiDan = Math.max(...zajednicki.map((z) => z.dan));
+    const togDana = zajednicki.filter((z) => z.dan === posljednjiDan);
+
+    // Ako su svima upisana vremena početka i jedan je najkasniji, on JE
+    // posljednji — pravilnik govori o turniru, a ne o danu.
+    const svaVremena = togDana.every((z) => typeof z.pocetak === "number");
+    if (svaVremena && togDana.length > 1) {
+      const najkasnije = Math.max(...togDana.map((z) => z.pocetak as number));
+      const zadnji = togDana.filter((z) => z.pocetak === najkasnije);
+      if (zadnji.length === 1) {
+        const z = zadnji[0]!;
+        if (z.a !== z.b) return z.a - z.b;
+        return 0;
+      }
+    }
+
+    const aBolji = togDana.filter((z) => z.a < z.b).length;
+    const bBolji = togDana.filter((z) => z.b < z.a).length;
+
+    // Jednoglasno, u jednu ili drugu stranu. Kad nisu, kriterij 5 ne odlučuje.
+    if (aBolji > 0 && bBolji === 0) return -1;
+    if (bBolji > 0 && aBolji === 0) return 1;
   }
 
   return 0; // dijeljeno mjesto — čl. 15 st. 6
@@ -177,8 +239,8 @@ export function sortStandings(
  * komparatorom nedefiniran.
  *
  * Postupak:
- *  1. Igrači se dijele u skupine po kriterijima 1–4. Oni su tranzitivni, pa
- *     je to prava podjela na razrede, a ne „susjedi u nizu".
+ *  1. Igrači se dijele u razrede po kriterijima 1–4. Oni su tranzitivni, pa
+ *     je to prava podjela, a ne „susjedi u nizu".
  *  2. Unutar skupine gradi se relacija „nije lošiji od" (compareStandings
  *     ≤ 0). Za svaki par barem jedan smjer vrijedi, pa su skupine međusobno
  *     potpuno poredane.
@@ -196,9 +258,7 @@ export function poredajAkademiju<T extends ComparableAkademijaStanding>(
   // 1. Razredi po kriterijima 1–4.
   const razredi: T[][] = [];
   for (const e of ulaz) {
-    const razred = razredi.find(
-      (r) => compareKriteriji1do4(r[0]!, e) === 0
-    );
+    const razred = razredi.find((r) => compareKriteriji1do4(r[0]!, e) === 0);
     if (razred) razred.push(e);
     else razredi.push([e]);
   }
@@ -225,6 +285,7 @@ export function poredajAkademiju<T extends ComparableAkademijaStanding>(
 
 /**
  * Jako povezane komponente relacije „nije lošiji od", poredane od najbolje.
+ * Ovdje se razrješuje kriterij 5, koji nije tranzitivan.
  *
  * Relacija je potpuna (za svaki par vrijedi barem jedan smjer), pa su
  * komponente međusobno uvijek u jednom smjeru — dovoljno je usporediti po
@@ -266,4 +327,15 @@ function komponenteIstogMjesta<T extends ComparableAkademijaStanding>(
   // daju ispravan poredak.
   komponente.sort((a, b) => compareStandings(a[0]!, b[0]!));
   return komponente;
+}
+
+/** „HH:MM" u minute od ponoći; prazno ili neispravno daje null. */
+export function minuteIzVremena(vrijeme: string | null | undefined): number | null {
+  if (!vrijeme) return null;
+  const m = /^(\d{1,2}):(\d{2})$/.exec(vrijeme.trim());
+  if (!m) return null;
+  const h = Number(m[1]);
+  const min = Number(m[2]);
+  if (h > 23 || min > 59) return null;
+  return h * 60 + min;
 }
