@@ -106,7 +106,12 @@ describe("odluciPravo — zapis bez turnira (turnir obrisan)", () => {
 });
 
 describe("odluciPravo — dva turnira istog dana", () => {
-  it("drugi turnir istog datuma je preračunavanje, ne „raniji turnir“", () => {
+  /**
+   * Čl. 3 veže pravo uz DAN prvog nastupa, a dan je isti — pa među dvama
+   * turnirima istog dana nema „ranijeg" i nema razloga da pobijedi onaj koji
+   * je slučajno zadnji spremljen. Zapis se zadržava.
+   */
+  it("drugi turnir istog datuma ne prepisuje zapis", () => {
     const o = odluciPravo({
       ...osnova,
       tournamentId: "t2b",
@@ -117,7 +122,36 @@ describe("odluciPravo — dva turnira istog dana", () => {
       },
       rapidRatingAtThisTournament: 1650,
     });
-    expect(o.status).toBe("refreshed");
-    expect(o.isEligible).toBe(false);
+    expect(o.status).toBe("locked");
+    expect(o.zaUpis).toBeNull();
+    expect(o.isEligible).toBe(true); // zadržana odluka s t2
+  });
+
+  it("ali javlja da bi izračun po njemu dao drukčiju odluku", () => {
+    const o = odluciPravo({
+      ...osnova,
+      tournamentId: "t2b",
+      postojeci: {
+        isEligible: true,
+        firstTournamentId: "t2",
+        firstTournamentDate: dan("2026-11-01"),
+      },
+      rapidRatingAtThisTournament: 1650,
+    });
+    expect(o.odlukaBiSeRazlikovala).toBe(true);
+  });
+
+  it("kad se odluka ne razlikuje, nema ni upozorenja", () => {
+    const o = odluciPravo({
+      ...osnova,
+      tournamentId: "t2b",
+      postojeci: {
+        isEligible: true,
+        firstTournamentId: "t2",
+        firstTournamentDate: dan("2026-11-01"),
+      },
+      rapidRatingAtThisTournament: 1500,
+    });
+    expect(o.odlukaBiSeRazlikovala).toBe(false);
   });
 });

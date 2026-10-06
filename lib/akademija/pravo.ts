@@ -36,7 +36,8 @@ export interface OdlukaPrava {
   playerId: string;
   isEligible: boolean;
   /**
-   * locked — pravo je zaključano na ranijem turniru i ne dira se.
+   * locked — pravo je zaključano na ranijem turniru (ili na drugom turniru
+   *   istog dana) i ne dira se.
    * new — prvi nastup u sezoni, pravo se utvrđuje sada.
    * refreshed — ponovno spremanje ISTOG turnira na kojem je pravo utvrđeno;
    *   preračunava se, pa ispravak rejtinga ili godišta ima učinak.
@@ -47,6 +48,15 @@ export interface OdlukaPrava {
   status: "locked" | "new" | "refreshed" | "recomputed";
   /** Što treba upisati; prazno kad je pravo već zaključano. */
   zaUpis: ZapisPrava | null;
+  /**
+   * Zapis se zadržava, ali bi izračun po OVOM turniru dao drukčiju odluku.
+   *
+   * Javlja se samo uz status "locked", i to u praksi samo za drugi turnir
+   * istog dana: tada se postojeći zapis ne prepisuje (vidi odluciPravo), ali
+   * admin mora znati da se podaci ne slažu — bodovi su negdje izračunati po
+   * jednoj odluci, a rejting s ovog turnira daje drugu.
+   */
+  odlukaBiSeRazlikovala?: boolean;
 }
 
 /**
@@ -68,6 +78,13 @@ export function odluciPravo(input: {
 }): OdlukaPrava {
   const { postojeci, tournamentDate, tournamentId, playerId } = input;
 
+  const isEligible = isEligibleForPoints({
+    birthYear: input.birthYear,
+    seasonStartYear: input.seasonStartYear,
+    rapidRatingAtFirstTournament: input.rapidRatingAtThisTournament,
+  });
+
+  // Zaključano na STROGO ranijem turniru — vrijednost stoji, ništa se ne piše.
   if (
     postojeci &&
     postojeci.firstTournamentDate.getTime() < tournamentDate.getTime()
@@ -80,27 +97,45 @@ export function odluciPravo(input: {
     };
   }
 
-  const isEligible = isEligibleForPoints({
-    birthYear: input.birthYear,
-    seasonStartYear: input.seasonStartYear,
-    rapidRatingAtFirstTournament: input.rapidRatingAtThisTournament,
-  });
-
   /**
-   * „Isti dan" se tretira kao ponovno spremanje, ne kao unos ranijeg turnira.
-   *
-   * Isti turnir prepoznaje se po ID-u, ali ID može biti prazan (obrisan
-   * turnir), a i dva turnira Akademije mogu pasti na isti datum. Čl. 3 veže
-   * pravo uz DAN prvog nastupa, pa među turnirima istog dana nema „ranijeg" —
-   * upozorenje o ranijem turniru bilo bi neistinito, a pravo se svejedno
-   * preračunava, jer se taj dan i dalje utvrđuje.
+   * Isti turnir — ponovno spremanje. Preračunava se, pa ispravak rejtinga ili
+   * godišta na tom turniru ima učinak. ID može biti prazan (turnir je
+   * obrisan), pa se tada pada na datum.
    */
-  const istiDan = postojeci
+  const istiTurnir = postojeci
     ? postojeci.firstTournamentId === tournamentId ||
-      postojeci.firstTournamentDate.getTime() === tournamentDate.getTime()
+      (postojeci.firstTournamentId === null &&
+        postojeci.firstTournamentDate.getTime() === tournamentDate.getTime())
     : false;
 
-  const status = !postojeci ? "new" : istiDan ? "refreshed" : "recomputed";
+  /**
+   * DRUGI turnir istog dana: zapis se ZADRŽAVA.
+   *
+   * Čl. 3 veže pravo uz dan prvog nastupa, a dan je isti — pa među njima
+   * nema „ranijeg" i nema razloga da pobijedi onaj koji je slučajno zadnji
+   * spremljen. Prepisivanje je uz to bilo i opasno: zapis bi upućivao na
+   * turnir Y, a brisanje igrača s Y odnijelo bi mu pravo premda je istog dana
+   * igrao X. Ako bi izračun po ovom turniru dao drukčiju odluku, to se javlja
+   * adminu, jer su tada bodovi negdje izračunati po drugoj odluci.
+   */
+  const istiDan = postojeci
+    ? postojeci.firstTournamentDate.getTime() === tournamentDate.getTime()
+    : false;
+
+  if (postojeci && istiDan && !istiTurnir) {
+    return {
+      playerId,
+      isEligible: postojeci.isEligible,
+      status: "locked",
+      zaUpis: null,
+      odlukaBiSeRazlikovala: isEligible !== postojeci.isEligible,
+    };
+  }
+
+  // Ostaje: ili prvi nastup, ili ponovno spremanje istog turnira, ili je
+  // naknadno unesen turnir RANIJI od zabilježenog prvog nastupa — tada se
+  // pravo utvrđuje po njemu, a kasniji turniri sezone traže provjeru.
+  const status = !postojeci ? "new" : istiTurnir ? "refreshed" : "recomputed";
 
   return {
     playerId,

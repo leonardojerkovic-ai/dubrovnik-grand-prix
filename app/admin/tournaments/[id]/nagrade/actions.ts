@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { revalidateAwards } from "@/lib/revalidate";
-import { odbij } from "@/lib/admin-odbijanje";
+import { napomeni, odbij } from "@/lib/admin-odbijanje";
 import { getLockStatus, lockedMessage } from "@/lib/scoring/results-lock";
 
 /**
@@ -114,6 +114,15 @@ export async function createPrize(
   revalidatePath(`/admin/tournaments/${tournamentId}/nagrade`);
   revalidateAwards(tournamentId);
 
+  // Kad je dodjela zamrznuta, awarded je 0 — to je ispravno, ali bez
+  // objašnjenja izgleda kao da nagrada nikome nije pripala.
+  if (result.zamrznuto) {
+    return {
+      message:
+        "Nagrada dodana, ali dodjela NIJE promijenjena: nagrade ovog turnira već su dodijeljene i ne mijenjaju se same (čl. 29). Ako novu nagradu treba i dodijeliti, pokreni „Preračunaj dodjelu“.",
+    };
+  }
+
   return { message: `Nagrada dodana. Dodijeljeno ukupno: ${result.awarded}.` };
 }
 
@@ -136,9 +145,18 @@ export async function deletePrize(prizeId: string): Promise<void> {
     before,
   });
 
-  await syncTournamentPrizes(before.tournamentId);
+  const posljeBrisanja = await syncTournamentPrizes(before.tournamentId);
   revalidatePath(`/admin/tournaments/${before.tournamentId}/nagrade`);
   revalidateAwards(before.tournamentId);
+
+  // Dodjela je zamrznuta, pa izmjena popisa nagrada nije promijenila ni jednu
+  // dodjelu. Bez poruke admin to ne bi imao odakle znati.
+  if (posljeBrisanja.zamrznuto) {
+    napomeni(
+      `/admin/tournaments/${before.tournamentId}/nagrade`,
+      "Popis nagrada je izmijenjen, ali dodjela NIJE: nagrade ovog turnira već su dodijeljene i ne mijenjaju se same (čl. 29). Ako dodjelu treba uskladiti, pokreni „Preračunaj dodjelu“."
+    );
+  }
 }
 
 /**
@@ -185,9 +203,18 @@ export async function movePrize(
     }),
   ]);
 
-  await syncTournamentPrizes(prize.tournamentId);
+  const posljePomicanja = await syncTournamentPrizes(prize.tournamentId);
   revalidatePath(`/admin/tournaments/${prize.tournamentId}/nagrade`);
   revalidateAwards(prize.tournamentId);
+
+  // Dodjela je zamrznuta, pa izmjena popisa nagrada nije promijenila ni jednu
+  // dodjelu. Bez poruke admin to ne bi imao odakle znati.
+  if (posljePomicanja.zamrznuto) {
+    napomeni(
+      `/admin/tournaments/${prize.tournamentId}/nagrade`,
+      "Popis nagrada je izmijenjen, ali dodjela NIJE: nagrade ovog turnira već su dodijeljene i ne mijenjaju se same (čl. 29). Ako dodjelu treba uskladiti, pokreni „Preračunaj dodjelu“."
+    );
+  }
 }
 
 /** Ponovni izračun na zahtjev — npr. nakon ispravka rezultata. */

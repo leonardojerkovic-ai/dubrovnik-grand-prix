@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { porukaIzAdrese } from "./admin-odbijanje";
+import { napomenaIzAdrese, porukaIzAdrese } from "./admin-odbijanje";
 
 describe("porukaIzAdrese", () => {
   it("čita poruku", () => {
@@ -15,5 +15,18 @@ describe("porukaIzAdrese", () => {
   it("bez parametra i bez searchParams vraća undefined", () => {
     expect(porukaIzAdrese({})).toBeUndefined();
     expect(porukaIzAdrese(undefined)).toBeUndefined();
+  });
+});
+
+describe("napomenaIzAdrese", () => {
+  it("čita napomenu", () => {
+    expect(napomenaIzAdrese({ napomena: "Dodjela nije promijenjena." })).toBe(
+      "Dodjela nije promijenjena."
+    );
+  });
+
+  it("ne miješa se s greškom", () => {
+    expect(napomenaIzAdrese({ greska: "x" })).toBeUndefined();
+    expect(porukaIzAdrese({ napomena: "y" })).toBeUndefined();
   });
 });

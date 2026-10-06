@@ -11,7 +11,7 @@ import {
   recomputePrizes,
 } from "./actions";
 import { AdminNotice } from "@/components/admin-notice";
-import { porukaIzAdrese } from "@/lib/admin-odbijanje";
+import { napomenaIzAdrese, porukaIzAdrese } from "@/lib/admin-odbijanje";
 
 /**
  * Nagrade jednog turnira.
@@ -46,8 +46,11 @@ export default async function AdminPrizesPage(props: {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await props.params;
-  // Vidi medalje/page.tsx — odbijanje dolazi kao ?greska=.
-  const greska = porukaIzAdrese(await props.searchParams);
+  // Vidi medalje/page.tsx — odbijanje dolazi kao ?greska=, a napomena uz
+  // radnju koja je prošla kao ?napomena=.
+  const parametri = await props.searchParams;
+  const greska = porukaIzAdrese(parametri);
+  const napomena = napomenaIzAdrese(parametri);
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: { season: true, _count: { select: { results: true } } },
@@ -72,6 +75,7 @@ export default async function AdminPrizesPage(props: {
   return (
     <div>
       <AdminNotice message={greska} />
+      <AdminNotice message={napomena} tone="napomena" />
       <div className="mb-4">
         <Link
           href={`/admin/tournaments/${tournament.id}/results`}

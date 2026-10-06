@@ -27,3 +27,21 @@ export function porukaIzAdrese(
   if (Array.isArray(v)) return v[0];
   return v;
 }
+
+/**
+ * Napomena, ne odbijanje: radnja je prošla, ali ima nešto što admin mora
+ * znati. Ide kroz isti mehanizam adrese, samo pod drugim parametrom, da se ne
+ * prikaže crveno kao greška.
+ */
+export function napomeni(putanja: string, poruka: string): never {
+  redirect(`${putanja}?napomena=${encodeURIComponent(poruka)}`);
+}
+
+/** Čita napomenu iz searchParams. */
+export function napomenaIzAdrese(
+  searchParams: Record<string, string | string[] | undefined> | undefined
+): string | undefined {
+  const v = searchParams?.napomena;
+  if (Array.isArray(v)) return v[0];
+  return v;
+}

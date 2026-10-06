@@ -144,6 +144,12 @@ export async function saveTournamentResults(
      * zaključano na turniru kojega u bazi nema.
      */
     const pravaZaUpis: ZapisPrava[] = [];
+    /** Igrači kojima je pravo preračunato jer su maknuti s ovog turnira. */
+    const pravoPromijenjeno: string[] = [];
+    /** Maknuti s ovog turnira, a u sezoni nemaju drugi nastup. */
+    const bezNastupaUSezoni: string[] = [];
+    /** Drugi turnir istog dana bi dao drukčiju odluku o pravu. */
+    const razlikaIstiDan: string[] = [];
     /**
      * Igrači spremljeni bez rejtinga. U GP-u takav ulazi u prosjek kao 1400
      * (čl. 7) i vodi se kao neocijenjen pri nagradama tipa U1800; u
@@ -260,6 +266,9 @@ export async function saveTournamentResults(
         if (odluka.status === "recomputed") {
           recomputedPlayers.push(label);
         }
+        if (odluka.odlukaBiSeRazlikovala) {
+          razlikaIstiDan.push(label);
+        }
 
         if (!isEligible) {
           ineligiblePlayers.push(label);
@@ -332,16 +341,102 @@ export async function saveTournamentResults(
         /**
          * Igrač maknut s ovog turnira ne smije na njemu i dalje imati
          * zaključano pravo na bodove: po čl. 3 pravo se veže uz NASTUP, a on
-         * tu nije nastupio. Briše se samo zapis koji se poziva upravo na ovaj
-         * turnir — ako je pravo stekao negdje drugdje, ostaje.
+         * tu nije nastupio.
+         *
+         * Ali brisanje samo po sebi nije dovoljno: ako je igrač u sezoni
+         * igrao i druge turnire, pravo mu treba ODMAH utvrditi po najranijem
+         * preostalom nastupu. Bez toga bi ostao bez zapisa, pa bi mu se
+         * samoprijava ponovno vrednovala po današnjem rejtingu (to je bio
+         * nalaz 9), a novi zapis nastao bi tek kad admin slučajno prvi spremi
+         * neki njegov turnir — i zaključao bi pravo na tome, a ne na
+         * najranijem.
          */
-        await tx.academyEligibility.deleteMany({
+        const izgubiliZapis = await tx.academyEligibility.findMany({
           where: {
             seasonId: tournament.seasonId,
             firstTournamentId: tournamentId,
             playerId: { notIn: keepPlayerIds },
           },
+          select: { playerId: true, isEligible: true },
         });
+
+        if (izgubiliZapis.length > 0) {
+          await tx.academyEligibility.deleteMany({
+            where: {
+              seasonId: tournament.seasonId,
+              firstTournamentId: tournamentId,
+              playerId: { notIn: keepPlayerIds },
+            },
+          });
+
+          const ostaliNastupi = await tx.tournamentResult.findMany({
+            where: {
+              playerId: { in: izgubiliZapis.map((z) => z.playerId) },
+              gamesPlayed: true,
+              tournamentId: { not: tournamentId },
+              tournament: { seasonId: tournament.seasonId },
+            },
+            select: {
+              playerId: true,
+              ratingSnapshotUsed: true,
+              tournamentId: true,
+              tournament: { select: { date: true } },
+            },
+            orderBy: { tournament: { date: "asc" } },
+          });
+
+          const godisteBez = new Map(
+            (
+              await tx.player.findMany({
+                where: { id: { in: izgubiliZapis.map((z) => z.playerId) } },
+                select: {
+                  id: true,
+                  birthYear: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              })
+            ).map((p) => [p.id, p])
+          );
+
+          for (const z of izgubiliZapis) {
+            const igrac = godisteBez.get(z.playerId);
+            const label = igrac
+              ? `${igrac.lastName} ${igrac.firstName}`
+              : z.playerId;
+
+            // Prvi u nizu je najraniji — upit je sortiran po datumu.
+            const najraniji = ostaliNastupi.find(
+              (o) => o.playerId === z.playerId
+            );
+
+            if (!najraniji) {
+              bezNastupaUSezoni.push(label);
+              continue;
+            }
+
+            const odluka = odluciPravo({
+              tournamentId: najraniji.tournamentId,
+              tournamentDate: najraniji.tournament.date,
+              playerId: z.playerId,
+              birthYear: igrac?.birthYear ?? 0,
+              seasonStartYear: tournament.season.startDate.getFullYear(),
+              rapidRatingAtThisTournament: bezNule(
+                najraniji.ratingSnapshotUsed
+              ),
+            });
+
+            if (odluka.zaUpis) {
+              await tx.academyEligibility.create({
+                data: { seasonId: tournament.seasonId, ...odluka.zaUpis },
+              });
+            }
+
+            if (odluka.isEligible !== z.isEligible) {
+              pravoPromijenjeno.push(label);
+            }
+          }
+        }
 
         // Pravo na bodove (čl. 3) ide u istu transakciju kao i rezultati:
         // ako spremanje padne, ne smije ostati zaključano pravo s turnira
@@ -486,6 +581,19 @@ export async function saveTournamentResults(
     }
     if (ineligiblePlayers.length > 0) {
       message += ` Bez prava na bodove (čl. 3 — godište ili rapid rejting): ${ineligiblePlayers.join(", ")}.`;
+    }
+    if (pravoPromijenjeno.length > 0) {
+      message +=
+        ` Maknuti s ovog turnira, pa im je pravo na bodove (čl. 3) preračunato po najranijem preostalom nastupu, i ODLUKA SE PROMIJENILA: ${pravoPromijenjeno.join(", ")}.` +
+        " Bodovi na njihovim ostalim turnirima ove sezone računati su po staroj odluci — spremi te turnire ponovno.";
+    }
+    if (bezNastupaUSezoni.length > 0) {
+      message += ` Maknuti s ovog turnira i bez drugog nastupa u sezoni, pa im je zapis o pravu na bodove uklonjen: ${bezNastupaUSezoni.join(", ")}.`;
+    }
+    if (razlikaIstiDan.length > 0) {
+      message +=
+        ` UPOZORENJE: pravo na bodove zaključano je na drugom turniru istog dana i NIJE promijenjeno, ali rejting s ovog turnira dao bi drukčiju odluku za: ${razlikaIstiDan.join(", ")}.` +
+        " Provjeri koji je rejting točan.";
     }
     if (recomputedPlayers.length > 0) {
       message +=

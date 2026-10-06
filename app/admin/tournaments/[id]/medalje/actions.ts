@@ -90,6 +90,11 @@ export async function setMedalManually(
 
 /**
  * Briše ručnu dodjelu i vraća mjesto automatskom izračunu.
+ *
+ * Zato „izricito": poništenje ručne dodjele JE zahtjev da izračun to mjesto
+ * ponovno zauzme. Sa zadanim „pri-unosu" bio je zamrznut čim na turniru
+ * postoji ijedna automatska medalja — a to je gotovo uvijek — pa je mjesto
+ * ostajalo prazno, a vraćene razlike nitko nije čitao.
  */
 export async function clearManualMedal(
   tournamentId: string,
@@ -103,7 +108,7 @@ export async function clearManualMedal(
     where: { tournamentId, category, place, manual: true },
   });
 
-  await syncTournamentMedals(tournamentId);
+  await syncTournamentMedals(tournamentId, "izricito");
 
   await logAudit({
     actor,
