@@ -39,10 +39,10 @@ components/                  — dijeljene UI komponente
 
 ## Napomena o formuli GP-a (glavni sustav)
 
-Kontrolni primjer PRILOG A u izvornom pravilniku sadrži manje računske
-nepodudarnosti (vidi komentar u `lib/scoring/gp/formulas.ts`). Engine
-slijedi formulu doslovno kako je zapisana u čl. 5-6 — provjeriti s
-voditeljem GP-a prije službenog usvajanja pravilnika.
+Engine slijedi formulu iz čl. 5–6 pravilnika v1.1 (usvojen, rujan 2026.) i
+slaže se s kontrolnim primjerom iz Priloga u svakom redu (N=19, prosječni
+rapid 1676,4: 87, 75, 63, 37, 2 boda). Radna verzija pravilnika imala je u
+tom primjeru 64 i 38 za 5. i 10. mjesto; usvojena ih je ispravila.
 
 ## Status razvoja
 

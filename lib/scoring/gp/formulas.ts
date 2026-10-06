@@ -1,13 +1,16 @@
 /**
  * Bodovni engine — Dubrovnik Grand Prix (glavni sustav)
- * Reference: PRAVILNIK DUBROVNIK GRAND PRIXA (radna verzija), čl. 5-9
+ * Reference: PRAVILNIK DUBROVNIK GRAND PRIXA v1.1 (usvojen, rujan 2026.),
+ * čl. 5–9.
  *
- * NAPOMENA O PRILOG A: kontrolni primjer u dokumentu (klupska razina,
- * ubrzani tempo, N=19, prosj. rejting 1676,4) sadrži manje računske
- * nepodudarnosti za R=5 i R=10 (dokument navodi 64 i 38, precizan izračun
- * formule iz čl. 5-6 daje 63 i 37). Ova implementacija slijedi formulu
- * doslovno kako je zapisana u tekstu pravilnika. Provjeriti s voditeljem
- * GP-a prije službenog usvajanja pravilnika.
+ * Kontrolni primjer iz Priloga (klupska razina, ubrzani tempo, N=19,
+ * prosječni rapid 1676,4) slaže se s ovom implementacijom u svakom redu:
+ * 1. mjesto 87, 3. 75, 5. 63, 10. 37, 19. 2 boda.
+ *
+ * Komentar je dosad tvrdio da dokument za 5. i 10. mjesto navodi 64 i 38, a
+ * da formula daje 63 i 37. To je bilo točno za RADNU verziju; usvojeni
+ * pravilnik ima 63 i 37, pa nepodudarnosti više nema i nema što provjeravati
+ * s voditeljem GP-a.
  */
 
 import { clamp, log2, round3, roundHalfUp } from "../utils";

@@ -117,3 +117,35 @@ describe("GP calculateAverageRating (čl. 7) — nula znači „nema rejtinga“
     expect(calculateAverageRating(rejtinzi)).toBeCloseTo(1580, 6);
   });
 });
+
+describe("GP — kontrolni primjer iz Priloga pravilnika v1.1", () => {
+  /**
+   * Klupska razina, ubrzani tempo, N=19, prosječni rapid 1676,4.
+   * Pravilnik ispisuje: FN 1,030, FR 0,941, FC 1,00, FT 0,90,
+   * umnožak 0,87231, pa bodove 87, 75, 63, 37 i 2.
+   *
+   * Ovo je jedini test koji pravilnik provjerava kao DOKUMENT, a ne kao
+   * formulu: da se brojevi u Prilogu i kod ne raziđu nezapaženo.
+   */
+  const primjer = {
+    playerCount: 19,
+    level: "KLUPSKA" as const,
+    tempo: "RAPID" as const,
+    averageRating: 1676.4,
+  };
+
+  it("faktori odgovaraju ispisanima", () => {
+    expect(calculateFN(19)).toBeCloseTo(1.03, 3);
+    expect(calculateFR(1676.4)).toBeCloseTo(0.941, 3);
+  });
+
+  it.each([
+    [1, 87],
+    [3, 75],
+    [5, 63],
+    [10, 37],
+    [19, 2],
+  ])("%i. mjesto daje %i bodova", (rank, bodovi) => {
+    expect(calculateGpPoints({ ...primjer, rank })).toBe(bodovi);
+  });
+});
