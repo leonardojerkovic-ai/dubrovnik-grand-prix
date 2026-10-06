@@ -103,3 +103,63 @@ describe("Akademija", () => {
     expect(checkEligibility(p, akademija(false)).allowed).toBe(true);
   });
 });
+
+describe("checkEligibility — čl. 3 se zaključava na prvom nastupu", () => {
+  const akademija = {
+    restrictedCategories: null,
+    seasonSystem: "AKADEMIJA" as const,
+    seasonStartYear: 2026,
+    academyPointsOnly: true,
+  };
+
+  it("zaključano pravo nadjačava današnji previsok rejting", () => {
+    const r = checkEligibility(
+      {
+        birthYear: 2014,
+        gender: "M",
+        tempoRating: 1620,
+        rapidRating: 1620,
+        lockedAcademyEligibility: true,
+      },
+      akademija
+    );
+    expect(r.allowed).toBe(true);
+  });
+
+  it("zaključano odbijanje vrijedi i kad je rejting danas pao ispod granice", () => {
+    const r = checkEligibility(
+      {
+        birthYear: 2014,
+        gender: "M",
+        tempoRating: 1500,
+        rapidRating: 1500,
+        lockedAcademyEligibility: false,
+      },
+      akademija
+    );
+    expect(r.allowed).toBe(false);
+    if (!r.allowed) expect(r.reason).toContain("prvom nastupu");
+  });
+
+  it("bez zapisa o prvom nastupu odlučuje današnji rejting", () => {
+    const previsok = checkEligibility(
+      { birthYear: 2014, gender: "M", tempoRating: 1620, rapidRating: 1620 },
+      akademija
+    );
+    expect(previsok.allowed).toBe(false);
+
+    const uredu = checkEligibility(
+      { birthYear: 2014, gender: "M", tempoRating: 1500, rapidRating: 1500 },
+      akademija
+    );
+    expect(uredu.allowed).toBe(true);
+  });
+
+  it("godište izvan Akademije i dalje pada kad zapisa nema", () => {
+    const r = checkEligibility(
+      { birthYear: 2010, gender: "M", tempoRating: null, rapidRating: null },
+      akademija
+    );
+    expect(r.allowed).toBe(false);
+  });
+});

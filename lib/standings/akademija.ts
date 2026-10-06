@@ -26,11 +26,13 @@ export type AkademijaStandingRow = {
 /**
  * Dohvaća i sastavlja konačni poredak GP Akademije za zadanu sezonu (čl. 14).
  *
- * NAPOMENA / POJEDNOSTAVLJENJE: pravo na bodove (čl. 3 — dobna/rejting
- * granica) trenutno se ne provjerava ovdje; pretpostavlja se da je admin
- * pri unosu rezultata već uzeo u obzir tko ima pravo na bodove. Provjera
- * kroz isEligibleForPoints() (lib/scoring/akademija/formulas.ts) treba se
- * ugraditi u admin unos rezultata u idućoj iteraciji.
+ * Pravo na bodove (čl. 3) NE provjerava se ovdje, i to je namjerno: utvrđuje
+ * se i zaključava pri unosu rezultata (resolveAcademyEligibility), pa igrač
+ * bez prava ima gpPoints = null. Ljestvica takav zapis broji kao 0, pa on na
+ * njoj stoji s nula bodova. Dogovoreno je da to ostaje kako je: igrače
+ * starije od granice ili s rapidom iznad 1600 na prvom nastupu Klub na
+ * turnire Akademije ne prima, pa stanje u praksi ne nastaje. Prijave takvih
+ * igrača odbija checkEligibility (lib/scoring/eligibility.ts).
  */
 export async function getAkademijaStandings(
   seasonId: string

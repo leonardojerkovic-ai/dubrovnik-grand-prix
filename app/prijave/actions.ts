@@ -54,7 +54,9 @@ export async function registerForTournament(
 
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
-    include: { season: { select: { system: true, startDate: true } } },
+    include: {
+      season: { select: { id: true, system: true, startDate: true } },
+    },
   });
   if (!tournament) return { error: "Turnir nije pronađen." };
   if (tournament.status !== "PRIJAVE_OTVORENE") {
@@ -74,6 +76,25 @@ export async function registerForTournament(
   });
   if (!full) return { error: "Igrač nije pronađen." };
 
+  /**
+   * Pravo na bodove u Akademiji zaključava se na prvom nastupu u sezoni i
+   * vrijedi do kraja (čl. 3). Dok se ovdje gledao samo današnji rapid,
+   * dijete koje je pravo steklo u rujnu s 1580 dobivalo je u studenom
+   * odbijenicu jer je naraslo na 1620 — a pravo je imalo cijelu sezonu.
+   */
+  const zakljucanoPravo =
+    tournament.season.system === "AKADEMIJA"
+      ? await prisma.academyEligibility.findUnique({
+          where: {
+            seasonId_playerId: {
+              seasonId: tournament.season.id,
+              playerId: player.id,
+            },
+          },
+          select: { isEligible: true },
+        })
+      : null;
+
   const tempoRating =
     tournament.tempo === "STANDARD"
       ? full.ratingsCurrent?.standard
@@ -87,6 +108,7 @@ export async function registerForTournament(
       gender: full.gender,
       tempoRating: tempoRating ?? null,
       rapidRating: full.ratingsCurrent?.rapid ?? null,
+      lockedAcademyEligibility: zakljucanoPravo?.isEligible,
     },
     {
       restrictedCategories: tournament.restrictedCategories,

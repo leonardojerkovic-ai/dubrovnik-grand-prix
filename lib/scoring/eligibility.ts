@@ -31,6 +31,20 @@ export interface EligibilityPlayer {
   tempoRating: number | null;
   /** Rapid rejting — za uvjet iz čl. 3 Akademije. */
   rapidRating: number | null;
+  /**
+   * Pravo na bodove ZAKLJUČANO na prvom nastupu u sezoni (čl. 3), ako je
+   * igrač ove sezone već nastupio.
+   *
+   * Čl. 3 veže pravo uz dan prvog nastupa i ono vrijedi do kraja sezone:
+   * dijete koje je u rujnu imalo 1580 zadržava pravo i kad u studenom
+   * naraste na 1620. Dok se ovdje gledao današnji rejting, takvo dijete
+   * dobivalo je odbijenicu na vlastitu prijavu — a pravo je imalo.
+   *
+   * `undefined` znači da ove sezone još nije nastupio, pa se pravo tek
+   * utvrđuje: tada odlučuje današnji rapid, jer će on biti i rejting prvog
+   * nastupa.
+   */
+  lockedAcademyEligibility?: boolean;
 }
 
 export interface EligibilityTournament {
@@ -75,17 +89,23 @@ export function checkEligibility(
   }
 
   if (tournament.seasonSystem === "AKADEMIJA" && tournament.academyPointsOnly) {
-    const ok = isEligibleForPoints({
-      birthYear: player.birthYear,
-      seasonStartYear: tournament.seasonStartYear,
-      rapidRatingAtFirstTournament: player.rapidRating,
-    });
+    // Zaključano pravo s prvog nastupa ima prednost pred današnjim rejtingom
+    // — tako kaže čl. 3, i u jednu i u drugu stranu.
+    const ok =
+      player.lockedAcademyEligibility ??
+      isEligibleForPoints({
+        birthYear: player.birthYear,
+        seasonStartYear: tournament.seasonStartYear,
+        rapidRatingAtFirstTournament: player.rapidRating,
+      });
     if (!ok) {
       return {
         allowed: false,
         reason:
-          "Turniri Akademije namijenjeni su igračima godišta " +
-          `${tournament.seasonStartYear - 14}. i mlađima s rapid rejtingom nižim od 1600 (čl. 3).`,
+          player.lockedAcademyEligibility === false
+            ? "Pravo na bodove u Akademiji utvrđuje se na prvom nastupu u sezoni i vrijedi do njezina kraja (čl. 3). Na tvojem prvom turniru ove sezone uvjeti nisu bili zadovoljeni, pa se na turnire Akademije ne možeš prijaviti sam/a — obrati se voditelju."
+            : "Turniri Akademije namijenjeni su igračima godišta " +
+              `${tournament.seasonStartYear - 14}. i mlađima s rapid rejtingom nižim od 1600 (čl. 3).`,
       };
     }
   }
