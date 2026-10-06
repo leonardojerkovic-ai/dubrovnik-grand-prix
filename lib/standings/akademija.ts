@@ -104,7 +104,12 @@ export async function getAkademijaStandings(
   // Poredak I mjesta dolaze iz poredajAkademiju: kriterij 5 nije tranzitivan,
   // pa obično sortiranje ne bi dalo ni stabilan poredak ni ispravna dijeljena
   // mjesta (čl. 15 st. 6).
-  return poredajAkademiju(standings).map(({ entry, mjesto, dijeljeno }) => ({
+  return poredajAkademiju(standings, (a, b) =>
+    `${a.player.lastName} ${a.player.firstName}`.localeCompare(
+      `${b.player.lastName} ${b.player.firstName}`,
+      "hr"
+    )
+  ).map(({ entry, mjesto, dijeljeno }) => ({
     ...entry,
     place: mjesto,
     sharedPlace: dijeljeno,

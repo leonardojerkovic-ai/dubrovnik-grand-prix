@@ -192,3 +192,33 @@ describe("minuteIzVremena", () => {
     expect(minuteIzVremena("10:75")).toBeNull();
   });
 });
+
+describe("redoslijed prikaza unutar dijeljenog mjesta", () => {
+  const z = (ime: string) => ({
+    ime,
+    total: 100,
+    allResults: [r("t1", "2026-09-01", 100, 3)],
+  });
+
+  it("bez zaPrikaza mjesta su ista, samo redoslijed imena nije zajamčen", () => {
+    const p = poredajAkademiju([z("Zec"), z("Ambulija"), z("Matić")]);
+    expect(p.map((x) => x.mjesto)).toEqual([1, 1, 1]);
+    expect(p.every((x) => x.dijeljeno)).toBe(true);
+  });
+
+  it("sa zaPrikazom je redoslijed stabilan i abecedni", () => {
+    const po = (a: { ime: string }, b: { ime: string }) =>
+      a.ime.localeCompare(b.ime, "hr");
+    for (const ulaz of [
+      [z("Zec"), z("Ambulija"), z("Matić")],
+      [z("Matić"), z("Zec"), z("Ambulija")],
+      [z("Ambulija"), z("Matić"), z("Zec")],
+    ]) {
+      expect(poredajAkademiju(ulaz, po).map((x) => x.entry.ime)).toEqual([
+        "Ambulija",
+        "Matić",
+        "Zec",
+      ]);
+    }
+  });
+});

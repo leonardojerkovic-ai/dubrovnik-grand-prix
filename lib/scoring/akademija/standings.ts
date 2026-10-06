@@ -88,7 +88,7 @@ export function isEligibleForFinal(input: {
  * Kriterij 5 nije tranzitivan: svaki par gleda SVOJ posljednji zajednički
  * turnir, pa je moguće da A pobijedi B, B pobijedi C, a C pobijedi A. Tada
  * kriterij 5 ne poreda skupinu — pa, po čl. 15, ne odlučuje ništa i prelazi
- * se na st. 6: igrači dijele mjesto. To radi mjestaAkademije; bez nje bi
+ * se na st. 6: igrači dijele mjesto. To radi poredajAkademiju; bez nje bi
  * sortiranje dalo proizvoljan poredak u kojem nijedan SUSJEDNI par nije
  * izjednačen, pa bi i medalje ispale automatski.
  *
@@ -251,9 +251,15 @@ export function sortStandings(
  *     kriterij koji je dao jasan odgovor.
  *
  * Rezultat ne ovisi o redoslijedu ulaznog niza.
+ *
+ * `zaPrikaz` određuje redoslijed UNUTAR dijeljenog mjesta. Na mjesta i na
+ * medalje ne utječe — svi takvi igrači imaju isto mjesto — ali bez njega bi
+ * se poredak imena mijenjao od učitavanja do učitavanja, što na javnoj
+ * ljestvici izgleda kao da se nešto promijenilo.
  */
 export function poredajAkademiju<T extends ComparableAkademijaStanding>(
-  ulaz: T[]
+  ulaz: T[],
+  zaPrikaz?: (a: T, b: T) => number
 ): { entry: T; mjesto: number; dijeljeno: boolean }[] {
   // 1. Razredi po kriterijima 1–4.
   const razredi: T[][] = [];
@@ -269,14 +275,15 @@ export function poredajAkademiju<T extends ComparableAkademijaStanding>(
 
   for (const razred of razredi) {
     for (const komponenta of komponenteIstogMjesta(razred)) {
-      for (const entry of komponenta) {
+      const clanovi = zaPrikaz ? [...komponenta].sort(zaPrikaz) : komponenta;
+      for (const entry of clanovi) {
         izlaz.push({
           entry,
           mjesto,
-          dijeljeno: komponenta.length > 1,
+          dijeljeno: clanovi.length > 1,
         });
       }
-      mjesto += komponenta.length;
+      mjesto += clanovi.length;
     }
   }
 
