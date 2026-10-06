@@ -329,6 +329,20 @@ export async function saveTournamentResults(
              AND "rank" > 0
         `;
 
+        /**
+         * Igrač maknut s ovog turnira ne smije na njemu i dalje imati
+         * zaključano pravo na bodove: po čl. 3 pravo se veže uz NASTUP, a on
+         * tu nije nastupio. Briše se samo zapis koji se poziva upravo na ovaj
+         * turnir — ako je pravo stekao negdje drugdje, ostaje.
+         */
+        await tx.academyEligibility.deleteMany({
+          where: {
+            seasonId: tournament.seasonId,
+            firstTournamentId: tournamentId,
+            playerId: { notIn: keepPlayerIds },
+          },
+        });
+
         // Pravo na bodove (čl. 3) ide u istu transakciju kao i rezultati:
         // ako spremanje padne, ne smije ostati zaključano pravo s turnira
         // kojega u bazi nema.

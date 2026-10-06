@@ -86,16 +86,21 @@ export function odluciPravo(input: {
     rapidRatingAtFirstTournament: input.rapidRatingAtThisTournament,
   });
 
-  // Isti turnir prepoznajemo po ID-u; ako ga zapis nema (obrisan turnir),
-  // pada se na datum. Inače bi ponovno spremanje istog turnira izlazilo kao
-  // „unesen raniji turnir" i nosilo upozorenje za koje nema razloga.
-  const istiTurnir = postojeci
+  /**
+   * „Isti dan" se tretira kao ponovno spremanje, ne kao unos ranijeg turnira.
+   *
+   * Isti turnir prepoznaje se po ID-u, ali ID može biti prazan (obrisan
+   * turnir), a i dva turnira Akademije mogu pasti na isti datum. Čl. 3 veže
+   * pravo uz DAN prvog nastupa, pa među turnirima istog dana nema „ranijeg" —
+   * upozorenje o ranijem turniru bilo bi neistinito, a pravo se svejedno
+   * preračunava, jer se taj dan i dalje utvrđuje.
+   */
+  const istiDan = postojeci
     ? postojeci.firstTournamentId === tournamentId ||
-      (postojeci.firstTournamentId === null &&
-        postojeci.firstTournamentDate.getTime() === tournamentDate.getTime())
+      postojeci.firstTournamentDate.getTime() === tournamentDate.getTime()
     : false;
 
-  const status = !postojeci ? "new" : istiTurnir ? "refreshed" : "recomputed";
+  const status = !postojeci ? "new" : istiDan ? "refreshed" : "recomputed";
 
   return {
     playerId,

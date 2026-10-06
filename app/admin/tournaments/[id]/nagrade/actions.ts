@@ -5,20 +5,29 @@ import { revalidateAwards } from "@/lib/revalidate";
 import { odbij } from "@/lib/admin-odbijanje";
 import { getLockStatus, lockedMessage } from "@/lib/scoring/results-lock";
 
-/** Isto kao kod medalja: nakon roka za prigovor (čl. 29) dodjela je konačna. */
-async function provjeriZakljucanost(tournamentId: string): Promise<void> {
+/**
+ * Isto kao kod medalja: nakon roka za prigovor (čl. 29) dodjela je konačna.
+ *
+ * Vraća poruku, a ne preusmjerava, jer createPrize je obrazac — njemu poruka
+ * treba uz polje, a ne skok na drugu stranicu. Akcije bez obrasca je
+ * proslijede u odbij().
+ */
+async function zakljucanoPoruka(tournamentId: string): Promise<string | null> {
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
     select: { resultsPublishedAt: true, unlockedUntil: true },
   });
-  if (!tournament) return;
+  if (!tournament) return null;
 
   const lock = getLockStatus(tournament);
-  if (!lock.editable) {
-    odbij(
-      `/admin/tournaments/${tournamentId}/nagrade`,
-      lockedMessage(lock.objectionDeadline)
-    );
+  return lock.editable ? null : lockedMessage(lock.objectionDeadline);
+}
+
+/** Za akcije bez obrasca: odbij i vrati admina na popis s porukom. */
+async function provjeriZakljucanost(tournamentId: string): Promise<void> {
+  const poruka = await zakljucanoPoruka(tournamentId);
+  if (poruka) {
+    odbij(`/admin/tournaments/${tournamentId}/nagrade`, poruka);
   }
 }
 import { prisma } from "@/lib/prisma";
@@ -57,6 +66,13 @@ export async function createPrize(
   if (count < 1 || count > 20) {
     return { errors: { count: ["Broj nagrada mora biti između 1 i 20."] } };
   }
+
+  // Popis nagrada dio je objavljenog rezultata turnira: dodavanje nakon roka
+  // za prigovor (čl. 29) mijenja ono što je objavljeno, pa traži
+  // otključavanje. Dodjela se zbog zamrzavanja ne bi promijenila, ali bi
+  // popis nagrada i dodjela prestali odgovarati.
+  const zakljucano = await zakljucanoPoruka(tournamentId);
+  if (zakljucano) return { errors: { label: [zakljucano] } };
 
   const genderRaw = String(formData.get("gender") ?? "");
   const gender = genderRaw === "M" || genderRaw === "F" ? genderRaw : null;
@@ -107,6 +123,7 @@ export async function deletePrize(prizeId: string): Promise<void> {
     where: { id: prizeId },
   });
   if (!before) return;
+  await provjeriZakljucanost(before.tournamentId);
 
   await prisma.tournamentPrize.delete({ where: { id: prizeId } });
 
@@ -139,6 +156,7 @@ export async function movePrize(
     where: { id: prizeId },
   });
   if (!prize) return;
+  await provjeriZakljucanost(prize.tournamentId);
 
   const neighbour = await prisma.tournamentPrize.findFirst({
     where: {

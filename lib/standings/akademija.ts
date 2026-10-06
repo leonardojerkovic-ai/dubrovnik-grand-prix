@@ -1,10 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import {
   buildPlayerStanding,
-  compareStandings,
+  poredajAkademiju,
   type AkademijaTournamentResult,
 } from "@/lib/scoring/akademija/standings";
-import { mjestaIzPoretka } from "@/lib/scoring/mjesta";
 
 export type AkademijaStandingRow = {
   player: {
@@ -96,11 +95,12 @@ export async function getAkademijaStandings(
     return { player, ...built };
   });
 
-  const poredani = standings.sort(compareStandings);
-  const mjesta = mjestaIzPoretka(poredani, compareStandings);
-  return poredani.map((row, i) => ({
-    ...row,
-    place: mjesta[i]?.mjesto ?? i + 1,
-    sharedPlace: mjesta[i]?.dijeljeno ?? false,
+  // Poredak I mjesta dolaze iz poredajAkademiju: kriterij 5 nije tranzitivan,
+  // pa obično sortiranje ne bi dalo ni stabilan poredak ni ispravna dijeljena
+  // mjesta (čl. 15 st. 6).
+  return poredajAkademiju(standings).map(({ entry, mjesto, dijeljeno }) => ({
+    ...entry,
+    place: mjesto,
+    sharedPlace: dijeljeno,
   }));
 }

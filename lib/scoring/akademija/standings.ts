@@ -3,6 +3,7 @@
  * Reference: čl. 11 (kvalifikacija za finale), čl. 14 (konačni poredak), čl. 15 (tie-break)
  */
 
+
 export interface AkademijaTournamentResult {
   tournamentId: string;
   isFinal: boolean;
@@ -78,13 +79,12 @@ export function isEligibleForFinal(input: {
  *   5. bolji plasman na posljednjem zajednički odigranom turniru
  *   6. dijeljeno mjesto
  *
- * Kriterij 5 nije tranzitivan, i to je svojstvo pravila, ne koda: svaki par
- * gleda SVOJ posljednji zajednički turnir, pa je moguće da A bude ispred B,
- * B ispred C, a C ispred A. Tada poredak među njima ovisi o redoslijedu u
- * nizu. Za to nema ispravka bez mijenjanja čl. 15; uvjet je rijedak (traži
- * tri igrača izjednačena kroz prva četiri kriterija i različite parove
- * zajedničkih turnira), a ako se pojavi, medalje se ionako ne dodjeljuju
- * automatski — vidi syncSeasonMedals.
+ * Kriterij 5 nije tranzitivan: svaki par gleda SVOJ posljednji zajednički
+ * turnir, pa je moguće da A pobijedi B, B pobijedi C, a C pobijedi A. Tada
+ * kriterij 5 ne poreda skupinu — pa, po čl. 15, ne odlučuje ništa i prelazi
+ * se na st. 6: igrači dijele mjesto. To radi mjestaAkademije; bez nje bi
+ * sortiranje dalo proizvoljan poredak u kojem nijedan SUSJEDNI par nije
+ * izjednačen, pa bi i medalje ispale automatski.
  *
  * Kriterij 5 traži datum turnira, pa ga `AkademijaTournamentResult` nosi u
  * polju `dan`. Prije je bio izostavljen, s napomenom da se „rješava na
@@ -96,7 +96,12 @@ export type ComparableAkademijaStanding = Pick<
   "total" | "allResults"
 >;
 
-export function compareStandings(
+/**
+ * Kriteriji 1–4. Odvojeni su jer su TRANZITIVNI — svaki je usporedba jednog
+ * broja — pa po njima nastaju skupine igrača koje kriterij 5 pokušava
+ * poredati. Vidi mjestaAkademije.
+ */
+export function compareKriteriji1do4(
   a: ComparableAkademijaStanding,
   b: ComparableAkademijaStanding
 ): number {
@@ -121,6 +126,16 @@ export function compareStandings(
   if (finalA && finalB && finalA.rank !== finalB.rank) {
     return finalA.rank - finalB.rank; // manji rank = bolji plasman
   }
+
+  return 0;
+}
+
+export function compareStandings(
+  a: ComparableAkademijaStanding,
+  b: ComparableAkademijaStanding
+): number {
+  const prvi = compareKriteriji1do4(a, b);
+  if (prvi !== 0) return prvi;
 
   // Kriterij 5 — posljednji turnir koji su OBA igrača odigrala. Uzimaju se
   // samo zajednički turniri: turnir na kojem je igrao jedan a drugi nije ne
@@ -149,4 +164,106 @@ export function sortStandings(
   entries: AkademijaStandingEntry[]
 ): AkademijaStandingEntry[] {
   return [...entries].sort(compareStandings);
+}
+
+/**
+ * Poredak i mjesta na ljestvici Akademije — čl. 15, uključujući st. 6.
+ *
+ * Zašto ne obično sortiranje pa mjestaIzPoretka: kriterij 5 nije tranzitivan
+ * (svaki par gleda SVOJ posljednji zajednički turnir), pa može dati krug
+ * A > B, B > C, C > A. Tada nijedan SUSJEDNI par nije izjednačen, a skupina
+ * ipak nije poredana — sortiranje bi dalo proizvoljan redoslijed, i to
+ * različit ovisno o tome kako je niz došao, jer je sort s netranzitivnim
+ * komparatorom nedefiniran.
+ *
+ * Postupak:
+ *  1. Igrači se dijele u skupine po kriterijima 1–4. Oni su tranzitivni, pa
+ *     je to prava podjela na razrede, a ne „susjedi u nizu".
+ *  2. Unutar skupine gradi se relacija „nije lošiji od" (compareStandings
+ *     ≤ 0). Za svaki par barem jedan smjer vrijedi, pa su skupine međusobno
+ *     potpuno poredane.
+ *  3. Igrači koji su si međusobno dostupni u oba smjera dijele mjesto. To su
+ *     jako povezane komponente te relacije, i dijeljenje se tako ne širi
+ *     dalje nego što mora: ako kriterij 5 četvrtog igrača razdvaja od sve
+ *     trojice iz kruga, on NE dijeli mjesto s njima — inače bi se preskočio
+ *     kriterij koji je dao jasan odgovor.
+ *
+ * Rezultat ne ovisi o redoslijedu ulaznog niza.
+ */
+export function poredajAkademiju<T extends ComparableAkademijaStanding>(
+  ulaz: T[]
+): { entry: T; mjesto: number; dijeljeno: boolean }[] {
+  // 1. Razredi po kriterijima 1–4.
+  const razredi: T[][] = [];
+  for (const e of ulaz) {
+    const razred = razredi.find(
+      (r) => compareKriteriji1do4(r[0]!, e) === 0
+    );
+    if (razred) razred.push(e);
+    else razredi.push([e]);
+  }
+  razredi.sort((a, b) => compareKriteriji1do4(a[0]!, b[0]!));
+
+  const izlaz: { entry: T; mjesto: number; dijeljeno: boolean }[] = [];
+  let mjesto = 1;
+
+  for (const razred of razredi) {
+    for (const komponenta of komponenteIstogMjesta(razred)) {
+      for (const entry of komponenta) {
+        izlaz.push({
+          entry,
+          mjesto,
+          dijeljeno: komponenta.length > 1,
+        });
+      }
+      mjesto += komponenta.length;
+    }
+  }
+
+  return izlaz;
+}
+
+/**
+ * Jako povezane komponente relacije „nije lošiji od", poredane od najbolje.
+ *
+ * Relacija je potpuna (za svaki par vrijedi barem jedan smjer), pa su
+ * komponente međusobno uvijek u jednom smjeru — dovoljno je usporediti po
+ * jednog predstavnika.
+ */
+function komponenteIstogMjesta<T extends ComparableAkademijaStanding>(
+  skupina: T[]
+): T[][] {
+  const n = skupina.length;
+  if (n <= 1) return skupina.map((e) => [e]);
+
+  // dostupno[i][j] — i je „nije lošiji od" j, posredno ili neposredno.
+  const dostupno: boolean[][] = skupina.map((a, i) =>
+    skupina.map((b, j) => i === j || compareStandings(a, b) <= 0)
+  );
+  for (let k = 0; k < n; k++) {
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        if (dostupno[i]![k] && dostupno[k]![j]) dostupno[i]![j] = true;
+      }
+    }
+  }
+
+  const obradeno = new Array<boolean>(n).fill(false);
+  const komponente: T[][] = [];
+  for (let i = 0; i < n; i++) {
+    if (obradeno[i]) continue;
+    const clanovi: T[] = [];
+    for (let j = 0; j < n; j++) {
+      if (!obradeno[j] && dostupno[i]![j] && dostupno[j]![i]) {
+        obradeno[j] = true;
+        clanovi.push(skupina[j]!);
+      }
+    }
+    komponente.push(clanovi);
+  }
+
+  // Između dviju komponenata svi su odnosi u istom smjeru, pa predstavnici
+  // daju ispravan poredak.
+  komponente.sort((a, b) => compareStandings(a[0]!, b[0]!));
+  return komponente;
 }

@@ -10,6 +10,8 @@ import {
   movePrize,
   recomputePrizes,
 } from "./actions";
+import { AdminNotice } from "@/components/admin-notice";
+import { porukaIzAdrese } from "@/lib/admin-odbijanje";
 
 /**
  * Nagrade jednog turnira.
@@ -41,8 +43,11 @@ function criteriaSummary(prize: {
 
 export default async function AdminPrizesPage(props: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await props.params;
+  // Vidi medalje/page.tsx — odbijanje dolazi kao ?greska=.
+  const greska = porukaIzAdrese(await props.searchParams);
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: { season: true, _count: { select: { results: true } } },
@@ -66,6 +71,7 @@ export default async function AdminPrizesPage(props: {
 
   return (
     <div>
+      <AdminNotice message={greska} />
       <div className="mb-4">
         <Link
           href={`/admin/tournaments/${tournament.id}/results`}

@@ -8,6 +8,8 @@ import {
 } from "@/lib/scoring/akademija/medals";
 import type { MedalCategory } from "@prisma/client";
 import { clearManualMedal, recomputeMedals, setMedalManually } from "./actions";
+import { AdminNotice } from "@/components/admin-notice";
+import { porukaIzAdrese } from "@/lib/admin-odbijanje";
 
 /**
  * Ručni ispravak medalja jednog turnira Akademije.
@@ -39,8 +41,12 @@ function slotLabel(category: AkademijaMedalCategory, place: number): string {
 
 export default async function AdminMedalsPage(props: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const params = await props.params;
+  // Odbijanje zbog zaključanog turnira (čl. 29) dolazi kao ?greska= — bez
+  // ovoga bi klik samo prošao bez učinka i bez objašnjenja.
+  const greska = porukaIzAdrese(await props.searchParams);
   const tournament = await prisma.tournament.findUnique({
     where: { id: params.id },
     include: { season: true },
@@ -86,6 +92,7 @@ export default async function AdminMedalsPage(props: {
 
   return (
     <div>
+      <AdminNotice message={greska} />
       <div className="mb-4">
         <Link
           href={`/admin/tournaments/${tournament.id}/results`}

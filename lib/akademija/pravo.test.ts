@@ -104,3 +104,20 @@ describe("odluciPravo — zapis bez turnira (turnir obrisan)", () => {
     expect(o.isEligible).toBe(true);
   });
 });
+
+describe("odluciPravo — dva turnira istog dana", () => {
+  it("drugi turnir istog datuma je preračunavanje, ne „raniji turnir“", () => {
+    const o = odluciPravo({
+      ...osnova,
+      tournamentId: "t2b",
+      postojeci: {
+        isEligible: true,
+        firstTournamentId: "t2",
+        firstTournamentDate: dan("2026-11-01"),
+      },
+      rapidRatingAtThisTournament: 1650,
+    });
+    expect(o.status).toBe("refreshed");
+    expect(o.isEligible).toBe(false);
+  });
+});
