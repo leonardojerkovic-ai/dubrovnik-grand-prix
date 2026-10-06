@@ -2,6 +2,30 @@
 
 import { revalidatePath } from "next/cache";
 import { revalidateAwards } from "@/lib/revalidate";
+import { odbij } from "@/lib/admin-odbijanje";
+import { getLockStatus, lockedMessage } from "@/lib/scoring/results-lock";
+
+/**
+ * Nakon isteka roka za prigovor (čl. 29) rezultat je konačan — a medalja je
+ * dio toga rezultata. Dok se ovo nije provjeravalo, ručna dodjela i ponovni
+ * izračun prolazili su i mjesecima nakon turnira, bez otključavanja i bez
+ * ikakva traga da je rok prošao.
+ */
+async function provjeriZakljucanost(tournamentId: string): Promise<void> {
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { resultsPublishedAt: true, unlockedUntil: true },
+  });
+  if (!tournament) return;
+
+  const lock = getLockStatus(tournament);
+  if (!lock.editable) {
+    odbij(
+      `/admin/tournaments/${tournamentId}/medalje`,
+      lockedMessage(lock.objectionDeadline)
+    );
+  }
+}
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
@@ -27,6 +51,7 @@ export async function setMedalManually(
   note: string
 ): Promise<void> {
   const actor = await requireAdmin();
+  await provjeriZakljucanost(tournamentId);
 
   const tournament = await prisma.tournament.findUnique({
     where: { id: tournamentId },
@@ -72,6 +97,7 @@ export async function clearManualMedal(
   place: number
 ): Promise<void> {
   const actor = await requireAdmin();
+  await provjeriZakljucanost(tournamentId);
 
   await prisma.medal.deleteMany({
     where: { tournamentId, category, place, manual: true },
@@ -94,6 +120,7 @@ export async function clearManualMedal(
 
 export async function recomputeMedals(tournamentId: string): Promise<void> {
   const actor = await requireAdmin();
+  await provjeriZakljucanost(tournamentId);
   const result = await syncTournamentMedals(tournamentId);
 
   await logAudit({

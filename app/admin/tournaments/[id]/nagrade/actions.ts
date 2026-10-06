@@ -2,6 +2,25 @@
 
 import { revalidatePath } from "next/cache";
 import { revalidateAwards } from "@/lib/revalidate";
+import { odbij } from "@/lib/admin-odbijanje";
+import { getLockStatus, lockedMessage } from "@/lib/scoring/results-lock";
+
+/** Isto kao kod medalja: nakon roka za prigovor (čl. 29) dodjela je konačna. */
+async function provjeriZakljucanost(tournamentId: string): Promise<void> {
+  const tournament = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { resultsPublishedAt: true, unlockedUntil: true },
+  });
+  if (!tournament) return;
+
+  const lock = getLockStatus(tournament);
+  if (!lock.editable) {
+    odbij(
+      `/admin/tournaments/${tournamentId}/nagrade`,
+      lockedMessage(lock.objectionDeadline)
+    );
+  }
+}
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/require-admin";
 import { logAudit } from "@/lib/audit";
@@ -156,6 +175,7 @@ export async function movePrize(
 /** Ponovni izračun na zahtjev — npr. nakon ispravka rezultata. */
 export async function recomputePrizes(tournamentId: string): Promise<void> {
   const actor = await requireAdmin();
+  await provjeriZakljucanost(tournamentId);
   const result = await syncTournamentPrizes(tournamentId);
 
   await logAudit({

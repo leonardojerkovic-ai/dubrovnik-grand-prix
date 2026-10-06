@@ -22,7 +22,11 @@ import {
   buildGpSnapshot,
   type ScoringSnapshot,
 } from "@/lib/scoring/rulebook";
-import { resolveAcademyEligibility } from "@/lib/akademija/eligibility";
+import {
+  odluciPravo,
+  ucitajPrava,
+  type ZapisPrava,
+} from "@/lib/akademija/eligibility";
 import { syncTournamentMedals } from "@/lib/akademija/medals";
 import { syncTournamentPrizes } from "@/lib/tournament-prizes";
 import { wasClubMemberOn } from "@/lib/membership";
@@ -134,6 +138,13 @@ export async function saveTournamentResults(
     const ineligiblePlayers: string[] = [];
     const recomputedPlayers: string[] = [];
     /**
+     * Zapisi o pravu na bodove koje treba upisati. Upisuju se U ISTOJ
+     * transakciji kao i rezultati — dok su se upisivali prije nje, ostajali
+     * su u bazi i kad spremanje rezultata padne, pa je pravo bilo
+     * zaključano na turniru kojega u bazi nema.
+     */
+    const pravaZaUpis: ZapisPrava[] = [];
+    /**
      * Igrači spremljeni bez rejtinga. U GP-u takav ulazi u prosjek kao 1400
      * (čl. 7) i vodi se kao neocijenjen pri nagradama tipa U1800; u
      * Akademiji „bez rejtinga" znači da ima pravo na bodove (čl. 3). Oboje
@@ -218,6 +229,13 @@ export async function saveTournamentResults(
       });
       const playerById = new Map(players.map((p) => [p.id, p]));
 
+      // Sva postojeća prava na bodove jednim upitom. Dok se čitalo u petlji,
+      // bilo je 1–2 upita po igraču — kod 30 igrača oko 60.
+      const postojecaPrava = await ucitajPrava(
+        tournament.seasonId,
+        playedRows.map((r) => r.playerId)
+      );
+
       for (const row of playedRows) {
         const player = playerById.get(row.playerId);
         const label = player
@@ -227,17 +245,19 @@ export async function saveTournamentResults(
         // Pravo na bodove veže se uz PRVI nastup u sezoni i zaključava se
         // (čl. 3). Kasniji rast rejtinga preko 1600 ne ukida već stečeno
         // pravo, niti pad ispod 1600 pravo naknadno stvara.
-        const { isEligible, status } = await resolveAcademyEligibility({
-          seasonId: tournament.seasonId,
-          seasonStartDate: tournament.season.startDate,
+        const odluka = odluciPravo({
+          postojeci: postojecaPrava.get(row.playerId),
           tournamentId: tournament.id,
           tournamentDate: tournament.date,
           playerId: row.playerId,
           birthYear: player?.birthYear ?? 0,
+          seasonStartYear: tournament.season.startDate.getFullYear(),
           rapidRatingAtThisTournament: row.rating,
         });
+        const isEligible = odluka.isEligible;
+        if (odluka.zaUpis) pravaZaUpis.push(odluka.zaUpis);
 
-        if (status === "recomputed") {
+        if (odluka.status === "recomputed") {
           recomputedPlayers.push(label);
         }
 
@@ -308,6 +328,28 @@ export async function saveTournamentResults(
            WHERE "tournamentId" = ${tournamentId}
              AND "rank" > 0
         `;
+
+        // Pravo na bodove (čl. 3) ide u istu transakciju kao i rezultati:
+        // ako spremanje padne, ne smije ostati zaključano pravo s turnira
+        // kojega u bazi nema.
+        for (const pravo of pravaZaUpis) {
+          await tx.academyEligibility.upsert({
+            where: {
+              seasonId_playerId: {
+                seasonId: tournament.seasonId,
+                playerId: pravo.playerId,
+              },
+            },
+            create: { seasonId: tournament.seasonId, ...pravo },
+            update: {
+              isEligible: pravo.isEligible,
+              firstTournamentId: pravo.firstTournamentId,
+              firstTournamentDate: pravo.firstTournamentDate,
+              rapidRatingAtFirst: pravo.rapidRatingAtFirst,
+              birthYearUsed: pravo.birthYearUsed,
+            },
+          });
+        }
 
         for (const row of playedRows) {
           const calc = pointsByPlayer.get(row.playerId)!;

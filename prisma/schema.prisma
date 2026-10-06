@@ -390,6 +390,12 @@ model Tournament {
   unlockReason   String?
   unlockedByEmail String?
 
+  /// NIJE U UPOTREBI. Prijave se otvaraju i zatvaraju promjenom statusa
+  /// turnira (TournamentStatus), a ne datumima — ova dva polja nigdje se ne
+  /// upisuju ni čitaju. Ostavljena su jer bi im jednog dana mogla biti
+  /// namjena (automatsko otvaranje u zadani trenutak), ali dok se ne
+  /// upotrijebe, ne znače ništa: tko ih popuni ručno u bazi, neće postići
+  /// ništa.
   registrationOpensAt  DateTime?
   registrationClosesAt DateTime?
 

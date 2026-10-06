@@ -118,7 +118,15 @@ export default async function PlayersPage(props: {
       <form method="get" className="mb-5 flex gap-2">
         <input type="hidden" name="sort" value={sort} />
         <input type="hidden" name="dir" value={dir} />
+        {/*
+          Oznaka je skrivena očima, ali ne čitačima zaslona: placeholder nije
+          oznaka — nestaje pri upisu i neki ga čitači uopće ne izgovore.
+        */}
+        <label htmlFor="pretraga-igraca" className="sr-only">
+          Pretraži igrače po imenu ili prezimenu
+        </label>
         <input
+          id="pretraga-igraca"
           type="search"
           name="q"
           defaultValue={q}
