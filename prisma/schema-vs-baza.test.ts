@@ -22,8 +22,13 @@ const shema = readFileSync(
 /** Vraća tijelo modela po imenu. */
 function model(ime: string): string {
   const m = shema.match(new RegExp(`\\nmodel ${ime} \\{([\\s\\S]*?)\\n\\}`));
-  if (!m) throw new Error(`Model ${ime} nije nađen u schema.prisma.`);
-  return m[1];
+  // noUncheckedIndexedAccess: m[1] je string | undefined i kad regex ima
+  // grupu, pa se provjerava odvojeno od samog podudaranja.
+  const tijelo = m?.[1];
+  if (tijelo === undefined) {
+    throw new Error(`Model ${ime} nije nađen u schema.prisma.`);
+  }
+  return tijelo;
 }
 
 /**
