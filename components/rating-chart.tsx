@@ -1,3 +1,4 @@
+import { BOJE } from "@/lib/design-tokens";
 import type { RatingPoint } from "@/lib/players/profile";
 
 /**
@@ -45,9 +46,9 @@ export function RatingChart({
   };
 }) {
   const allSeries: Series[] = [
-    { key: "standard", label: "Standard", color: "#0B2A5B", points: history.standard },
-    { key: "rapid", label: "Rapid", color: "#6FA8DC", points: history.rapid },
-    { key: "blitz", label: "Blitz", color: "#D4A93A", points: history.blitz },
+    { key: "standard", label: "Standard", color: BOJE.navy.DEFAULT, points: history.standard },
+    { key: "rapid", label: "Rapid", color: BOJE.sky.DEFAULT, points: history.rapid },
+    { key: "blitz", label: "Blitz", color: BOJE.gold.DEFAULT, points: history.blitz },
   ];
   const series = allSeries.filter((s) => s.points.length > 0);
 
@@ -136,7 +137,7 @@ export function RatingChart({
               <text
                 x={x(last.date.getTime()) + 7}
                 y={y(last.value) + 4}
-                fontSize="11"
+                fontSize="12"
                 fill={s.color}
               >
                 {last.value}
@@ -145,14 +146,24 @@ export function RatingChart({
           );
         })}
 
-        <text x={PAD.left} y={H - 6} fontSize="11" fill="#8896A6">
+        {/* Oznake osi: ista siva kao text-ink/60 u ostatku stranice
+            (4,74:1 na bijelom). Prije je ovdje stajao #8896A6, koji na
+            bijelom ima 3,02:1 — ispod 4,5:1 koliko WCAG traži za tekst. */}
+        <text
+          x={PAD.left}
+          y={H - 6}
+          fontSize="12"
+          fill={BOJE.ink}
+          fillOpacity={0.6}
+        >
           {MONTHS[firstDate.getMonth()]} {firstDate.getFullYear()}
         </text>
         <text
           x={W - PAD.right}
           y={H - 6}
-          fontSize="11"
-          fill="#8896A6"
+          fontSize="12"
+          fill={BOJE.ink}
+          fillOpacity={0.6}
           textAnchor="end"
         >
           {MONTHS[lastDate.getMonth()]} {lastDate.getFullYear()}

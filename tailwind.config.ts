@@ -1,32 +1,17 @@
 import type { Config } from "tailwindcss";
+import { BOJE } from "./lib/design-tokens";
 
 /**
  * Dizajn tokeni — Dubrovnik Grand Prix
- * Paleta izvedena iz grba kluba (šahovnica u hrvatskim bojama, plavi obruč).
+ *
+ * Boje stoje u lib/design-tokens.ts da ih može čitati i kod koji ne ide
+ * kroz Tailwind (SVG atributi u grafu rejtinga).
  */
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
-      colors: {
-        navy: {
-          DEFAULT: "#0B2A5B", // primarna — tekst na svijetlom, pozadine kartica
-          dark: "#071D40",
-          light: "#12386F",
-        },
-        sky: {
-          DEFAULT: "#6FA8DC", // sekundarna — pozadine sekcija, badge-ovi
-          light: "#DCEBFA",
-        },
-        crimson: "#C41E3A", // šahovnica akcent — natjecateljska razina, upozorenja
-        gold: {
-          DEFAULT: "#D4A93A", // Grand Prix akcent — istaknuti elementi, medalje
-          light: "#F0D98C",
-        },
-        paper: "#F7F6F2", // pozadina stranice
-        ink: "#161616", // primarni tekst
-        academy: "#1F5C3F", // zelena vrpca — vizualno razlikuje GP Akademije od glavnog GP-a
-      },
+      colors: BOJE,
       /**
        * Najmanja veličina teksta na stranici je text-xs (12 px). Ispod toga
        * se u kombinaciji s uppercase, tracking i text-ink/60 na mobitelu
@@ -40,8 +25,7 @@ const config: Config = {
         mono: ["var(--font-mono)", "monospace"],
       },
       backgroundImage: {
-        "checker-pattern":
-          "repeating-conic-gradient(#0B2A5B 0% 25%, transparent 0% 50%)",
+        "checker-pattern": `repeating-conic-gradient(${BOJE.navy.DEFAULT} 0% 25%, transparent 0% 50%)`,
       },
     },
   },
