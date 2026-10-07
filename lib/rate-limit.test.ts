@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  NAJDULJI_PROZOR_MS,
   RATE_LIMITS,
   adresaIzZaglavlja,
   izvuciAdresu,
@@ -123,6 +124,15 @@ describe("granice", () => {
 
   it("prozori para i stroja su jednaki, pa se ne razilaze", () => {
     expect(RATE_LIMITS.prijavaIp.windowMs).toBe(RATE_LIMITS.prijava.windowMs);
+  });
+
+  /*
+    Izjava o privatnosti (12.3) kaže da razdoblja brojanja traju najviše sat
+    vremena i da se zapisi tada brišu. Dulji prozor značio bi i dulje
+    čuvanje — tada se prvo mijenja izjava, pa tek onda ovaj test.
+  */
+  it("najdulji prozor je sat vremena, kako piše u izjavi o privatnosti", () => {
+    expect(NAJDULJI_PROZOR_MS).toBe(60 * 60 * 1000);
   });
 
   it("granica po računu je u duljem prozoru, jer pokriva rasprseni napad", () => {

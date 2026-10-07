@@ -71,6 +71,14 @@ export const RATE_LIMITS = {
 export type RateLimitAction = keyof typeof RATE_LIMITS;
 
 /**
+ * Najdulji prozor od svih pravila. Zapis stariji od ovoga više ne broji
+ * nijedan brojač i smije se obrisati, bez obzira na ključ.
+ */
+export const NAJDULJI_PROZOR_MS = Math.max(
+  ...Object.values(RATE_LIMITS).map((r) => r.windowMs),
+);
+
+/**
  * Ključ po kojem se broji pokušaj prijave: adresa e-pošte i IP zajedno.
  *
  * Ako IP nije poznat (zahtjev bez zaglavlja posrednika), umjesto njega ide

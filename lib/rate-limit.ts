@@ -1,5 +1,10 @@
 import { prisma } from "@/lib/prisma";
-import { RATE_LIMITS, type RateLimitAction, type RateLimitResult } from "@/lib/rate-limit-rules";
+import {
+  NAJDULJI_PROZOR_MS,
+  RATE_LIMITS,
+  type RateLimitAction,
+  type RateLimitResult,
+} from "@/lib/rate-limit-rules";
 
 // Pravila i poruka stoje odvojeno, u rate-limit-rules.ts, da ih se može
 // testirati bez povlačenja Prisma klijenta.
@@ -60,10 +65,14 @@ export async function checkRateLimit(
 
     await tx.rateLimitHit.create({ data: { bucket, createdAt: now } });
 
-    // Čišćenje usput: bez ovoga tablica raste zauvijek. Briše se samo ono što
-    // je ispalo iz prozora ovog istog ključa, pa je upit jeftin.
+    // Čišćenje usput, po svim ključevima. Dok se brisalo samo po ovom
+    // ključu, zapis ključa koji se više nikad ne pojavi ostajao je zauvijek,
+    // a izjava o privatnosti (12.3) obećaje da se brišu kad prozor istekne.
+    // Prag je najdulji prozor, da se ne obriše ništa što neki drugi brojač
+    // još broji. Tablica drži samo zadnji sat pokušaja, pa je upit jeftin i
+    // bez indeksa na samom createdAt.
     await tx.rateLimitHit.deleteMany({
-      where: { bucket, createdAt: { lt: since } },
+      where: { createdAt: { lt: new Date(now.getTime() - NAJDULJI_PROZOR_MS) } },
     });
 
     return { allowed: true, remaining: rule.limit - recent.length - 1 };
