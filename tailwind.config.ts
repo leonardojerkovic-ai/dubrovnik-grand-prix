@@ -14,7 +14,17 @@ import { BOJE, TEKST } from "./lib/design-tokens";
  * (fontSize atribut) ni on ne pomaže, pa tamo vrijedi pažnja.
  */
 const config: Config = {
-  content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
+  /*
+    lib/ je u popisu jer u lib/dizajn/odlicja.ts stoje gotovi nizovi Tailwind
+    klasa (boje odličja). Bez njega ih Tailwind ne vidi i izbaci ih iz
+    izlaznog CSS-a, pa drugo i treće mjesto ostanu bez podloge — i na
+    ljestvici i na medaljicama.
+  */
+  content: [
+    "./app/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./lib/**/*.{ts,tsx}",
+  ],
   theme: {
     extend: {
       colors: BOJE,
