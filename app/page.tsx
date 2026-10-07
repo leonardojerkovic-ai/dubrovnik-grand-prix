@@ -97,9 +97,13 @@ export default async function HomePage() {
 
   /*
     Podnaslov navodi samo sustave koji stvarno imaju aktivnu sezonu — kao i
-    bedževi ispod njega. Dok je tekst bio nepromjenjiv, obećavao je poredak
-    Akademije i kad Akademija nije igrala, a ispod toga nije bilo ni bedža ni
-    pregleda poretka. Kad nijedan sustav nije aktivan, opisuje cijeli sustav.
+    bedževi i pregled poretka. Dok je tekst bio nepromjenjiv, obećavao je
+    poredak Akademije i kad Akademija nije igrala, a ispod toga nije bilo ni
+    bedža ni pregleda poretka. Kad nijedan sustav nije aktivan, opisuje
+    cijeli sustav.
+
+    Akademija je pritom ravnopravan sustav bodovanja, a ne podskupina Općeg
+    GP-a, pa se navodi posebno, a ne kao jedna od kategorijskih ljestvica.
   */
   const podnaslov =
     gpSeason && !akademijaSeason
@@ -192,11 +196,6 @@ export default async function HomePage() {
             </span>
           </h1>
           <span className="mt-6 block h-0.5 w-10 bg-gold" />
-          {/*
-            Akademija je ravnopravan sustav bodovanja, a ne podskupina Općeg
-            GP-a, pa se u podnaslovu navodi posebno — u bedževima iznad i u
-            pregledu poretka ispod stoji jednako istaknuto.
-          */}
           <p className="mt-5 max-w-xl text-sky-light">{podnaslov}</p>
           <div className="mt-8 flex gap-3">
             <Link
