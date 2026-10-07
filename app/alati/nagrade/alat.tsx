@@ -217,12 +217,12 @@ export function NovcaneNagradeAlat() {
           <button
             type="button"
             onClick={() => setTekst(PRIMJER)}
-            className="text-xs text-ink/60 underline hover:text-crimson"
+            className="text-xs text-muted underline hover:text-crimson"
           >
             umetni primjer
           </button>
         </div>
-        <p className="text-xs text-ink/60">
+        <p className="text-xs text-muted">
           Označi stupce u Excelu, kopiraj i zalijepi ovdje. Poredak određuje
           redoslijed redaka. Prepoznaju se zaglavlja Ime, Godište, Kategorija
           (ili Vrsta), Spol, Rejting i Član; ostali se stupci preskaču. Bez
@@ -243,7 +243,7 @@ export function NovcaneNagradeAlat() {
           placeholder="Ime&#9;Godište&#9;Spol&#9;Rejting&#9;Član"
           className="input font-mono text-xs"
         />
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-ink/60">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted">
           <span>
             Pročitano igrača:{" "}
             <strong className="text-navy">{natjecatelji.length}</strong>
@@ -268,7 +268,7 @@ export function NovcaneNagradeAlat() {
             <p className="font-semibold text-crimson">
               Ovi se redci nisu mogli pročitati i nisu ušli u izračun:
             </p>
-            <ul className="mt-1 list-disc pl-5 text-ink/80">
+            <ul className="mt-1 list-disc pl-5 text-subtle">
               {greske.map((g) => (
                 <li key={g.redak}>Redak {g.redak}: {g.poruka}</li>
               ))}
@@ -312,14 +312,14 @@ export function NovcaneNagradeAlat() {
               <button
                 type="button"
                 onClick={obrisi}
-                className="text-xs text-ink/60 hover:text-crimson"
+                className="text-xs text-muted hover:text-crimson"
               >
                 obriši
               </button>
             )}
           </div>
         </div>
-        <p className="text-xs text-ink/60">
+        <p className="text-xs text-muted">
           Predložak pamti nagrade i godinu sezone, ali ne i poredak. Spremljen
           je u ovom pregledniku, pa ga na drugom računalu nema.
         </p>
@@ -331,13 +331,13 @@ export function NovcaneNagradeAlat() {
             onChange={(e) => setGodinaSezone(e.target.value)}
             className="input w-28"
           />
-          <span className="text-xs text-ink/60">
+          <span className="text-xs text-muted">
             po njoj se računaju dobne kategorije (čl. 22)
           </span>
         </label>
 
         <fieldset className="rounded-md border border-navy/10 bg-paper/60 px-3 py-2.5">
-          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-ink/60">
+          <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-muted">
             Kad su iznosi jednaki
           </legend>
           <div className="grid gap-1 text-sm text-ink">
@@ -359,7 +359,7 @@ export function NovcaneNagradeAlat() {
               </label>
             ))}
           </div>
-          <p className="mt-1.5 text-xs text-ink/60">
+          <p className="mt-1.5 text-xs text-muted">
             Rečenica iz raspisa podnosi oba čitanja, pa odluka pripada raspisu,
             a ne programu. Na nagrade različitih iznosa ovo ne utječe.
           </p>
@@ -373,7 +373,7 @@ export function NovcaneNagradeAlat() {
 
         <div className="overflow-x-auto">
           <table className="w-full min-w-[64rem] text-sm">
-            <thead className="text-left text-xs uppercase tracking-wide text-ink/60">
+            <thead className="text-left text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="pb-1 pr-2 font-medium">Naziv</th>
                 <th className="pb-1 pr-2 font-medium">Iznos €</th>
@@ -444,7 +444,7 @@ export function NovcaneNagradeAlat() {
                       <option value="VLASTITO">godište…</option>
                     </select>
                     {r.dob === "VLASTITO" && (
-                      <div className="mt-1 flex items-center gap-1 text-xs text-ink/60">
+                      <div className="mt-1 flex items-center gap-1 text-xs text-muted">
                         <input
                           type="number"
                           value={r.godisteOd}
@@ -532,7 +532,7 @@ export function NovcaneNagradeAlat() {
                     <button
                       type="button"
                       onClick={() => setRedci((prev) => prev.filter((x) => x.id !== r.id))}
-                      className="text-xs text-ink/60 hover:text-crimson"
+                      className="text-xs text-muted hover:text-crimson"
                     >
                       ukloni
                     </button>
@@ -551,7 +551,7 @@ export function NovcaneNagradeAlat() {
           >
             + Dodaj nagradu
           </button>
-          <span className="text-ink/60">
+          <span className="text-muted">
             Objavljeni redoslijed posebnih nagrada je redoslijed redaka u ovoj
             tablici; odlučuje samo kad su iznosi jednaki. Za dob koju gotove
             oznake ne pokrivaju odaberi &bdquo;godište…&rdquo; i upiši raspon — prazno
@@ -565,7 +565,7 @@ export function NovcaneNagradeAlat() {
         <h3 className="font-display font-bold text-navy">3. Raspodjela</h3>
 
         {natjecatelji.length === 0 || nagrade.length === 0 ? (
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             Za izračun trebaju i poredak i barem jedna nagrada s imenom i
             iznosom većim od nule.
           </p>
@@ -573,7 +573,7 @@ export function NovcaneNagradeAlat() {
           <>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
-                <thead className="text-left text-xs uppercase tracking-wide text-ink/60">
+                <thead className="text-left text-xs uppercase tracking-wide text-muted">
                   <tr>
                     <th className="pb-1 pr-3 font-medium">Nagrada</th>
                     <th className="pb-1 pr-3 font-medium">Iznos</th>
@@ -587,7 +587,7 @@ export function NovcaneNagradeAlat() {
                       <td className="py-1.5 pr-3 text-navy">
                         {d.naziv}
                         {d.primjerak > 1 && (
-                          <span className="text-ink/60"> ({d.primjerak}.)</span>
+                          <span className="text-muted"> ({d.primjerak}.)</span>
                         )}
                       </td>
                       <td className="py-1.5 pr-3 tabular-nums">{eur(d.iznos)}</td>
@@ -605,10 +605,10 @@ export function NovcaneNagradeAlat() {
                             )}
                           </>
                         ) : (
-                          <span className="text-ink/60">nitko ne zadovoljava uvjete</span>
+                          <span className="text-muted">nitko ne zadovoljava uvjete</span>
                         )}
                       </td>
-                      <td className="py-1.5 tabular-nums text-ink/70">{d.mjesto ?? "—"}</td>
+                      <td className="py-1.5 tabular-nums text-subtle">{d.mjesto ?? "—"}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -619,7 +619,7 @@ export function NovcaneNagradeAlat() {
               <span>
                 Za isplatu: <strong className="text-navy">{eur(isplaceno)}</strong>
               </span>
-              <span className="text-ink/60">Objavljeni fond: {eur(fond)}</span>
+              <span className="text-muted">Objavljeni fond: {eur(fond)}</span>
               {nedodijeljeno.length > 0 && (
                 <span className="text-crimson">
                   Nedodijeljeno: {eur(fond - isplaceno)} ({nedodijeljeno.length}{" "}

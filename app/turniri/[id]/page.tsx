@@ -217,7 +217,7 @@ export default async function TournamentDetailPage(props: {
 
       <dl className="mb-8 grid grid-cols-2 gap-4 rounded-lg border border-navy/10 bg-white p-4 text-sm md:grid-cols-4">
         <div>
-          <dt className="text-xs uppercase tracking-wide text-ink/60">Datum</dt>
+          <dt className="text-xs uppercase tracking-wide text-muted">Datum</dt>
           <dd className="font-medium text-navy">
             {tournament.date.toLocaleDateString("hr-HR", {
               day: "numeric",
@@ -229,22 +229,22 @@ export default async function TournamentDetailPage(props: {
         </div>
         {tournament.venue && (
           <div>
-            <dt className="text-xs uppercase tracking-wide text-ink/60">Mjesto</dt>
+            <dt className="text-xs uppercase tracking-wide text-muted">Mjesto</dt>
             <dd className="font-medium text-navy">{tournament.venue}</dd>
           </div>
         )}
         {tournament.level && (
           <div>
-            <dt className="text-xs uppercase tracking-wide text-ink/60">Razina</dt>
+            <dt className="text-xs uppercase tracking-wide text-muted">Razina</dt>
             <dd className="font-medium text-navy">{LEVEL_LABELS[tournament.level]}</dd>
           </div>
         )}
         <div>
-          <dt className="text-xs uppercase tracking-wide text-ink/60">Tempo</dt>
+          <dt className="text-xs uppercase tracking-wide text-muted">Tempo</dt>
           <dd className="font-medium text-navy">{TEMPO_LABELS[tournament.tempo]}</dd>
         </div>
         <div>
-          <dt className="text-xs uppercase tracking-wide text-ink/60">
+          <dt className="text-xs uppercase tracking-wide text-muted">
             Vrijeme razmišljanja
           </dt>
           <dd className="font-medium text-navy font-mono">
@@ -270,13 +270,13 @@ export default async function TournamentDetailPage(props: {
       </h2>
 
       {displayPlayers.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
           Još nema prijava za ovaj turnir.
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-3 py-2 w-10">#</th>
                 <th className="px-4 py-2">Igrač</th>
@@ -289,7 +289,7 @@ export default async function TournamentDetailPage(props: {
             <tbody className="divide-y divide-navy/10">
               {displayPlayers.map((p, i) => (
                 <tr key={p.id}>
-                  <td className="px-3 py-2 text-ink/60 font-mono">
+                  <td className="px-3 py-2 text-muted font-mono">
                     {p.rank ?? i + 1}.
                   </td>
                   <td className="px-4 py-2 font-medium text-navy">
@@ -316,7 +316,7 @@ export default async function TournamentDetailPage(props: {
       )}
 
       {displayPlayers.some((p) => p.neocijenjenUIzracunu) && (
-        <p className="mt-2 text-xs text-ink/70">
+        <p className="mt-2 text-xs text-subtle">
           <span className="text-crimson">*</span> Rejting je uz ime prikazan s
           liste koja je vrijedila na dan turnira, ali u izračun bodova igrač je
           ušao kao neocijenjen (1400, čl. 7) — pri unosu rezultata polje je
@@ -376,7 +376,7 @@ export default async function TournamentDetailPage(props: {
             Gosti izvan kluba redovito pitaju zašto ih nema na ljestvici.
             Bodovi im se računaju (čl. 4), ali se ljestvica vodi za članove.
           */}
-          <p className="text-xs text-ink/60">
+          <p className="text-xs text-muted">
             Bodovi se računaju svim igračima, ali se na službenoj ljestvici
             prikazuju samo članovi ŠK Dubrovnik (čl. 4).
           </p>

@@ -65,7 +65,7 @@ export default async function AdminAnnouncementsPage() {
           />
         ))}
         {announcements.length === 0 && (
-          <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+          <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
             Još nema objavljenih najava.
           </p>
         )}

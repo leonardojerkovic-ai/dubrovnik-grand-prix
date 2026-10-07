@@ -87,7 +87,7 @@ export default async function TournamentResultsPage(props: {
           <h2 className="font-display text-lg font-bold text-navy">
             Rezultati — {tournament.name}
           </h2>
-          <p className="text-sm text-ink/60">
+          <p className="text-sm text-muted">
             {tournament.season.system === "GP" ? "Dubrovnik GP" : "GP Akademije"}{" "}
             · {tournament.season.yearLabel} ·{" "}
             {tournament.date.toLocaleDateString("hr-HR")}

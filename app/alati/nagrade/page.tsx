@@ -16,14 +16,14 @@ export default async function NovcaneNagradePage() {
         <h1 className="font-display text-xl font-bold text-navy">
           Raspodjela novčanih nagrada
         </h1>
-        <p className="mt-1 max-w-3xl text-sm text-ink/70">
+        <p className="mt-1 max-w-3xl text-sm text-subtle">
           Zalijepi konačni poredak iz Excela, upiši objavljene nagrade i
           program izračuna kome što pripada. Ništa se ne sprema u bazu —
           ovo je alat za izračun prije isplate.
         </p>
       </div>
 
-      <div className="rounded-md border border-navy/10 bg-paper/60 px-4 py-3 text-sm text-ink/80">
+      <div className="rounded-md border border-navy/10 bg-paper/60 px-4 py-3 text-sm text-subtle">
         <p className="font-semibold text-navy">Pravilo koje program provodi</p>
         <p className="mt-1 italic">
           &bdquo;Nagrade nisu kumulativne. U slučaju da jedan igrač osvoji više

@@ -25,13 +25,17 @@ tipski posve ispravne:
 **Najmanju veličinu teksta.** Prvo je stajala kao `no-restricted-syntax` nad
 `text-[Npx]`, ali regex ne zna usporediti brojeve: pravilo je blokiralo i
 `text-[40px]`, a propuštalo `text-[0.625rem]` — istih 10 px napisanih
-drukčije. Granicu od 12 px zato čuva test `lib/dizajn/velicina-teksta.test.ts`,
+drukčije. Granicu od 12 px i dvije nijanse sporednog teksta (`text-muted`,
+`text-subtle`) zato čuvaju testovi u `lib/dizajn/`. Prvi,
+`velicina-teksta.test.ts`,
 koji vrijednost pretvori u piksele i u poruci ispiše datoteku, redak i
 izračun. Čita `.ts`, `.tsx` i `.css` u `app/` i `components/`, pa hvata i
 `@apply text-[10px]` i `font-size: 10px`, a komentare preskače da ne bi pao
 na objašnjenju zašto je neka veličina uklonjena. Ni on ne vidi `fontSize`
 atribut u SVG-u (graf rejtinga), jer to nije ni Tailwind klasa ni CSS
-deklaracija.
+deklaracija. Drugi, `nijanse-teksta.test.ts`, pazi da se `text-ink` s
+prozirnošću ne vrati; puni `text-ink` je i dalje u redu, to je primarni
+tekst. Zajednički obilazak izvora je u `lib/dizajn/izvori.ts`.
 
 Raspored ruta. Greška koja je 19.9. srušila build — dva različita naziva
 dinamičkog segmenta na istoj razini putanje — ne vidi se ni linterom ni

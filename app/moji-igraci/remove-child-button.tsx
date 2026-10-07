@@ -18,7 +18,7 @@ export function RemoveChildButton({
       <button
         type="button"
         onClick={() => setConfirming(true)}
-        className="text-xs text-ink/60 hover:text-crimson"
+        className="text-xs text-muted hover:text-crimson"
       >
         ukloni
       </button>
@@ -27,7 +27,7 @@ export function RemoveChildButton({
 
   return (
     <span className="flex items-center gap-2 text-xs">
-      <span className="text-ink/60">Ukloniti {name}?</span>
+      <span className="text-muted">Ukloniti {name}?</span>
       <button
         type="button"
         disabled={isPending}
@@ -43,7 +43,7 @@ export function RemoveChildButton({
       <button
         type="button"
         onClick={() => setConfirming(false)}
-        className="text-ink/60 hover:text-navy"
+        className="text-muted hover:text-navy"
       >
         ne
       </button>

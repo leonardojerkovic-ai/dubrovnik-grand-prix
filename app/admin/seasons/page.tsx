@@ -31,7 +31,7 @@ export default async function AdminSeasonsPage(props: {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Sustav</th>
               <th className="px-4 py-3">Oznaka</th>
@@ -50,7 +50,7 @@ export default async function AdminSeasonsPage(props: {
                   </span>
                 </td>
                 <td className="px-4 py-3 font-medium text-navy">{s.yearLabel}</td>
-                <td className="px-4 py-3 text-ink/70">
+                <td className="px-4 py-3 text-subtle">
                   {s.startDate.toLocaleDateString("hr-HR")} –{" "}
                   {s.endDate.toLocaleDateString("hr-HR")}
                 </td>
@@ -61,7 +61,7 @@ export default async function AdminSeasonsPage(props: {
                   {s.isActive ? (
                     <span className="badge-title">Aktivna</span>
                   ) : (
-                    <span className="text-ink/60">—</span>
+                    <span className="text-muted">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap">
@@ -87,7 +87,7 @@ export default async function AdminSeasonsPage(props: {
             ))}
             {seasons.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted">
                   Još nema unesenih sezona.
                 </td>
               </tr>

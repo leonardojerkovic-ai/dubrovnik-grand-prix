@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join } from "node:path";
+import { jeKomentar, sviIzvori } from "./izvori";
 
 /**
  * Najmanja veličina teksta na stranici je 12 px (text-xs).
@@ -11,7 +10,8 @@ import { join } from "node:path";
  * blokirao je i text-[40px], a propuštao text-[0.625rem], što je ista ona
  * veličina od 10 px napisana drukčije.
  *
- * Ovaj test zato pročita svaki `text-[…]` iz izvora, pretvori vrijednost u
+ * Ovaj test zato pročita svaki `text-[…]` iz izvora (obilazak stabla i
+ * preskakanje komentara su u ./izvori), pretvori vrijednost u
  * piksele i padne samo na onima ispod 12. Velike proizvoljne veličine
  * ostaju dopuštene. Uz .tsx i .ts čita i CSS u app/, gdje se veličina može
  * postaviti kroz @apply ili ravno kao font-size.
@@ -20,23 +20,7 @@ import { join } from "node:path";
  * nije ni Tailwind klasa ni CSS deklaracija.
  */
 
-const KORIJENI = ["app", "components"];
-const NASTAVCI = [".ts", ".tsx", ".css"];
 const NAJMANJA_PX = 12;
-
-/** Svi izvori pod zadanim direktorijem. */
-function izvori(dir: string): string[] {
-  const nadeno: string[] = [];
-  for (const unos of readdirSync(dir)) {
-    const put = join(dir, unos);
-    if (statSync(put).isDirectory()) {
-      nadeno.push(...izvori(put));
-    } else if (NASTAVCI.some((n) => put.endsWith(n))) {
-      nadeno.push(put);
-    }
-  }
-  return nadeno;
-}
 
 /**
  * Proizvoljna veličina teksta u Tailwind klasi: text-[12px], text-[0.75rem],
@@ -51,20 +35,6 @@ const DEKLARACIJA = /font-size:\s*(\d*\.?\d+)(px|rem|em)/g;
 /** U pikselima; rem i em se računaju na zadanih 16 px. */
 function uPiksele(vrijednost: number, jedinica: string): number {
   return jedinica === "px" ? vrijednost : vrijednost * 16;
-}
-
-/**
- * Komentari se preskaču. Test čita sirov tekst, pa bi inače pao i na
- * komentaru koji objašnjava zašto je neki text-[10px] uklonjen — a upravo
- * takve komentare ovaj projekt rado piše. Prepoznaju se po početku retka,
- * što pokriva sve komentare u projektu; veličina teksta ionako nikad ne
- * stoji u istom redu s komentarom.
- */
-const POCETAK_KOMENTARA = ["//", "/*", "*/", "*", "{/*"];
-
-function jeKomentar(red: string): boolean {
-  const t = red.trimStart();
-  return POCETAK_KOMENTARA.some((p) => t.startsWith(p));
 }
 
 type Nalaz = { mjesto: string; zapis: string; px: number };
@@ -90,19 +60,7 @@ function premaleUTekstu(sadrzaj: string, oznaka: string): Nalaz[] {
 }
 
 function premaleVelicine(): Nalaz[] {
-  const korijen = join(__dirname, "..", "..");
-  const nalazi: Nalaz[] = [];
-  for (const grana of KORIJENI) {
-    for (const datoteka of izvori(join(korijen, grana))) {
-      nalazi.push(
-        ...premaleUTekstu(
-          readFileSync(datoteka, "utf-8"),
-          datoteka.slice(korijen.length + 1),
-        ),
-      );
-    }
-  }
-  return nalazi;
+  return sviIzvori().flatMap(({ oznaka, sadrzaj }) => premaleUTekstu(sadrzaj, oznaka));
 }
 
 describe("najmanja veličina teksta", () => {

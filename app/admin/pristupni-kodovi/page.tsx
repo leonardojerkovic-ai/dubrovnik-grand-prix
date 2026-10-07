@@ -32,7 +32,7 @@ export default async function LinkCodesPage() {
       <h2 className="font-display text-lg font-semibold text-navy mb-1">
         Pristupni kodovi
       </h2>
-      <p className="mb-4 max-w-2xl text-sm text-ink/60">
+      <p className="mb-4 max-w-2xl text-sm text-muted">
         Kod dokazuje da je osoba ta koja tvrdi da jest, pa se njezin račun pri
         registraciji odmah povezuje s igračkim profilom — bez ručnog
         odobravanja. Prikazuje se samo jednom, pri izdavanju; u bazi ostaje
@@ -52,7 +52,7 @@ export default async function LinkCodesPage() {
       </div>
 
       {players.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
           Svi igrači imaju povezan korisnički račun.
         </p>
       ) : (

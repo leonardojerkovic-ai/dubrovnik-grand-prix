@@ -12,7 +12,7 @@ export default function PostaniClanPage() {
       <h1 className="font-display text-2xl font-bold text-navy mb-6">
         Postani član
       </h1>
-      <div className="grid gap-4 text-ink/80 mb-8">
+      <div className="grid gap-4 text-subtle mb-8">
         <p>
           Članstvo u ŠK Dubrovnik otvoreno je svim zainteresiranima, bez
           obzira na dob ili razinu igre. Članovi kluba imaju pravo nastupa na
@@ -27,7 +27,7 @@ export default function PostaniClanPage() {
           <span className="rank-badge" data-parity="odd">1</span>
           <div>
             <p className="font-semibold text-navy">Kreiraj korisnički račun</p>
-            <p className="text-sm text-ink/60">
+            <p className="text-sm text-muted">
               Registriraj se na stranici kako bi mogao/la pratiti svoje
               rezultate i prijavljivati se na turnire.
             </p>
@@ -38,7 +38,7 @@ export default function PostaniClanPage() {
           <div className="grid gap-3">
             <div>
               <p className="font-semibold text-navy">Ispuni pristupnicu</p>
-              <p className="text-sm text-ink/60">
+              <p className="text-sm text-muted">
                 Pristupnicu možeš ispuniti izravno na mrežnoj stranici kluba
                 ili je preuzeti, ispuniti i poslati e-poštom.
               </p>
@@ -63,7 +63,7 @@ export default function PostaniClanPage() {
               </a>
             </div>
 
-            <div className="rounded-md bg-paper px-3 py-2.5 text-sm text-ink/70">
+            <div className="rounded-md bg-paper px-3 py-2.5 text-sm text-subtle">
               <p className="mb-1 font-medium text-navy">Šalje se e-poštom na</p>
               <a
                 href="mailto:skdubrovnik@skdubrovnik.hr?subject=Pristupnica%20-%20u%C4%8Dlanjenje%20u%20%C5%A0K%20Dubrovnik"
@@ -86,7 +86,7 @@ export default function PostaniClanPage() {
         </h2>
         <dl className="grid gap-2 text-sm">
           <div className="flex justify-between gap-4 border-b border-navy/[0.07] pb-2">
-            <dt className="text-ink/70">
+            <dt className="text-subtle">
               Učenici, studenti, nezaposleni, umirovljenici i osobe s
               invaliditetom
             </dt>
@@ -95,14 +95,14 @@ export default function PostaniClanPage() {
             </dd>
           </div>
           <div className="flex justify-between gap-4 pb-1">
-            <dt className="text-ink/70">Zaposleni</dt>
+            <dt className="text-subtle">Zaposleni</dt>
             <dd className="whitespace-nowrap font-mono font-semibold text-navy">
               30 EUR
             </dd>
           </div>
         </dl>
 
-        <p className="mt-3 text-sm text-ink/60">
+        <p className="mt-3 text-sm text-muted">
           Igrači koji žele nastupati na službenim turnirima trebaju FIDE ID.
           Registraciju pri Hrvatskom šahovskom savezu klub može obaviti uz
           dodatnu naknadu — 10 EUR za kadete do 16 godina, 20 EUR za ostale.
@@ -110,28 +110,28 @@ export default function PostaniClanPage() {
 
         <div className="mt-4 rounded-md bg-paper px-3 py-3 text-sm">
           <p className="font-medium text-navy">Podaci za uplatu</p>
-          <dl className="mt-2 grid gap-1 text-ink/75">
+          <dl className="mt-2 grid gap-1 text-subtle">
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/60">Primatelj:</dt>
+              <dt className="text-muted">Primatelj:</dt>
               <dd>Šahovski klub Dubrovnik, Liechtensteinov put 12, 20000 Dubrovnik</dd>
             </div>
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/60">IBAN:</dt>
+              <dt className="text-muted">IBAN:</dt>
               <dd className="font-mono">HR8224070001100022033</dd>
             </div>
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/60">Poziv na broj:</dt>
+              <dt className="text-muted">Poziv na broj:</dt>
               <dd className="font-mono">00 1-2026</dd>
             </div>
             <div className="flex flex-wrap gap-x-2">
-              <dt className="text-ink/60">Opis:</dt>
+              <dt className="text-muted">Opis:</dt>
               <dd>ime i prezime osobe za koju se članarina uplaćuje</dd>
             </div>
           </dl>
         </div>
       </section>
 
-      <section className="mb-8 text-sm text-ink/70">
+      <section className="mb-8 text-sm text-subtle">
         <h2 className="font-display text-lg font-bold text-navy mb-2">Kontakt</h2>
         <ul className="grid gap-1">
           <li>

@@ -57,7 +57,7 @@ export default async function EditSeasonPage(props: {
           <h3 className="font-display font-bold text-navy">
             Medalje konačnog poretka (čl. 19 st. 3)
           </h3>
-          <p className="mb-3 max-w-prose text-xs text-ink/60">
+          <p className="mb-3 max-w-prose text-xs text-muted">
             Računaju se iz konačne ljestvice sezone, pa ih treba pokrenuti tek
             kad su svi turniri odigrani i rezultati uneseni. Ponovni izračun
             ne dira ručno dodijeljene medalje.
@@ -77,7 +77,7 @@ export default async function EditSeasonPage(props: {
                     className="flex justify-between gap-3 px-4 py-2"
                   >
                     <span className="text-navy">{m.playerName}</span>
-                    <span className="text-xs text-ink/60">
+                    <span className="text-xs text-muted">
                       {m.category === "UKUPNO"
                         ? `${m.place}. mjesto`
                         : `${m.category} — ${m.place}. mjesto`}
@@ -86,7 +86,7 @@ export default async function EditSeasonPage(props: {
                 ))}
             </ul>
           ) : (
-            <p className="mb-3 text-sm text-ink/60">
+            <p className="mb-3 text-sm text-muted">
               Medalje konačnog poretka još nisu izračunate.
             </p>
           )}

@@ -99,7 +99,7 @@ export default async function ArchivedStandingsPage(props: {
 
       {otherSeasons.length > 1 && (
         <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-ink/60">Sezona:</span>
+          <span className="text-muted">Sezona:</span>
           {otherSeasons.map((s) => {
             const active = s.id === season.id;
             return (

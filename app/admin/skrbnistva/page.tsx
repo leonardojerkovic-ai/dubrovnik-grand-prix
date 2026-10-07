@@ -70,7 +70,7 @@ export default async function GuardianshipsPage() {
       <h2 className="font-display text-lg font-semibold text-navy mb-1">
         Skrbništva
       </h2>
-      <p className="mb-5 max-w-2xl text-sm text-ink/60">
+      <p className="mb-5 max-w-2xl text-sm text-muted">
         Roditelji i skrbnici koji upravljaju profilima djece. Vezu može
         uspostaviti roditelj sam, upisom pristupnog koda djeteta, ili je ovdje
         dodaješ izravno — korisno kad roditelj i sam igra, pa već ima račun.
@@ -81,7 +81,7 @@ export default async function GuardianshipsPage() {
           Dodaj skrbništvo
         </h3>
         <AddGuardianshipForm accounts={accounts} childOptions={childOptions} />
-        <p className="mt-3 text-xs text-ink/60">
+        <p className="mt-3 text-xs text-muted">
           Ponuđeni su samo igrači mlađi od {SELF_ACCOUNT_AGE} godina. Isto
           dijete može voditi više skrbnika, primjerice oba roditelja.
         </p>
@@ -92,7 +92,7 @@ export default async function GuardianshipsPage() {
           <h3 className="mb-2 text-sm font-semibold text-crimson">
             Mogu voditi vlastiti račun ({adults.length})
           </h3>
-          <p className="mb-3 text-sm text-ink/60">
+          <p className="mb-3 text-sm text-muted">
             Ovi igrači imaju {SELF_ACCOUNT_AGE} godina ili više. Razmisli
             treba li im izdati vlastiti pristupni kod i ukloniti skrbništvo —
             veza se ne prekida sama, da nikoga ne zatekne usred sezone.
@@ -107,7 +107,7 @@ export default async function GuardianshipsPage() {
                 >
                   {l.player.lastName} {l.player.firstName} ({l.player.birthYear}.)
                 </PlayerLink>
-                <span className="flex items-center gap-3 text-ink/60">
+                <span className="flex items-center gap-3 text-muted">
                   {l.guardian.email}
                   <RemoveGuardianshipButton
                     linkId={l.id}
@@ -124,7 +124,7 @@ export default async function GuardianshipsPage() {
         Aktivna skrbništva ({minors.length})
       </h3>
       {minors.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-sm text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-sm text-muted">
           Nema zabilježenih skrbništava.
         </p>
       ) : (
@@ -138,7 +138,7 @@ export default async function GuardianshipsPage() {
               >
                 {l.player.lastName} {l.player.firstName} ({l.player.birthYear}.)
               </PlayerLink>
-              <span className="flex items-center gap-3 text-ink/60">
+              <span className="flex items-center gap-3 text-muted">
                 {l.guardian.email}
                 <RemoveGuardianshipButton
                   linkId={l.id}

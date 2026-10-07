@@ -86,13 +86,13 @@ export default async function AdminPrizesPage(props: {
         <h2 className="font-display text-lg font-bold text-navy">
           Nagrade — {tournament.name}
         </h2>
-        <p className="text-xs text-ink/60">
+        <p className="text-xs text-muted">
           Sezona {tournament.season.yearLabel} · {tournament._count.results}{" "}
           unesenih rezultata
         </p>
       </div>
 
-      <div className="mb-6 rounded-md border border-navy/10 bg-sky-light/30 px-4 py-3 text-sm text-ink/75">
+      <div className="mb-6 rounded-md border border-navy/10 bg-sky-light/30 px-4 py-3 text-sm text-subtle">
         Nagrade se ne kumuliraju. Igrač prima samo najvišu nagradu koju je
         ostvario, a nagrada koja time ostane slobodna pripada sljedećem igraču
         koji zadovoljava njezine uvjete. Redoslijed na popisu odlučuje što je
@@ -108,14 +108,14 @@ export default async function AdminPrizesPage(props: {
       </div>
 
       {prizes.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
           Za ovaj turnir još nije unesena nijedna nagrada.
         </p>
       ) : (
         <>
           <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
             <table className="w-full text-sm">
-              <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+              <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-3 py-3 w-16">Red</th>
                   <th className="px-4 py-3">Nagrada</th>
@@ -168,7 +168,7 @@ export default async function AdminPrizesPage(props: {
                         {prize.label}
                       </span>
                       {prize.count > 1 && (
-                        <span className="ml-2 text-xs text-ink/60">
+                        <span className="ml-2 text-xs text-muted">
                           ×{prize.count}
                         </span>
                       )}
@@ -178,25 +178,25 @@ export default async function AdminPrizesPage(props: {
                         </span>
                       )}
                     </td>
-                    <td className="px-4 py-3 text-xs text-ink/60">
+                    <td className="px-4 py-3 text-xs text-muted">
                       {criteriaSummary(prize)}
                     </td>
                     <td className="px-4 py-3">
                       {(winnersByPrize.get(prize.id) ?? []).length === 0 ? (
-                        <span className="text-xs text-ink/60">—</span>
+                        <span className="text-xs text-muted">—</span>
                       ) : (
                         <ul className="space-y-0.5">
                           {(winnersByPrize.get(prize.id) ?? []).map((a) => (
                             <li key={a.place} className="text-navy">
                               {prize.count > 1 && (
-                                <span className="mr-1 text-ink/60">
+                                <span className="mr-1 text-muted">
                                   {a.place}.
                                 </span>
                               )}
                               {a.playerName}
                               {a.transferred && (
                                 <span
-                                  className="ml-1 text-xs text-ink/60"
+                                  className="ml-1 text-xs text-muted"
                                   title="Igrači ispred u ovoj skupini već su primili višu nagradu"
                                 >
                                   (prenesena)
@@ -237,7 +237,7 @@ export default async function AdminPrizesPage(props: {
               Preračunaj dodjelu
             </button>
           </form>
-          <p className="mt-2 max-w-prose text-xs text-ink/60">
+          <p className="mt-2 max-w-prose text-xs text-muted">
             Prva dodjela izračuna se sama, pri spremanju rezultata — to je ono
             što se na turniru uručuje. Kasniji ispravak rezultata je NE mijenja
             nego samo javi razliku, da nagrada već predana igraču ne prijeđe

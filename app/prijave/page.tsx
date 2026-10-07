@@ -29,7 +29,7 @@ export default async function PrijavePage() {
       </h1>
 
       {tournaments.length === 0 && (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
           Trenutno nema turnira otvorenih za prijavu.
         </p>
       )}
@@ -42,7 +42,7 @@ export default async function PrijavePage() {
           >
             <div>
               <p className="font-semibold text-navy">{t.name}</p>
-              <p className="text-sm text-ink/60">
+              <p className="text-sm text-muted">
                 {t.date.toLocaleDateString("hr-HR", {
                   day: "numeric",
                   month: "long",

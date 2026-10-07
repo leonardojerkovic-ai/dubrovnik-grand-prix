@@ -38,7 +38,7 @@ export default async function AdminHallOfFamePage() {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Sezona</th>
               <th className="px-4 py-3">Kategorija</th>
@@ -74,7 +74,7 @@ export default async function AdminHallOfFamePage() {
             ))}
             {entries.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted">
                   Još nema unesenih Hall of Fame zapisa.
                 </td>
               </tr>

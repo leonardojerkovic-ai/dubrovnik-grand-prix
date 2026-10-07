@@ -40,18 +40,18 @@ export function PrizeList({ items }: { items: PrizeListItem[] }) {
             >
               {item.playerName}
             </PlayerLink>
-            <p className="text-xs text-ink/70">
+            <p className="text-xs text-subtle">
               {item.label}
               {item.place > 1 && ` — ${item.place}. mjesto`}
             </p>
             {item.transferred && (
-              <p className="mt-0.5 text-xs text-ink/60">
+              <p className="mt-0.5 text-xs text-muted">
                 Prenesena — igrači ispred u ovoj skupini već su primili višu
                 nagradu.
               </p>
             )}
             {item.note && (
-              <p className="mt-0.5 text-xs text-ink/60">{item.note}</p>
+              <p className="mt-0.5 text-xs text-muted">{item.note}</p>
             )}
           </div>
         </li>

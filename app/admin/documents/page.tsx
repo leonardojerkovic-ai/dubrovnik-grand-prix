@@ -33,7 +33,7 @@ export default async function AdminDocumentsPage() {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Naziv</th>
               <th className="px-4 py-3">Kategorija</th>
@@ -50,7 +50,7 @@ export default async function AdminDocumentsPage() {
                   </a>
                 </td>
                 <td className="px-4 py-3">{CATEGORY_LABELS[d.category]}</td>
-                <td className="px-4 py-3 text-ink/60">
+                <td className="px-4 py-3 text-muted">
                   {d.season?.yearLabel ?? "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -69,7 +69,7 @@ export default async function AdminDocumentsPage() {
             ))}
             {documents.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={4} className="px-4 py-8 text-center text-muted">
                   Još nema dodanih dokumenata.
                 </td>
               </tr>

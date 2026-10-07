@@ -44,15 +44,15 @@ export default function FaqPage() {
             <summary className="cursor-pointer list-none font-semibold text-navy marker:content-none">
               <span className="flex items-center justify-between">
                 {item.q}
-                <span className="text-ink/60 transition-transform group-open:rotate-45">+</span>
+                <span className="text-muted transition-transform group-open:rotate-45">+</span>
               </span>
             </summary>
-            <p className="mt-2 text-sm text-ink/70">{item.a}</p>
+            <p className="mt-2 text-sm text-subtle">{item.a}</p>
           </details>
         ))}
       </div>
 
-      <p className="mt-8 max-w-prose text-sm text-ink/70">
+      <p className="mt-8 max-w-prose text-sm text-subtle">
         Nisi našao odgovor? Za pitanja o bodovima, ljestvicama i korisničkim
         računima piši na{" "}
         <a

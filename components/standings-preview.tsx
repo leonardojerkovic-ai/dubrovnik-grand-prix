@@ -66,7 +66,7 @@ export function StandingsPreview({
             >
               <span
                 className={`w-5 shrink-0 text-right font-mono tabular-nums ${
-                  place === 1 ? "font-bold text-navy" : "text-ink/60"
+                  place === 1 ? "font-bold text-navy" : "text-muted"
                 }`}
               >
                 {place}
@@ -78,7 +78,7 @@ export function StandingsPreview({
                 className="min-w-0 flex-1 truncate text-navy"
               >
                 {row.title !== "NONE" && (
-                  <span className="mr-1 text-xs font-semibold text-ink/60">
+                  <span className="mr-1 text-xs font-semibold text-muted">
                     {row.title}
                   </span>
                 )}

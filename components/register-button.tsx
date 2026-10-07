@@ -47,7 +47,7 @@ export function RegisterButton({
     return (
       <Link
         href="/moji-igraci"
-        className={`inline-block rounded-md border border-navy/15 font-medium text-ink/60 hover:bg-navy/5 ${pad}`}
+        className={`inline-block rounded-md border border-navy/15 font-medium text-muted hover:bg-navy/5 ${pad}`}
         title="Račun još nije povezan s igračkim profilom."
       >
         Poveži profil

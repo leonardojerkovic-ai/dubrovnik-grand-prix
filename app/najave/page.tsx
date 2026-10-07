@@ -30,7 +30,7 @@ const GENERAL_NOTICE_DAYS = 60;
 function AnnouncementCard({ a }: { a: Announcement }) {
   return (
     <article className="rounded-lg border border-navy/10 bg-white p-5">
-      <p className="mb-1 text-xs text-ink/60">
+      <p className="mb-1 text-xs text-muted">
         {a.publishedAt.toLocaleDateString("hr-HR", {
           day: "numeric",
           month: "long",
@@ -38,7 +38,7 @@ function AnnouncementCard({ a }: { a: Announcement }) {
         })}
       </p>
       <h2 className="font-display text-lg font-bold text-navy mb-2">{a.title}</h2>
-      <p className="text-sm text-ink/70 whitespace-pre-wrap mb-3">{a.body}</p>
+      <p className="text-sm text-subtle whitespace-pre-wrap mb-3">{a.body}</p>
       {a.tournament && (
         <div className="rounded-md bg-paper px-3 py-2.5">
           <Link
@@ -47,7 +47,7 @@ function AnnouncementCard({ a }: { a: Announcement }) {
           >
             {a.tournament.name}
           </Link>
-          <p className="mt-0.5 text-xs text-ink/60">
+          <p className="mt-0.5 text-xs text-muted">
             {[
               a.tournament.date.toLocaleDateString("hr-HR", {
                 day: "numeric",
@@ -109,7 +109,7 @@ export default async function NajavePage() {
       </h1>
 
       {current.length === 0 && (
-        <p className="text-ink/60">Trenutno nema aktualnih najava.</p>
+        <p className="text-muted">Trenutno nema aktualnih najava.</p>
       )}
 
       <div className="grid gap-4">

@@ -56,7 +56,7 @@ export function RatingChart({
 
   if (all.length < 2) {
     return (
-      <p className="rounded-lg border border-navy/10 bg-white px-4 py-6 text-sm text-ink/60">
+      <p className="rounded-lg border border-navy/10 bg-white px-4 py-6 text-sm text-muted">
         Još nema dovoljno zabilježenih rejtinga za prikaz krivulje.
       </p>
     );
@@ -98,7 +98,7 @@ export function RatingChart({
                 className="inline-block h-0.5 w-5 rounded"
                 style={{ backgroundColor: s.color }}
               />
-              <span className="text-ink/70">{s.label}</span>
+              <span className="text-subtle">{s.label}</span>
               <span className="font-mono text-navy">{last?.value}</span>
             </span>
           );
@@ -146,7 +146,7 @@ export function RatingChart({
           );
         })}
 
-        {/* Oznake osi: ista siva kao text-ink/60 u ostatku stranice
+        {/* Oznake osi: ista siva kao text-muted u ostatku stranice
             (4,74:1 na bijelom). Prije je ovdje stajao #8896A6, koji na
             bijelom ima 3,02:1 — ispod 4,5:1 koliko WCAG traži za tekst. */}
         <text

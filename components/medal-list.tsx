@@ -39,17 +39,17 @@ export function MedalList({ items }: { items: MedalListItem[] }) {
             >
               {item.playerName}
             </PlayerLink>
-            <p className="text-xs text-ink/70">
+            <p className="text-xs text-subtle">
               {awardLabel(item.category, item.place)}
             </p>
             {item.transferred && (
-              <p className="mt-0.5 text-xs text-ink/60">
+              <p className="mt-0.5 text-xs text-muted">
                 Prenesena — igrači ispred u ovoj kategoriji već su primili višu
                 medalju (čl. 19).
               </p>
             )}
             {item.note && (
-              <p className="mt-0.5 text-xs text-ink/60">{item.note}</p>
+              <p className="mt-0.5 text-xs text-muted">{item.note}</p>
             )}
           </div>
         </li>

@@ -277,7 +277,7 @@ export default async function HomePage() {
                   <div className="font-hero text-xl leading-none text-navy">
                     {t.date.getDate()}
                   </div>
-                  <div className="mt-1 text-xs uppercase tracking-widest text-ink/60">
+                  <div className="mt-1 text-xs uppercase tracking-widest text-muted">
                     {t.date.toLocaleDateString("hr-HR", { month: "short" })}
                   </div>
                 </div>
@@ -288,7 +288,7 @@ export default async function HomePage() {
                   >
                     {t.name}
                   </Link>
-                  <p className="text-xs text-ink/60">
+                  <p className="text-xs text-muted">
                     {[
                       t.startTime ?? null,
                       t.venue ?? null,
@@ -318,7 +318,7 @@ export default async function HomePage() {
             ))}
           </ul>
         ) : (
-          <p className="text-ink/60">
+          <p className="text-muted">
             Kalendar sezone još nije objavljen. Provjerite uskoro.
           </p>
         )}

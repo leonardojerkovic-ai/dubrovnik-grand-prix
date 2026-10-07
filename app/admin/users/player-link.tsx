@@ -130,7 +130,7 @@ export function PlayerLink({
           <button
             type="button"
             onClick={() => setOpen(false)}
-            className="text-xs text-ink/60 hover:text-navy"
+            className="text-xs text-muted hover:text-navy"
           >
             Odustani
           </button>

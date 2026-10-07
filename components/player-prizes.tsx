@@ -40,7 +40,7 @@ export function PlayerPrizes({ items }: { items: PlayerPrizeItem[] }) {
                 {item.tournamentName}
               </Link>
             </span>
-            <span className="shrink-0 text-xs text-ink/60">
+            <span className="shrink-0 text-xs text-muted">
               {item.label}
               {item.place > 1 && ` — ${item.place}. mjesto`}
             </span>

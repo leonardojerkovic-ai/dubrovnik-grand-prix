@@ -120,7 +120,7 @@ export function AnnouncementForm({
           <button
             type="button"
             onClick={onDone}
-            className="text-sm text-ink/60 hover:text-navy"
+            className="text-sm text-muted hover:text-navy"
           >
             Odustani
           </button>

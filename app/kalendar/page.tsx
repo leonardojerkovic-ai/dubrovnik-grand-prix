@@ -111,7 +111,7 @@ export default async function KalendarPage(props: {
       <h1 className="font-display text-2xl font-bold text-navy mb-2">
         Kalendar
       </h1>
-      <p className="mb-6 max-w-prose text-sm text-ink/70">
+      <p className="mb-6 max-w-prose text-sm text-subtle">
         Nadolazeći turniri i arhiva odigranih, po sezonama. Odigrani turniri
         vode na svoje rezultate.
       </p>
@@ -120,7 +120,7 @@ export default async function KalendarPage(props: {
 
       {allSeasons.length > 1 && (
         <nav className="mb-8 mt-6 flex flex-wrap items-center gap-2 text-xs">
-          <span className="text-ink/60">Sezona:</span>
+          <span className="text-muted">Sezona:</span>
           {allSeasons.map((s) => {
             const slug = seasonSlug(s.yearLabel);
             const active = selected
@@ -155,7 +155,7 @@ export default async function KalendarPage(props: {
       )}
 
       {seasons.length === 0 && (
-        <p className="text-ink/60">Kalendar još nije objavljen.</p>
+        <p className="text-muted">Kalendar još nije objavljen.</p>
       )}
 
       <div className="grid gap-12">
@@ -182,17 +182,17 @@ export default async function KalendarPage(props: {
               </h2>
 
               {season.tournaments.length === 0 && (
-                <p className="text-sm text-ink/60">Nema unesenih turnira.</p>
+                <p className="text-sm text-muted">Nema unesenih turnira.</p>
               )}
 
               {upcoming.length > 0 && (
                 <div className="mb-6">
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                     Predstoji ({upcoming.length})
                   </h3>
                   <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
                     <table className="w-full min-w-[44rem] text-sm">
-                      <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+                      <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
                         <tr>
                           <th className="px-4 py-2">Naziv</th>
                           <th className="px-4 py-2">Datum</th>
@@ -219,10 +219,10 @@ export default async function KalendarPage(props: {
                             <td className="px-4 py-3 font-medium text-navy">
                               {formatDate(t.date)}
                             </td>
-                            <td className="px-4 py-3 text-ink/70">
+                            <td className="px-4 py-3 text-subtle">
                               {levelAndTempo(t)}
                             </td>
-                            <td className="px-4 py-3 text-ink/60">
+                            <td className="px-4 py-3 text-muted">
                               {[t.startTime, t.venue].filter(Boolean).join(" · ") ||
                                 "—"}
                             </td>
@@ -244,12 +244,12 @@ export default async function KalendarPage(props: {
 
               {played.length > 0 && (
                 <div>
-                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
+                  <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
                     Odigrano ({played.length})
                   </h3>
                   <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
                     <table className="w-full min-w-[44rem] text-sm">
-                      <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+                      <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
                         <tr>
                           <th className="px-4 py-2">Naziv</th>
                           <th className="px-4 py-2">Datum</th>
@@ -274,13 +274,13 @@ export default async function KalendarPage(props: {
                                   <span className="badge-title ml-2">Finale</span>
                                 )}
                               </td>
-                              <td className="px-4 py-3 text-ink/70">
+                              <td className="px-4 py-3 text-subtle">
                                 {formatDate(t.date)}
                               </td>
-                              <td className="px-4 py-3 text-ink/70">
+                              <td className="px-4 py-3 text-subtle">
                                 {levelAndTempo(t)}
                               </td>
-                              <td className="px-4 py-3 text-right font-mono tabular-nums text-ink/70">
+                              <td className="px-4 py-3 text-right font-mono tabular-nums text-subtle">
                                 {t._count.results > 0 ? t._count.results : "—"}
                               </td>
                               <td className="px-4 py-3">
@@ -293,7 +293,7 @@ export default async function KalendarPage(props: {
                                     {winner.lastName} {winner.firstName}
                                   </PlayerLink>
                                 ) : (
-                                  <span className="text-xs text-ink/60">
+                                  <span className="text-xs text-muted">
                                     rezultati još nisu uneseni
                                   </span>
                                 )}

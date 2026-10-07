@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import { BOJE } from "./lib/design-tokens";
+import { BOJE, TEKST } from "./lib/design-tokens";
 
 /**
  * Dizajn tokeni — Dubrovnik Grand Prix
@@ -18,6 +18,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: BOJE,
+      /**
+       * Sporedni tekst ima dvije nijanse, muted i subtle, i stoje samo među
+       * text-* klasama — pozadina ili obrub u njima nema smisla.
+       */
+      textColor: TEKST,
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         // Serif, samo za naslov na naslovnici.

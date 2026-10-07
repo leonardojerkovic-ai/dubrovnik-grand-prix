@@ -5,7 +5,7 @@ import { SYSTEM_EMAIL } from "@/lib/contact";
 export function SiteFooter() {
   return (
     <footer className="mt-16 border-t border-navy/10 bg-white">
-      <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-6 text-xs text-ink/60 sm:flex-row sm:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col items-center gap-2 px-4 py-6 text-xs text-muted sm:flex-row sm:justify-between">
         <p>
           © {new Date().getFullYear()}{" "}
           {/*

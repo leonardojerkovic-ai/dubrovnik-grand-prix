@@ -110,7 +110,7 @@ export default async function PlayersPage(props: {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <h1 className="font-display text-2xl font-bold text-navy mb-1">Igrači</h1>
-      <p className="mb-5 text-sm text-ink/60">
+      <p className="mb-5 text-sm text-muted">
         Članovi Šahovskog kluba Dubrovnik. Klikni na ime za profil s
         rezultatima i razlaganjem bodova.
       </p>
@@ -150,7 +150,7 @@ export default async function PlayersPage(props: {
       </form>
 
       {players.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
           {q
             ? `Nema igrača koji odgovaraju pojmu „${q}".`
             : "Još nema unesenih članova."}
@@ -158,7 +158,7 @@ export default async function PlayersPage(props: {
       ) : (
         <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
               <tr>
                 {(
                   [
@@ -208,21 +208,21 @@ export default async function PlayersPage(props: {
                   </td>
                   <td
                     className={`px-4 py-3 text-right font-mono tabular-nums ${
-                      sort === "standard" ? "text-navy" : "text-ink/70"
+                      sort === "standard" ? "text-navy" : "text-subtle"
                     }`}
                   >
                     {p.ratingsCurrent?.standard ?? "—"}
                   </td>
                   <td
                     className={`px-4 py-3 text-right font-mono tabular-nums ${
-                      sort === "rapid" ? "text-navy" : "text-ink/70"
+                      sort === "rapid" ? "text-navy" : "text-subtle"
                     }`}
                   >
                     {p.ratingsCurrent?.rapid ?? "—"}
                   </td>
                   <td
                     className={`px-4 py-3 text-right font-mono tabular-nums ${
-                      sort === "blitz" ? "text-navy" : "text-ink/70"
+                      sort === "blitz" ? "text-navy" : "text-subtle"
                     }`}
                   >
                     {p.ratingsCurrent?.blitz ?? "—"}

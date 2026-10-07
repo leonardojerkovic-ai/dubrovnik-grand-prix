@@ -32,9 +32,9 @@ export function ObjectionNote({
 
   if (expired && deadline) {
     return (
-      <p className="mt-4 max-w-prose text-xs text-ink/60">
+      <p className="mt-4 max-w-prose text-xs text-muted">
         Rok za prigovor na izračun bodova istekao je{" "}
-        <strong className="text-ink/75">{formatDate(deadline)}</strong> i
+        <strong className="text-subtle">{formatDate(deadline)}</strong> i
         rezultat se smatra konačnim (čl. 29). Razrada bodova po turniru
         vidljiva je na profilu igrača; za pitanja se javi na{" "}
         <a
@@ -49,13 +49,13 @@ export function ObjectionNote({
   }
 
   return (
-    <p className="mt-4 max-w-prose text-xs text-ink/60">
+    <p className="mt-4 max-w-prose text-xs text-muted">
       Prigovor na izračun bodova podnosi se u roku od {OBJECTION_PERIOD_DAYS}{" "}
       dana od objave rezultata (čl. 29)
       {deadline && (
         <>
           , dakle do{" "}
-          <strong className="text-ink/75">{formatDate(deadline)}</strong>
+          <strong className="text-subtle">{formatDate(deadline)}</strong>
         </>
       )}
       , na{" "}

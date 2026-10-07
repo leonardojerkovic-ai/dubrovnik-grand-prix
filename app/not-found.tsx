@@ -9,7 +9,7 @@ export default function NotFound() {
       <h1 className="font-display text-2xl font-bold text-navy mb-2">
         Stranica nije pronađena
       </h1>
-      <p className="mb-6 text-ink/60">
+      <p className="mb-6 text-muted">
         Stranica koju tražiš ne postoji ili je premještena — možda je krivi
         potez odveo u slijepu ulicu.
       </p>

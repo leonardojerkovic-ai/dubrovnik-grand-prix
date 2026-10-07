@@ -27,7 +27,7 @@ export default function ZaboravljenaLozinkaPage() {
       <h1 className="font-display text-2xl font-bold text-navy mb-2">
         Zaboravljena lozinka
       </h1>
-      <p className="mb-6 text-sm text-ink/60">
+      <p className="mb-6 text-sm text-muted">
         Unesi email s kojim si registriran/a — poslat ćemo ti poveznicu za
         postavljanje nove lozinke.
       </p>

@@ -5,7 +5,7 @@ export default function PrivatnostPage() {
         Politika privatnosti i zaštite osobnih podataka
       </h1>
 
-      <div className="grid gap-6 text-ink/80">
+      <div className="grid gap-6 text-subtle">
         <section>
           <p>
             Šahovski klub Dubrovnik (u daljnjem tekstu: „Klub&rdquo;) poštuje

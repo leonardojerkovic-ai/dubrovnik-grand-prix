@@ -32,7 +32,7 @@ export async function generateMetadata(props: {
 function Rating({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="bg-paper px-4 py-3">
-      <p className="text-xs uppercase tracking-wide text-ink/60">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
       <p className="font-mono text-xl font-semibold text-navy">
         {value ?? "—"}
       </p>
@@ -104,7 +104,7 @@ export default async function PlayerProfilePage(props: {
       </div>
 
       {player.seasons.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
           Igrač još nema unesenih rezultata.
         </p>
       ) : (

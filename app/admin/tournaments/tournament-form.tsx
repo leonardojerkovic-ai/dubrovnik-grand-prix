@@ -235,7 +235,7 @@ export function TournamentForm({
           />
           <span>
             Samo igrači s pravom na bodove (čl. 3)
-            <span className="mt-0.5 block text-xs text-ink/60">
+            <span className="mt-0.5 block text-xs text-muted">
               Prijavu dopušta samo igračima odgovarajućeg godišta s rapid
               rejtingom nižim od 1600. Isključi ako želiš pustiti starije ili
               jače igrače da odigraju izvan konkurencije — bodove ionako ne
@@ -336,7 +336,7 @@ function Field({
     <label className="grid gap-1 text-sm font-medium text-navy">
       {label}
       {children}
-      {hint && <span className="text-xs font-normal text-ink/60">{hint}</span>}
+      {hint && <span className="text-xs font-normal text-muted">{hint}</span>}
       {error && <span className="text-xs font-normal text-crimson">{error[0]}</span>}
     </label>
   );

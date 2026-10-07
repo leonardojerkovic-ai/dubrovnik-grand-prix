@@ -75,7 +75,7 @@ export function DocumentForm({
           required
           className="input"
         />
-        <span className="mt-1 block text-xs text-ink/60">
+        <span className="mt-1 block text-xs text-muted">
           Datoteke smještene u <code>public/dokumenti</code> u repozitoriju
           dostupne su kao <code>/dokumenti/naziv.pdf</code>. Takva poveznica ne
           istječe i ne ovisi o tuđim dozvolama.

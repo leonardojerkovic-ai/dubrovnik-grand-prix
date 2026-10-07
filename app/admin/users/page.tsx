@@ -53,7 +53,7 @@ export default async function AdminUsersPage(props: {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Igrač</th>

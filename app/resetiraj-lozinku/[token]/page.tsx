@@ -56,7 +56,7 @@ export default function ResetirajLozinkuPage(props: {
           <label className="grid gap-1 text-sm font-medium text-navy">
             Nova lozinka
             <input type="password" name="password" required className="input" />
-            <span className="text-xs text-ink/60">Barem 8 znakova</span>
+            <span className="text-xs text-muted">Barem 8 znakova</span>
           </label>
           <SubmitButton />
         </form>

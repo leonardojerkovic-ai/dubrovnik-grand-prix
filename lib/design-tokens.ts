@@ -29,3 +29,22 @@ export const BOJE = {
   ink: "#161616", // primarni tekst
   academy: "#1F5C3F", // zelena vrpca — vizualno razlikuje GP Akademije od glavnog GP-a
 } as const;
+
+/**
+ * Dvije nijanse sporednog teksta, i nijedna više.
+ *
+ * Prije ih je bilo pet (text-ink/60, /65, /70, /75, /80). Razlika između
+ * susjednih se ne primjećuje, a pri svakoj novoj komponenti trebalo je
+ * nagađati koja je "prava". Sada su imenovane: muted za sve sporedno,
+ * subtle za ono što treba biti nešto čitljivije (legende, pomoćni tekst uz
+ * podatak).
+ *
+ * Zapisane su s prozirnošću, ne kao pune boje, jer stoje i na papiru i na
+ * bijelom, pa moraju raditi na oba. Izmjereni kontrast: muted 4,74:1 na
+ * bijelom i 4,59:1 na papiru, subtle 8,06:1 i 7,70:1 — sve iznad 4,5:1
+ * koliko WCAG traži za tekst. Niže od 0,6 se ne smije ići.
+ */
+export const TEKST = {
+  muted: "rgb(22 22 22 / 0.6)",
+  subtle: "rgb(22 22 22 / 0.75)",
+} as const;

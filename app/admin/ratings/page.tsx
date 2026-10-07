@@ -12,7 +12,7 @@ export default async function AdminRatingsPage() {
       <h2 className="font-display text-lg font-bold text-navy mb-1">
         Mjesečno ažuriranje rejtinga
       </h2>
-      <p className="mb-4 text-sm text-ink/60">
+      <p className="mb-4 text-sm text-muted">
         Unesi trenutne FIDE rejtinge za sve igrače odjednom (čl. 7 — ažurira
         se svakog 1. u mjesecu).
       </p>

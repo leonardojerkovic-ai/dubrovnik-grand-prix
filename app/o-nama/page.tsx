@@ -12,7 +12,7 @@ export default function ONamaPage() {
       <h1 className="font-display text-2xl font-bold text-navy mb-6">
         O nama
       </h1>
-      <div className="prose prose-sm max-w-none text-ink/80 grid gap-4">
+      <div className="prose prose-sm max-w-none text-subtle grid gap-4">
         <p>
           Šahovski klub Dubrovnik jedan je od najstarijih športskih klubova u
           gradu, s dugom tradicijom natjecateljskog i klupskog šaha.

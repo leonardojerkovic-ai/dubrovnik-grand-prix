@@ -33,7 +33,7 @@ export function CalendarSubscribe() {
 
       {open && (
         <div className="mt-3 rounded-lg border border-navy/10 bg-white px-4 py-3">
-          <p className="mb-3 text-sm text-ink/65">
+          <p className="mb-3 text-sm text-muted">
             Kalendar se sam osvježava. Kad se termin turnira promijeni,
             promijenit će se i kod tebe — ništa ne treba ponovno dodavati.
           </p>
@@ -66,7 +66,7 @@ export function CalendarSubscribe() {
             </button>
           </div>
 
-          <p className="mt-3 text-xs text-ink/60">
+          <p className="mt-3 text-xs text-muted">
             Na mobitelu je najlakše prvi gumb. Ako ne otvori kalendar, kopiraj
             poveznicu i dodaj je ručno kao pretplatu na kalendar.
           </p>

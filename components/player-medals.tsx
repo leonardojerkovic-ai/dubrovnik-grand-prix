@@ -40,7 +40,7 @@ function Count({
   return (
     <span className="flex items-center gap-2">
       <MedalDisc category={category} place={place} />
-      <span className="text-sm text-ink/70">
+      <span className="text-sm text-subtle">
         <strong className="text-navy tabular-nums">{value}</strong> {label}
       </span>
     </span>
@@ -80,7 +80,7 @@ export function PlayerMedals({ items }: { items: PlayerMedalItem[] }) {
           ))}
           {special.length > 0 && (
             <span className="flex items-center gap-2">
-              <span className="text-sm text-ink/70">
+              <span className="text-sm text-subtle">
                 <strong className="text-navy tabular-nums">
                   {special.length}
                 </strong>{" "}
@@ -109,7 +109,7 @@ export function PlayerMedals({ items }: { items: PlayerMedalItem[] }) {
                   <>Konačni poredak {item.seasonLabel}</>
                 )}
               </span>
-              <span className="shrink-0 text-xs text-ink/60">
+              <span className="shrink-0 text-xs text-muted">
                 {awardLabel(item.category, item.place)}
               </span>
             </li>

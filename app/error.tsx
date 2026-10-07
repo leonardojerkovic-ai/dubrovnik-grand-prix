@@ -17,7 +17,7 @@ export default function Error({
       <h1 className="font-display text-2xl font-bold text-navy mb-2">
         Nešto je pošlo po zlu
       </h1>
-      <p className="mb-6 text-ink/60">
+      <p className="mb-6 text-muted">
         {error.message || "Došlo je do neočekivane greške."}
       </p>
       <div className="flex gap-3">

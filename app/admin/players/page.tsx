@@ -31,7 +31,7 @@ export default async function AdminPlayersPage(props: {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Ime i prezime</th>
               <th className="px-4 py-3">Titula</th>
@@ -51,10 +51,10 @@ export default async function AdminPlayersPage(props: {
                   {p.title !== "NONE" ? (
                     <span className="badge-title">{p.title}</span>
                   ) : (
-                    <span className="text-ink/60">—</span>
+                    <span className="text-muted">—</span>
                   )}
                 </td>
-                <td className="px-4 py-3 font-mono text-ink/70">
+                <td className="px-4 py-3 font-mono text-subtle">
                   {p.fideId ?? "—"}
                 </td>
                 <td className="px-4 py-3 font-mono tabular-nums">
@@ -64,7 +64,7 @@ export default async function AdminPlayersPage(props: {
                   {p.isClubMember ? (
                     <span className="text-academy">DA</span>
                   ) : (
-                    <span className="text-ink/60">NE</span>
+                    <span className="text-muted">NE</span>
                   )}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -90,7 +90,7 @@ export default async function AdminPlayersPage(props: {
             ))}
             {players.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted">
                   Još nema unesenih igrača.
                 </td>
               </tr>

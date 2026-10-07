@@ -183,7 +183,7 @@ export function SiteHeader() {
               <button
                 type="button"
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-sm text-ink/60 hover:text-crimson"
+                className="text-sm text-muted hover:text-crimson"
               >
                 Odjava
               </button>
@@ -227,7 +227,7 @@ export function SiteHeader() {
       {/* Mobilni panel */}
       {mobileOpen && (
         <div className="lg:hidden border-t border-navy/10 bg-paper px-4 py-4">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Ljestvice
           </p>
           <div className="mb-4 grid grid-cols-2 gap-1">
@@ -247,7 +247,7 @@ export function SiteHeader() {
             })}
           </div>
 
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">
             Stranice
           </p>
           <div className="mb-4 grid gap-1">
@@ -269,7 +269,7 @@ export function SiteHeader() {
 
           {signedIn ? (
             <div className="grid gap-2 border-t border-navy/10 pt-3">
-              <p className="px-2 text-xs text-ink/60">Prijavljeni ste kao</p>
+              <p className="px-2 text-xs text-muted">Prijavljeni ste kao</p>
               <p className="truncate px-2 text-sm font-medium text-navy">{label}</p>
               <Link
                 href="/moji-igraci"

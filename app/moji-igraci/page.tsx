@@ -26,7 +26,7 @@ export default async function MyPlayersPage() {
       <h1 className="font-display text-2xl font-semibold text-navy mb-1">
         Moji igrači
       </h1>
-      <p className="mb-6 text-sm text-ink/60">
+      <p className="mb-6 text-sm text-muted">
         Ovdje su profili kojima upravljaš — tvoj vlastiti i djeca za koju si
         upisao/la pristupni kod. Pri prijavi na turnir biraš za koga se
         prijavljuješ.
@@ -43,7 +43,7 @@ export default async function MyPlayersPage() {
               >
                 {self.lastName} {self.firstName}
               </PlayerLink>
-              <p className="text-xs text-ink/60">tvoj profil · {self.birthYear}.</p>
+              <p className="text-xs text-muted">tvoj profil · {self.birthYear}.</p>
             </div>
           </div>
         )}
@@ -58,7 +58,7 @@ export default async function MyPlayersPage() {
               >
                 {c.lastName} {c.firstName}
               </PlayerLink>
-              <p className="text-xs text-ink/60">
+              <p className="text-xs text-muted">
                 {c.birthYear}.
                 {!needsGuardian(c.birthYear) && " · može voditi vlastiti račun"}
               </p>
@@ -68,7 +68,7 @@ export default async function MyPlayersPage() {
         ))}
 
         {managed.length === 0 && (
-          <p className="px-4 py-8 text-center text-sm text-ink/60">
+          <p className="px-4 py-8 text-center text-sm text-muted">
             Još nemaš nijedan povezan profil.
           </p>
         )}
@@ -77,7 +77,7 @@ export default async function MyPlayersPage() {
       <h2 className="font-display text-lg font-semibold text-navy mb-2">
         Dodaj dijete
       </h2>
-      <p className="mb-3 text-sm text-ink/60">
+      <p className="mb-3 text-sm text-muted">
         Upiši pristupni kod koji si dobio/la od kluba. Vrijedi jednokratno i
         samo za igrače mlađe od 18 godina — punoljetni igrači otvaraju vlastiti
         račun.

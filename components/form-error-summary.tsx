@@ -29,7 +29,7 @@ export function FormErrorSummary({
           ? "Spremanje nije uspjelo:"
           : "Spremanje nije uspjelo. Treba ispraviti:"}
       </p>
-      <ul className="mt-1 list-disc pl-5 text-ink/80">
+      <ul className="mt-1 list-disc pl-5 text-subtle">
         {messages.map((m) => (
           <li key={m}>{m}</li>
         ))}

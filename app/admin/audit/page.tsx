@@ -56,7 +56,7 @@ export default async function AdminAuditPage(props: {
       <h2 className="font-display text-lg font-bold text-navy mb-1">
         Trag izmjena
       </h2>
-      <p className="mb-4 text-sm text-ink/60">
+      <p className="mb-4 text-sm text-muted">
         Zapis o svakoj izmjeni u adminu. Služi za razrješavanje prigovora na
         izračun (čl. 29). Zapisi se ne mogu mijenjati ni brisati.
       </p>
@@ -109,14 +109,14 @@ export default async function AdminAuditPage(props: {
       </form>
 
       {entries.length === 0 ? (
-        <p className="rounded-lg border border-navy/10 bg-white px-4 py-6 text-sm text-ink/60">
+        <p className="rounded-lg border border-navy/10 bg-white px-4 py-6 text-sm text-muted">
           Nema zabilježenih izmjena
           {entity || actor ? " za odabrani filtar." : " — trag počinje od uvođenja ove funkcije."}
         </p>
       ) : (
         <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
           <table className="w-full text-sm">
-            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+            <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
               <tr>
                 <th className="px-4 py-3 whitespace-nowrap">Kada</th>
                 <th className="px-4 py-3">Tko</th>
@@ -127,12 +127,12 @@ export default async function AdminAuditPage(props: {
             <tbody className="divide-y divide-navy/10">
               {entries.map((e) => (
                 <tr key={e.id} className="align-top">
-                  <td className="px-4 py-3 whitespace-nowrap text-ink/60">
+                  <td className="px-4 py-3 whitespace-nowrap text-muted">
                     {formatDateTime(e.at)}
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-navy">{e.actorEmail}</span>
-                    <span className="block text-xs text-ink/60">{e.actorRole}</span>
+                    <span className="block text-xs text-muted">{e.actorRole}</span>
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     <span
@@ -142,16 +142,16 @@ export default async function AdminAuditPage(props: {
                     >
                       {ACTION_LABELS[e.action] ?? e.action}
                     </span>
-                    <span className="block text-xs text-ink/60 mt-1">{e.entity}</span>
+                    <span className="block text-xs text-muted mt-1">{e.entity}</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-ink">{e.summary}</span>
                     {(e.before || e.after) && (
                       <details className="mt-1">
-                        <summary className="cursor-pointer text-xs text-ink/60 hover:text-navy">
+                        <summary className="cursor-pointer text-xs text-muted hover:text-navy">
                           Detalji
                         </summary>
-                        <pre className="mt-2 max-h-64 overflow-auto rounded bg-navy/5 p-2 text-xs leading-relaxed text-ink/80">
+                        <pre className="mt-2 max-h-64 overflow-auto rounded bg-navy/5 p-2 text-xs leading-relaxed text-subtle">
                           {JSON.stringify({ prije: e.before, poslije: e.after }, null, 2)}
                         </pre>
                       </details>
@@ -165,7 +165,7 @@ export default async function AdminAuditPage(props: {
       )}
 
       {entries.length === PAGE_SIZE && (
-        <p className="mt-3 text-xs text-ink/60">
+        <p className="mt-3 text-xs text-muted">
           Prikazano zadnjih {PAGE_SIZE} zapisa. Suzi filtar za starije.
         </p>
       )}

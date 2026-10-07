@@ -20,7 +20,7 @@ type Row = {
 export function StandingsTable({ rows }: { rows: Row[] }) {
   if (rows.length === 0) {
     return (
-      <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-ink/60">
+      <p className="rounded-lg border border-navy/10 bg-white px-4 py-8 text-center text-muted">
         Za ovu ljestvicu još nema unesenih rezultata.
       </p>
     );
@@ -34,7 +34,7 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
     <>
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-3 py-3 w-14">#</th>
               <th className="px-4 py-3">Igrač</th>
@@ -69,7 +69,7 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
                       ide u aria-hidden, a tekst u sr-only.
                     */
                     <>
-                      <span className="ml-1 text-xs text-ink/75" aria-hidden>
+                      <span className="ml-1 text-xs text-subtle" aria-hidden>
                         =
                       </span>
                       {/*
@@ -84,7 +84,7 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
                 <td className="px-4 py-3 font-medium text-navy">
                   <PlayerName {...row.player} />
                 </td>
-                <td className="px-4 py-3 text-right text-ink/60 font-mono tabular-nums">
+                <td className="px-4 py-3 text-right text-muted font-mono tabular-nums">
                   {row.allResults.length}
                 </td>
                 <td className="px-4 py-3 text-right font-mono font-bold tabular-nums text-navy">
@@ -97,7 +97,7 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
       </div>
 
       {imaDijeljenih && (
-        <p className="mt-2 text-xs text-ink/75">
+        <p className="mt-2 text-xs text-subtle">
           <span className="font-mono font-semibold">=</span> dijeljeno mjesto —
           svi kriteriji pravilnika daju jednak rezultat.
         </p>

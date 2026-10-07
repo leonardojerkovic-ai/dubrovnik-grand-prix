@@ -46,7 +46,7 @@ export default async function AdminTournamentsPage(props: {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Naziv</th>
               <th className="px-4 py-3">Sezona</th>
@@ -73,7 +73,7 @@ export default async function AdminTournamentsPage(props: {
                   </span>{" "}
                   {t.season.yearLabel}
                 </td>
-                <td className="px-4 py-3 text-ink/70">
+                <td className="px-4 py-3 text-subtle">
                   {t.date.toLocaleDateString("hr-HR")}
                 </td>
                 <td className="px-4 py-3">{STATUS_LABELS[t.status]}</td>
@@ -115,7 +115,7 @@ export default async function AdminTournamentsPage(props: {
             ))}
             {tournaments.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={6} className="px-4 py-8 text-center text-muted">
                   Još nema unesenih turnira.
                 </td>
               </tr>

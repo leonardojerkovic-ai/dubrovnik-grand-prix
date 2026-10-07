@@ -59,7 +59,7 @@ export default async function AdminMedalsPage(props: {
         <h2 className="font-display text-lg font-bold text-navy mb-2">
           Medalje
         </h2>
-        <p className="max-w-prose text-sm text-ink/70">
+        <p className="max-w-prose text-sm text-subtle">
           Medalje propisuje pravilnik Akademije (čl. 19) i postoje samo na
           njezinim turnirima. Turniri glavnog GP-a imaju{" "}
           <Link
@@ -103,13 +103,13 @@ export default async function AdminMedalsPage(props: {
         <h2 className="font-display text-lg font-bold text-navy">
           Medalje — {tournament.name}
         </h2>
-        <p className="text-xs text-ink/60">
+        <p className="text-xs text-muted">
           {tournament.isFinal ? "Prvenstvo Akademije" : "Kvalifikacijski turnir"}{" "}
           · {results.length} igrača
         </p>
       </div>
 
-      <div className="mb-6 rounded-md border border-navy/10 bg-sky-light/30 px-4 py-3 text-sm text-ink/75">
+      <div className="mb-6 rounded-md border border-navy/10 bg-sky-light/30 px-4 py-3 text-sm text-subtle">
         Dodjela se računa sama iz poretka. Ručni odabir ovdje označava se kao
         iznimka i preživljava sve kasnije izmjene rezultata — dok ga sam ne
         poništiš. Obrazloženje se prikazuje uz medalju na javnoj stranici.
@@ -117,7 +117,7 @@ export default async function AdminMedalsPage(props: {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Medalja</th>
               <th className="px-4 py-3">Dobitnik</th>
@@ -154,13 +154,13 @@ export default async function AdminMedalsPage(props: {
                             </span>
                           )}
                           {medal.note && (
-                            <span className="mt-0.5 block text-xs text-ink/60">
+                            <span className="mt-0.5 block text-xs text-muted">
                               {medal.note}
                             </span>
                           )}
                         </>
                       ) : (
-                        <span className="text-xs text-ink/60">
+                        <span className="text-xs text-muted">
                           nije dodijeljena
                         </span>
                       )}
@@ -248,7 +248,7 @@ export default async function AdminMedalsPage(props: {
         >
           Preračunaj dodjelu
         </button>
-        <p className="mt-2 max-w-prose text-xs text-ink/60">
+        <p className="mt-2 max-w-prose text-xs text-muted">
           Prva dodjela izračuna se sama, pri spremanju rezultata — to je ono što
           se na turniru uručuje. Kasniji ispravak rezultata je NE mijenja nego
           samo javi razliku, da medalja već uručena djetetu ne prijeđe tiho na

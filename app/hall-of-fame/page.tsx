@@ -68,7 +68,7 @@ export default async function HallOfFamePage() {
       </h1>
 
       {Object.keys(grouped).length === 0 && (
-        <p className="text-ink/60">Još nema zabilježenih pobjednika.</p>
+        <p className="text-muted">Još nema zabilježenih pobjednika.</p>
       )}
 
       {Object.entries(medalsBySeason).map(([seasonId, medals]) => {
@@ -100,7 +100,7 @@ export default async function HallOfFamePage() {
                     >
                       {m.player.lastName} {m.player.firstName}
                     </PlayerLink>
-                    <span className="shrink-0 text-xs text-ink/60">
+                    <span className="shrink-0 text-xs text-muted">
                       {m.category === "UKUPNO"
                         ? `${m.place}. mjesto`
                         : m.place === 1
@@ -117,7 +117,7 @@ export default async function HallOfFamePage() {
       <div className="grid gap-6 md:grid-cols-2">
         {Object.entries(grouped).map(([key, group]) => (
           <div key={key} className="rounded-lg border border-navy/10 bg-white p-4">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink/60">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted">
               <span className={group.season.system === "AKADEMIJA" ? "text-academy" : "text-navy"}>
                 {group.season.system === "GP" ? "Dubrovnik GP" : "Akademija"}
               </span>{" "}
@@ -141,7 +141,7 @@ export default async function HallOfFamePage() {
                       isClubMember={e.player.isClubMember}
                     />
                   </span>
-                  <span className="ml-auto font-mono text-sm text-ink/60">
+                  <span className="ml-auto font-mono text-sm text-muted">
                     {e.pointsTotal}
                   </span>
                 </li>

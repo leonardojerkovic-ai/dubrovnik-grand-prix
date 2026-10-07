@@ -126,7 +126,7 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
           />
           Preminuo
         </label>
-        <p className="mt-1 text-xs text-ink/60">
+        <p className="mt-1 text-xs text-muted">
           Igrač nestaje s javnog popisa igrača i iz odabira za buduće turnire.
           Rezultati, ljestvice i Hall of Fame ostaju netaknuti.
         </p>
@@ -158,7 +158,7 @@ export function PlayerForm({ action, defaultValues = {} }: PlayerFormProps) {
         memberSince: defaultValues.memberSince ?? null,
         memberUntil: defaultValues.memberUntil ?? null,
       }) && (
-        <p className="rounded-md border border-navy/15 bg-paper px-3 py-2 text-xs text-ink/80">
+        <p className="rounded-md border border-navy/15 bg-paper px-3 py-2 text-xs text-subtle">
           Igrač nije označen kao član, ali ima upisane datume članstva — i zbog
           njih mu je profil na stranici javan, jer se upisani datum uzima kao
           dokaz da je članstvo postojalo. Ako nikad nije bio član (dijete s
@@ -216,7 +216,7 @@ function Field({
     <label className="grid gap-1 text-sm font-medium text-navy">
       {label}
       {children}
-      {hint && <span className="text-xs font-normal text-ink/60">{hint}</span>}
+      {hint && <span className="text-xs font-normal text-muted">{hint}</span>}
       {error && <span className="text-xs font-normal text-crimson">{error[0]}</span>}
     </label>
   );

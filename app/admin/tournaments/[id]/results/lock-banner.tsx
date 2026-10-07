@@ -30,7 +30,7 @@ export function LockBanner({
 
   if (status.state === "NEOBJAVLJENO") {
     return (
-      <div className="mb-4 rounded-md border border-navy/15 bg-white px-4 py-3 text-sm text-ink/70">
+      <div className="mb-4 rounded-md border border-navy/15 bg-white px-4 py-3 text-sm text-subtle">
         Rezultati još nisu objavljeni. Spremanjem počinje teći rok od 7 dana za
         prigovor (čl. 29).
       </div>
@@ -39,7 +39,7 @@ export function LockBanner({
 
   if (status.state === "ROK_TECE") {
     return (
-      <div className="mb-4 rounded-md border border-navy/15 bg-paper px-4 py-3 text-sm text-ink/80">
+      <div className="mb-4 rounded-md border border-navy/15 bg-paper px-4 py-3 text-sm text-subtle">
         Rok za prigovor teče do{" "}
         <strong>{formatDateTime(status.objectionDeadline!)}</strong> — još{" "}
         {status.daysRemaining}{" "}
@@ -57,7 +57,7 @@ export function LockBanner({
           i razlog zabilježeni su u tragu izmjena.
         </p>
         {unlockReason && (
-          <p className="mt-1 text-xs text-ink/60">
+          <p className="mt-1 text-xs text-muted">
             Razlog: {unlockReason}
             {unlockedByEmail ? ` — ${unlockedByEmail}` : ""}
           </p>
@@ -115,7 +115,7 @@ export function LockBanner({
             <button
               type="button"
               onClick={() => setShowForm(false)}
-              className="text-sm text-ink/60 hover:text-navy"
+              className="text-sm text-muted hover:text-navy"
             >
               Odustani
             </button>

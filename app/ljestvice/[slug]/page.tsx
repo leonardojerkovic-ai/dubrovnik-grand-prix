@@ -49,7 +49,7 @@ export default async function StandingsPage(props: {
         <h1 className="font-display text-2xl font-bold text-navy mb-4">
           {config.title}
         </h1>
-        <p className="text-ink/60">
+        <p className="text-muted">
           Trenutno nema aktivne sezone za{" "}
           {config.system === "GP" ? "Dubrovnik GP" : "GP Akademije"}.
         </p>
@@ -91,7 +91,7 @@ export default async function StandingsPage(props: {
 
       {(rows?.length ?? 0) > 0 && <ObjectionNote />}
 
-      <p className="mt-4 text-xs text-ink/60">
+      <p className="mt-4 text-xs text-muted">
         Ova adresa uvijek pokazuje aktivnu sezonu. Za trajnu poveznicu na ovaj
         poredak koristi{" "}
         <Link

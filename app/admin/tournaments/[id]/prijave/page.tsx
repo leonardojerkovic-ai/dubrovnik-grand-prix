@@ -53,7 +53,7 @@ export default async function TournamentRegistrationsPage(props: {
 
       <div className="overflow-x-auto rounded-lg border border-navy/10 bg-white">
         <table className="w-full text-sm">
-          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-ink/60">
+          <thead className="bg-navy/5 text-left text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Igrač</th>
               <th className="px-4 py-3">Prijavljen</th>
@@ -66,7 +66,7 @@ export default async function TournamentRegistrationsPage(props: {
                 <td className="px-4 py-3 font-medium text-navy">
                   {r.player.lastName} {r.player.firstName}
                 </td>
-                <td className="px-4 py-3 text-ink/60">
+                <td className="px-4 py-3 text-muted">
                   {r.registeredAt.toLocaleString("hr-HR")}
                 </td>
                 <td className="px-4 py-3 text-right">
@@ -85,7 +85,7 @@ export default async function TournamentRegistrationsPage(props: {
             ))}
             {tournament.registrations.length === 0 && (
               <tr>
-                <td colSpan={3} className="px-4 py-8 text-center text-ink/60">
+                <td colSpan={3} className="px-4 py-8 text-center text-muted">
                   Još nema prijava.
                 </td>
               </tr>
