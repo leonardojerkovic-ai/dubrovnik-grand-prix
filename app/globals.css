@@ -12,26 +12,6 @@
   h3 {
     @apply font-display;
   }
-
-  /**
-   * Vidljiv keyboard focus svugdje — ne uklanjati outline bez zamjene.
-   *
-   * Prsten je dvobojan jer jedna boja ne može biti vidljiva i na papiru i na
-   * tamnoplavim površinama (hero, podnožje, parni rang-bedževi). Zlatni obrub
-   * koji je ovdje stajao prije ima na papiru kontrast 2,04:1, a WCAG za
-   * ne-tekstualne elemente traži najmanje 3:1 — na svijetlom dijelu stranice
-   * praktično se nije vidio.
-   *
-   * Vanjski obrub je navy, a razmak do elementa ispunjava prsten u boji
-   * papira. Navy i papir imaju međusobni kontrast 12,98:1, pa se na svijetloj
-   * podlozi vidi navy obrub, a na tamnoj (navy, navy-dark 15,4:1, academy
-   * 7,3:1) papirnati prsten — barem jedan uvijek prelazi 3:1.
-   */
-  :focus-visible {
-    outline: 2px solid theme("colors.navy.DEFAULT");
-    outline-offset: 2px;
-    box-shadow: 0 0 0 2px theme("colors.paper");
-  }
 }
 
 @layer components {
@@ -60,4 +40,32 @@
   .input {
     @apply rounded-md border border-navy/20 bg-white px-3 py-2 text-sm text-ink focus:border-navy;
   }
+}
+
+/**
+ * Vidljiv keyboard focus svugdje — ne uklanjati outline bez zamjene.
+ *
+ * Pravilo namjerno stoji IZVAN @layer base, na kraju datoteke. U @layer base
+ * bi box-shadow na elementu s Tailwind klasom shadow-* pregazio utility
+ * (ista specifičnost, a utilities se ispisuju poslije), pa bi od prstena
+ * ostao samo navy obrub. Ovdje je nelayerano i zadnje u izlazu, pa pobjeđuje
+ * bez !important. Jedini ostatak slucaja je shadow-* u media queryju (npr.
+ * md:shadow-lg), koji se u izlazu ispisuje poslije; ni tada se fokus ne
+ * gubi, nego ostaje samo navy obrub, dovoljan na svijetloj podlozi.
+ *
+ * Prsten je dvobojan jer jedna boja ne može biti vidljiva i na papiru i na
+ * tamnoplavim površinama (hero, podnožje, parni rang-bedževi). Zlatni obrub
+ * koji je ovdje stajao prije ima na papiru kontrast 2,04:1, a WCAG za
+ * ne-tekstualne elemente traži najmanje 3:1 — na svijetlom dijelu stranice
+ * praktično se nije vidio.
+ *
+ * Vanjski obrub je navy, a razmak do elementa ispunjava prsten u boji
+ * papira. Navy i papir imaju međusobni kontrast 12,98:1, pa se na svijetloj
+ * podlozi vidi navy obrub, a na tamnoj (navy, navy-dark 15,4:1, academy
+ * 7,3:1) papirnati prsten — barem jedan uvijek prelazi 3:1.
+ */
+:focus-visible {
+  outline: 2px solid theme("colors.navy.DEFAULT");
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px theme("colors.paper");
 }
