@@ -10,6 +10,10 @@ name: Provjere
 # Baza ovdje ne treba: `prisma generate` samo stvara klijenta iz sheme, a
 # nijedan test ne dira Prismu (čista logika je zato i izdvojena u module bez
 # Prisme). Zato nema ni DATABASE_URL tajne.
+# Workflow ništa ne upisuje — samo čita kod i pokreće provjere.
+permissions:
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -31,8 +35,10 @@ jobs:
 
       - run: npm ci
 
-      # Bez generiranog klijenta tsc ne zna tipove modela i javi stotine
-      # grešaka koje s kodom nemaju veze.
+      # npm ci ovo pokreće i kroz postinstall; stoji izričito jer bez
+      # generiranog klijenta tsc ne zna tipove modela i javi stotine grešaka
+      # koje s kodom nemaju veze, a tada je bolje da se odmah vidi gdje je
+      # stalo. Isti korak stoji i u fide-ratings.yml.
       - run: npx prisma generate
 
       - name: Tipovi
