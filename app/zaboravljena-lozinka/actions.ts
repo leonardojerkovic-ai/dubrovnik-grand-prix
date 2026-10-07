@@ -83,8 +83,22 @@ export async function resetPassword(
 
   const sada = new Date();
 
-  await prisma.$transaction([
-    prisma.user.update({
+  /*
+    Token se troši uvjetno, unutar transakcije.
+
+    Provjera gore je samo brza ruta: između nje i upisa može proći drugi
+    zahtjev s istim tokenom i tada bi oba prošla. `updateMany` s uvjetom
+    `usedAt: null` zato je ono što stvarno odlučuje — tko ga prvi označi,
+    njegov je, a drugi dobije count 0 i ne mijenja ništa.
+  */
+  const promijenjeno = await prisma.$transaction(async (tx) => {
+    const zauzet = await tx.passwordResetToken.updateMany({
+      where: { id: resetToken.id, usedAt: null },
+      data: { usedAt: sada },
+    });
+    if (zauzet.count !== 1) return false;
+
+    await tx.user.update({
       where: { id: resetToken.userId },
       data: {
         passwordHash,
@@ -98,19 +112,24 @@ export async function resetPassword(
          */
         sessionsValidFrom: sada,
       },
-    }),
-    prisma.passwordResetToken.update({
-      where: { id: resetToken.id },
-      data: { usedAt: sada },
-    }),
+    });
+
     // I svi ostali nepotrošeni tokeni za ovog korisnika prestaju vrijediti:
     // tko je zatražio reset tuđe lozinke, ne smije ga moći ponoviti nakon
     // što je pravi vlasnik lozinku već promijenio.
-    prisma.passwordResetToken.updateMany({
+    await tx.passwordResetToken.updateMany({
       where: { userId: resetToken.userId, usedAt: null },
       data: { usedAt: sada },
-    }),
-  ]);
+    });
+
+    return true;
+  });
+
+  if (!promijenjeno) {
+    // Poveznica je u međuvremenu iskorištena — ista poruka kao i za istekli
+    // token, da se iz odgovora ne vidi koji je od dva razloga.
+    return { error: "Poveznica je nevažeća ili je istekla. Zatraži novu." };
+  }
 
   return {
     message:
