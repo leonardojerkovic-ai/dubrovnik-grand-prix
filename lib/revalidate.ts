@@ -19,6 +19,11 @@ import { revalidatePath } from "next/cache";
 export function revalidateSchedule(tournamentId?: string): void {
   revalidatePath("/");
   revalidatePath("/kalendar");
+  // Pretplatni kalendar se od uvođenja revalidate = 300 predmemorira kao i
+  // ostale stranice, pa ga treba osvježiti zajedno s njima — inače bi
+  // izmjena turnira u njemu kasnila do pet minuta, dok je svugdje drugdje
+  // vidljiva odmah.
+  revalidatePath("/kalendar.ics");
   revalidatePath("/najave");
   revalidatePath("/prijave");
   if (tournamentId) {
