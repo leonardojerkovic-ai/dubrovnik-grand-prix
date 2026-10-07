@@ -26,18 +26,7 @@
       "warn",
       "smart"
     ],
-    "prefer-const": "warn",
-    "no-restricted-syntax": [
-      "error",
-      {
-        "selector": "Literal[value=/text-\\[\\d+px\\]/]",
-        "message": "Najmanja velicina teksta je text-xs (12 px) - ne koristi text-[10px] ni text-[11px]."
-      },
-      {
-        "selector": "TemplateElement[value.raw=/text-\\[\\d+px\\]/]",
-        "message": "Najmanja velicina teksta je text-xs (12 px) - ne koristi text-[10px] ni text-[11px]."
-      }
-    ]
+    "prefer-const": "warn"
   },
   "overrides": [
     {

@@ -9,9 +9,9 @@ import { BOJE } from "./lib/design-tokens";
  *
  * Najmanja veličina teksta je text-xs (12 px) — ispod toga se uz uppercase,
  * tracking i text-ink/60 na mobitelu teško čita. Pravilo ne stoji ovdje kao
- * dogovor nego ga provodi ESLint (no-restricted-syntax u .eslintrc.json),
- * koji odbija text-[10px] i slične zapise. U SVG-u (fontSize atribut) lint
- * ne može pomoći, pa tamo vrijedi pažnja.
+ * dogovor nego ga provodi test lib/dizajn/velicina-teksta.test.ts, koji svaku
+ * proizvoljnu veličinu pretvori u piksele, pa hvata i rem zapis. U SVG-u
+ * (fontSize atribut) ni on ne pomaže, pa tamo vrijedi pažnja.
  */
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
