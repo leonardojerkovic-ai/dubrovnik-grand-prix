@@ -5,7 +5,7 @@ import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { JOIN_LINK, PRIMARY_NAV as NAV, SECONDARY_NAV } from "@/lib/nav";
-import { jeAktivna, jeAktivnaSkupina } from "@/lib/nav-aktivno";
+import { jeAktivna, jeAktivnaLjestvica } from "@/lib/nav-aktivno";
 
 const LJESTVICE = [
   { href: "/ljestvice/opci-gp", label: "Opći GP" },
@@ -18,8 +18,6 @@ const LJESTVICE = [
   { href: "/ljestvice/u1800", label: "U1800" },
   { href: "/ljestvice/akademija", label: "Akademija" },
 ];
-
-const LJESTVICE_HREFOVI = LJESTVICE.map((item) => item.href);
 
 /**
  * Aktivna stavka se ne označava samo bojom: zlatna crta na papiru ima
@@ -42,7 +40,9 @@ export function SiteHeader() {
   const ljestviceRef = useRef<HTMLDivElement>(null);
 
   const pathname = usePathname();
-  const ljestviceAktivne = jeAktivnaSkupina(pathname, LJESTVICE_HREFOVI);
+  // Prefiks, ne popis devet putanja: tako je gumb oznacen i na arhivskim
+  // ljestvicama (/ljestvice/<sezona>/<kategorija>), koje u popisu ne stoje.
+  const ljestviceAktivne = jeAktivna(pathname, "/ljestvice");
 
   /*
     Izbornik se dosad zatvarao samo Escapeom i odlaskom miša. Na dodirnom
@@ -122,7 +122,7 @@ export function SiteHeader() {
               } group-hover:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]`}
             >
               {LJESTVICE.map((item) => {
-                const aktivna = jeAktivna(pathname, item.href);
+                const aktivna = jeAktivnaLjestvica(pathname, item.href);
                 return (
                   <Link
                     key={item.href}
@@ -232,7 +232,7 @@ export function SiteHeader() {
           </p>
           <div className="mb-4 grid grid-cols-2 gap-1">
             {LJESTVICE.map((item) => {
-              const aktivna = jeAktivna(pathname, item.href);
+              const aktivna = jeAktivnaLjestvica(pathname, item.href);
               return (
                 <Link
                   key={item.href}

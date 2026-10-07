@@ -10,6 +10,13 @@
  * inače bila aktivna svugdje, pa se ona traži točno.
  */
 
+/** Segmenti putanje, bez praznih. */
+function segmenti(put: string): string[] {
+  return ocisti(put)
+    .split("/")
+    .filter((dio) => dio !== "");
+}
+
 function ocisti(put: string): string {
   const bezUpita = put.split(/[?#]/)[0] ?? "";
   if (bezUpita.length > 1 && bezUpita.endsWith("/")) {
@@ -27,12 +34,21 @@ export function jeAktivna(pathname: string | null | undefined, href: string): bo
 }
 
 /**
- * Za gumb "Ljestvice", koji sam nije poveznica nego otvara izbornik: aktivan
- * je kad smo na bilo kojoj od stranica u njemu.
+ * Ljestvice imaju dva oblika putanje: tekuća sezona je /ljestvice/<kategorija>,
+ * a arhivska /ljestvice/<sezona>/<kategorija>. Na arhivskoj stranici nijedna
+ * stavka izbornika nije odgovarala, pa se iz izbornika nije vidjelo koju
+ * ljestvicu gledate. Kategorija je u oba slučaja zadnji segment, pa se po
+ * njemu i uparuje.
  */
-export function jeAktivnaSkupina(
+export function jeAktivnaLjestvica(
   pathname: string | null | undefined,
-  hrefovi: readonly string[],
+  href: string,
 ): boolean {
-  return hrefovi.some((href) => jeAktivna(pathname, href));
+  if (jeAktivna(pathname, href)) return true;
+  if (!pathname) return false;
+  const put = segmenti(pathname);
+  const cilj = segmenti(href);
+  if (put.length !== 3 || cilj.length !== 2) return false;
+  if (put[0] !== "ljestvice" || cilj[0] !== "ljestvice") return false;
+  return put[2] === cilj[1];
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { jeAktivna, jeAktivnaSkupina } from "./nav-aktivno";
+import { jeAktivna, jeAktivnaLjestvica } from "./nav-aktivno";
 
 describe("jeAktivna", () => {
   it("prepoznaje točno istu stranicu", () => {
@@ -36,18 +36,42 @@ describe("jeAktivna", () => {
   });
 });
 
-describe("jeAktivnaSkupina", () => {
-  const ljestvice = ["/ljestvice/opci-gp", "/ljestvice/u20", "/ljestvice/akademija"];
-
-  it("aktivna je kad smo na bilo kojoj stranici iz skupine", () => {
-    expect(jeAktivnaSkupina("/ljestvice/u20", ljestvice)).toBe(true);
+describe("jeAktivnaLjestvica", () => {
+  it("tekuca sezona radi kao i prije", () => {
+    expect(jeAktivnaLjestvica("/ljestvice/u20", "/ljestvice/u20")).toBe(true);
+    expect(jeAktivnaLjestvica("/ljestvice/u20", "/ljestvice/u16")).toBe(false);
   });
 
-  it("nije aktivna izvan skupine", () => {
-    expect(jeAktivnaSkupina("/kalendar", ljestvice)).toBe(false);
+  it("arhivska putanja uparuje se po kategoriji", () => {
+    expect(jeAktivnaLjestvica("/ljestvice/2025-2026/u20", "/ljestvice/u20")).toBe(true);
+    expect(jeAktivnaLjestvica("/ljestvice/2025-2026/u20", "/ljestvice/u16")).toBe(false);
+    expect(jeAktivnaLjestvica("/ljestvice/2024-2025/akademija", "/ljestvice/akademija")).toBe(
+      true,
+    );
   });
 
-  it("prazna skupina nikad nije aktivna", () => {
-    expect(jeAktivnaSkupina("/ljestvice/u20", [])).toBe(false);
+  it("ne uparuje dvije arhivske kategorije", () => {
+    expect(jeAktivnaLjestvica("/ljestvice/2025-2026/zene", "/ljestvice/u20")).toBe(false);
+  });
+
+  it("ne pali se izvan /ljestvice", () => {
+    expect(jeAktivnaLjestvica("/kalendar", "/ljestvice/u20")).toBe(false);
+    expect(jeAktivnaLjestvica("/igraci/2025-2026/u20", "/ljestvice/u20")).toBe(false);
+  });
+
+  it("bez putanje nema aktivne stavke", () => {
+    expect(jeAktivnaLjestvica(null, "/ljestvice/u20")).toBe(false);
+  });
+});
+
+describe("gumb Ljestvice", () => {
+  // Gumb se oznacava prefiksom, pa pokriva i tekucu i arhivsku putanju.
+  it("aktivan je na svakoj ljestvici", () => {
+    expect(jeAktivna("/ljestvice/u20", "/ljestvice")).toBe(true);
+    expect(jeAktivna("/ljestvice/2025-2026/u20", "/ljestvice")).toBe(true);
+  });
+
+  it("nije aktivan izvan ljestvica", () => {
+    expect(jeAktivna("/kalendar", "/ljestvice")).toBe(false);
   });
 });
