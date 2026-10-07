@@ -20,8 +20,22 @@ const MINUTE = 60 * 1000;
 const HOUR = 60 * MINUTE;
 
 export const RATE_LIMITS = {
-  /** Pogađanje lozinke. Član koji je zaboravio lozinku stane u pet pokušaja. */
+  /**
+   * Pogađanje lozinke. Član koji je zaboravio lozinku stane u pet pokušaja.
+   *
+   * Broji se po paru adresa + IP, ne po samoj adresi. Dok se brojalo samo po
+   * adresi, tko zna tuđu adresu e-pošte mogao je s osam krivih lozinki
+   * svakih 15 minuta trajno držati vlasnika izvan računa. Ovako napadačev
+   * IP troši svoju kvotu, a vlasnikov je netaknut.
+   */
   prijava: { limit: 8, windowMs: 15 * MINUTE },
+  /**
+   * Isti IP koji pogađa po mnogo različitih računa. Par adresa + IP toga ne
+   * vidi jer svaka adresa ima svoju kvotu, pa ovo stoji iznad njega. Granica
+   * je namjerno visoka: iza jednog IP-a može biti cijela dvorana na istom
+   * wi-fiju.
+   */
+  prijavaIp: { limit: 30, windowMs: 15 * MINUTE },
   /** Svaki zahtjev troši jedan e-mail iz Resendove kvote. */
   resetLozinke: { limit: 4, windowMs: HOUR },
   /** Registracija je rijetka radnja; ovo je zaštita od masovnog upisa. */
@@ -29,6 +43,36 @@ export const RATE_LIMITS = {
 } satisfies Record<string, RateLimitRule>;
 
 export type RateLimitAction = keyof typeof RATE_LIMITS;
+
+/**
+ * Ključ po kojem se broji pokušaj prijave: adresa e-pošte i IP zajedno.
+ *
+ * Ako IP nije poznat (zahtjev bez zaglavlja posrednika), umjesto njega ide
+ * "nepoznato" — tada se ponaša kao i prije, dakle po samoj adresi. Bolje
+ * zajednička kvota nego nikakva.
+ */
+export function kljucPrijave(email: string, ip: string): string {
+  const adresa = email.trim().toLowerCase();
+  const stroj = ip.trim() === "" ? "nepoznato" : ip.trim();
+  return `${adresa}|${stroj}`;
+}
+
+/**
+ * IP klijenta iz zaglavlja posrednika.
+ *
+ * Na Vercelu je x-forwarded-for lanac posrednika; prvi član je klijent.
+ * Zaglavlje može biti lažirano, ali iza Vercela ga on sam prepisuje, pa je
+ * prvi član onaj do kojeg je zahtjev stvarno došao.
+ */
+export function izvuciAdresu(
+  forwardedFor: string | null,
+  realIp: string | null = null,
+): string {
+  const prvi = (forwardedFor ?? "").split(",")[0]?.trim() ?? "";
+  if (prvi !== "") return prvi;
+  const rezerva = (realIp ?? "").trim();
+  return rezerva === "" ? "nepoznato" : rezerva;
+}
 
 export type RateLimitResult = {
   allowed: boolean;

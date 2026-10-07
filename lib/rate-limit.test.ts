@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RATE_LIMITS, rateLimitMessage } from "./rate-limit-rules";
+import { RATE_LIMITS, izvuciAdresu, kljucPrijave, rateLimitMessage } from "./rate-limit-rules";
 
 describe("rateLimitMessage", () => {
   const now = new Date("2026-09-30T10:00:00Z");
@@ -41,5 +41,59 @@ describe("RATE_LIMITS", () => {
 
   it("reset lozinke je stroži od prijave, jer svaki pokušaj šalje e-mail", () => {
     expect(RATE_LIMITS.resetLozinke.limit).toBeLessThan(RATE_LIMITS.prijava.limit);
+  });
+});
+
+describe("kljucPrijave", () => {
+  it("razdvaja isti račun s različitih strojeva", () => {
+    expect(kljucPrijave("ana@primjer.hr", "1.2.3.4")).not.toBe(
+      kljucPrijave("ana@primjer.hr", "5.6.7.8"),
+    );
+  });
+
+  it("razdvaja različite račune s istog stroja", () => {
+    expect(kljucPrijave("ana@primjer.hr", "1.2.3.4")).not.toBe(
+      kljucPrijave("ivo@primjer.hr", "1.2.3.4"),
+    );
+  });
+
+  it("ne razlikuje velika i mala slova ni razmake u adresi", () => {
+    expect(kljucPrijave("  Ana@Primjer.hr ", "1.2.3.4")).toBe(
+      kljucPrijave("ana@primjer.hr", "1.2.3.4"),
+    );
+  });
+
+  it("bez IP-a se svodi na adresu, kao i prije", () => {
+    expect(kljucPrijave("ana@primjer.hr", "")).toBe("ana@primjer.hr|nepoznato");
+  });
+});
+
+describe("izvuciAdresu", () => {
+  it("uzima prvog iz lanca posrednika", () => {
+    expect(izvuciAdresu("1.2.3.4, 10.0.0.1, 10.0.0.2")).toBe("1.2.3.4");
+  });
+
+  it("podnosi razmake i jedan jedini član", () => {
+    expect(izvuciAdresu("  1.2.3.4  ")).toBe("1.2.3.4");
+  });
+
+  it("pada na x-real-ip kad lanca nema", () => {
+    expect(izvuciAdresu(null, "9.9.9.9")).toBe("9.9.9.9");
+    expect(izvuciAdresu("", "9.9.9.9")).toBe("9.9.9.9");
+  });
+
+  it("bez ijednog zaglavlja vraća nepoznato", () => {
+    expect(izvuciAdresu(null)).toBe("nepoznato");
+    expect(izvuciAdresu("  ", "  ")).toBe("nepoznato");
+  });
+});
+
+describe("granice", () => {
+  it("ograničenje po IP-u je blaže od onoga po računu", () => {
+    expect(RATE_LIMITS.prijavaIp.limit).toBeGreaterThan(RATE_LIMITS.prijava.limit);
+  });
+
+  it("oba prozora su jednako dugačka, pa se ne razilaze", () => {
+    expect(RATE_LIMITS.prijavaIp.windowMs).toBe(RATE_LIMITS.prijava.windowMs);
   });
 });

@@ -1,5 +1,7 @@
 import { normalizeEmail } from "@/lib/email-address";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { kljucPrijave } from "@/lib/rate-limit-rules";
+import { adresaKlijenta } from "@/lib/klijentska-adresa";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -43,10 +45,24 @@ export const authOptions: AuthOptions = {
 
         const email = normalizeEmail(credentials.email);
 
-        // Broji se po adresi e-pošte, dakle po računu koji se napada.
-        // Neuspjeli pokušaj se broji jednako kao uspjeli, jer upravo njih
-        // ima puno kad netko pogađa lozinku.
-        const limit = await checkRateLimit("prijava", email);
+        /*
+          Dva ograničenja, jer jedno ne pokriva oba napada.
+
+          Po IP-u: isti stroj koji pogađa po mnogo različitih računa.
+          Po paru adresa + IP: pogađanje jednog računa. Dok se brojalo samo
+          po adresi, tko zna tuđu adresu mogao je s osam krivih lozinki
+          svakih 15 minuta trajno držati vlasnika izvan vlastitog računa —
+          ograničenje je tako postalo oružje protiv onoga koga štiti.
+
+          Neuspjeli pokušaj se broji jednako kao uspjeli, jer upravo njih ima
+          puno kad netko pogađa lozinku.
+        */
+        const ip = await adresaKlijenta();
+
+        const poStroju = await checkRateLimit("prijavaIp", ip);
+        if (!poStroju.allowed) return null;
+
+        const limit = await checkRateLimit("prijava", kljucPrijave(email, ip));
         if (!limit.allowed) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });
