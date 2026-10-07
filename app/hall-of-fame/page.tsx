@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { PlayerName } from "@/components/player-name";
+import { RankBadge } from "@/components/rank-badge";
 import { PlayerLink } from "@/components/player-link";
 import { MedalDisc } from "@/components/medal-disc";
 import { MEDAL_PRIORITY } from "@/lib/scoring/akademija/medals";
@@ -126,13 +127,7 @@ export default async function HallOfFamePage() {
             <ol className="grid gap-2">
               {group.items.map((e) => (
                 <li key={e.id} className="flex items-center gap-3">
-                  <span
-                    className="rank-badge"
-                    data-parity={e.place % 2 === 0 ? "even" : "odd"}
-                    data-place={e.place === 1 ? "1" : undefined}
-                  >
-                    {e.place}
-                  </span>
+                  <RankBadge place={e.place} />
                   <span className="font-medium text-navy">
                     <PlayerName
                       id={e.player.id}

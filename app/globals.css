@@ -19,6 +19,9 @@
    * Signature element: rang-bedž stiliziran kao naizmjenično polje šahovske
    * ploče. Mjesto 1, 3, 5... na "svijetlom" polju, mjesto 2, 4, 6... na
    * "tamnom" — opravdano jer je poredak na ljestvici stvarna sekvenca.
+   *
+   * Boje odličja za prva tri mjesta ne stoje ovdje nego u lib/dizajn/odlicja,
+   * jer ih dijele bedž i medaljica.
    */
   .rank-badge {
     @apply inline-flex h-9 w-9 items-center justify-center rounded-sm font-mono text-sm font-bold tabular-nums;
@@ -29,8 +32,12 @@
   .rank-badge[data-parity="even"] {
     @apply bg-navy text-paper;
   }
-  .rank-badge[data-place="1"] {
-    @apply bg-gold text-navy border-none;
+  /*
+    Mjesta izvan prvih osam nemaju polje, nego samo broj — vidi RankBadge.
+    Širina je ista kao kod bedža da se stupac ne pomakne.
+  */
+  .rank-number {
+    @apply inline-flex h-9 w-9 items-center justify-center font-mono text-sm tabular-nums text-subtle;
   }
 
   .badge-title {

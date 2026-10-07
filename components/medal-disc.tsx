@@ -1,4 +1,5 @@
 import type { MedalCategory } from "@prisma/client";
+import { TON_BRONCA, tonOdlicja } from "@/lib/dizajn/odlicja";
 
 /**
  * Zajednički prikaz jedne medalje — koriste ga i popis na turniru i vitrina
@@ -29,10 +30,13 @@ export function isSpecial(category: MedalCategory): boolean {
   return category !== "UKUPNO";
 }
 
+/**
+ * Boje odličja dijeli s rang-bedžom na ljestvici, pa stoje u lib/dizajn.
+ * Sve preko trećeg mjesta nosi brončani ton — medalje dalje od toga nema,
+ * ali AwardDisc se koristi i za nagrade izvan podija.
+ */
 function toneFor(place: number): string {
-  if (place === 1) return "bg-gold text-navy-dark";
-  if (place === 2) return "bg-navy/15 text-navy";
-  return "bg-[#b06a2c]/20 text-[#8a4f1d]";
+  return tonOdlicja(place) ?? TON_BRONCA;
 }
 
 export function MedalDisc({

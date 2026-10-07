@@ -28,6 +28,19 @@ export const BOJE = {
   paper: "#F7F6F2", // pozadina stranice
   ink: "#161616", // primarni tekst
   academy: "#1F5C3F", // zelena vrpca — vizualno razlikuje GP Akademije od glavnog GP-a
+  /**
+   * Odličja. Zlato je gold iz palete, srebro je navy s prozirnošću, a bronca
+   * je jedina boja koja nije izvedena iz grba — nema je čime zamijeniti, a
+   * bez nje se treće mjesto ne razlikuje od ostalih.
+   *
+   * Stoje ovdje jer ih dijele dva mjesta: medaljica na turniru i profilu
+   * (medal-disc.tsx) i rang-bedž na ljestvici. Dok su bile upisane rukom u
+   * medal-disc, drugo mjesto ih nije moglo koristiti bez prepisivanja hexa.
+   */
+  medalja: {
+    bronca: "#B06A2C",
+    "bronca-tekst": "#8A4F1D",
+  },
 } as const;
 
 /**
