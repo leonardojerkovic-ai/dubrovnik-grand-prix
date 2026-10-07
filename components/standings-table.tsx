@@ -58,11 +58,22 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
                 <td className="px-3 py-3">
                   <RankBadge place={row.place} />
                   {row.sharedPlace && (
-                    /* title se na dodir ne prikazuje, pa znak sam ne objašnjava
-                       ništa — objašnjenje nosi legenda ispod tablice. */
-                    <span className="ml-1 text-xs text-ink/75" aria-label="dijeljeno mjesto">
-                      =
-                    </span>
+                    /*
+                      title se na dodir ne prikazuje, pa znak sam ne
+                      objašnjava ništa — objašnjenje nosi legenda ispod
+                      tablice.
+
+                      aria-label ovdje ne radi: ARIA ne dopušta imenovanje
+                      generičkog elementa, pa čitači zaslona takvu oznaku na
+                      običnom <span> preskoče i pročitaju samo "=". Zato znak
+                      ide u aria-hidden, a tekst u sr-only.
+                    */
+                    <>
+                      <span className="ml-1 text-xs text-ink/75" aria-hidden>
+                        =
+                      </span>
+                      <span className="sr-only">dijeljeno mjesto</span>
+                    </>
                   )}
                 </td>
                 <td className="px-4 py-3 font-medium text-navy">
