@@ -1,7 +1,7 @@
 import { normalizeEmail } from "@/lib/email-address";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { kljucPrijave } from "@/lib/rate-limit-rules";
-import { adresaKlijenta } from "@/lib/klijentska-adresa";
+import { requestIp } from "@/lib/request-ip";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -57,7 +57,7 @@ export const authOptions: AuthOptions = {
           Neuspjeli pokušaj se broji jednako kao uspjeli, jer upravo njih ima
           puno kad netko pogađa lozinku.
         */
-        const ip = await adresaKlijenta();
+        const ip = await requestIp();
 
         const poStroju = await checkRateLimit("prijavaIp", ip);
         if (!poStroju.allowed) return null;
