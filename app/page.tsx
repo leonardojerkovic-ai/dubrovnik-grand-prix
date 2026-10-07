@@ -154,7 +154,13 @@ export default async function HomePage() {
               priority
             />
           </div>
-          <p className="mb-3 text-xs uppercase tracking-[0.2em] text-gold">
+          {/*
+            Nadnaslov se na 375 px lomi u dva retka od kad je 12 px: izmjereno
+            u Interu, na 0,2em zauzima 367 px, a raspoloživo je 343 (375 minus
+            px-4 s obje strane). Razmak slova je zato ispod sm manji (0,1em →
+            320 px), a od sm ostaje kakav je bio. Na 320 px se i tako lomi.
+          */}
+          <p className="mb-3 text-xs uppercase tracking-[0.1em] text-gold sm:tracking-[0.2em]">
             Šahovski klub Dubrovnik · osnovan 1933.
           </p>
           <div className="mb-4 flex flex-wrap gap-2">
