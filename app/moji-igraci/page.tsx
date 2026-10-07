@@ -23,7 +23,7 @@ export default async function MyPlayersPage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="page-title">
+      <h1 className="page-title mb-1 font-semibold">
         Moji igrači
       </h1>
       <p className="mb-6 text-sm text-muted">

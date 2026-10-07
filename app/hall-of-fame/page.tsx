@@ -64,7 +64,7 @@ export default async function HallOfFamePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="page-title">
+      <h1 className="page-title mb-8">
         Hall of Fame
       </h1>
 

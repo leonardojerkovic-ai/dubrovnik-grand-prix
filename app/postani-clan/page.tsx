@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PostaniClanPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="page-title">
+      <h1 className="page-title mb-6">
         Postani član
       </h1>
       <div className="grid gap-4 text-subtle mb-8">

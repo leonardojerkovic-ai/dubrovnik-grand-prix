@@ -64,7 +64,7 @@ export default async function DokumentiPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="page-title">
+      <h1 className="page-title mb-2">
         Dokumenti
       </h1>
       <p className="mb-8 max-w-prose text-sm text-subtle">

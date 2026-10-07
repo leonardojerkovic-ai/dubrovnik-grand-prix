@@ -6,7 +6,7 @@ export default function NotFound() {
       <span className="rank-badge mb-4" data-parity="odd">
         ?
       </span>
-      <h1 className="page-title">
+      <h1 className="page-title mb-2">
         Stranica nije pronađena
       </h1>
       <p className="mb-6 text-muted">

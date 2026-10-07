@@ -109,7 +109,7 @@ export default async function PlayersPage(props: {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
-      <h1 className="page-title">Igrači</h1>
+      <h1 className="page-title mb-1">Igrači</h1>
       <p className="mb-5 text-sm text-muted">
         Članovi Šahovskog kluba Dubrovnik. Klikni na ime za profil s
         rezultatima i razlaganjem bodova.

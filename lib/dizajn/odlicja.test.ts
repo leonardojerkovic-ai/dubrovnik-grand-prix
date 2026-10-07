@@ -29,7 +29,10 @@ describe("Tailwind vidi klase iz lib/", () => {
       join(__dirname, "..", "..", "tailwind.config.ts"),
       "utf-8",
     );
-    const content = config.slice(config.indexOf("content:"), config.indexOf("theme:"));
+    // Uzima se sam niz iza "content:", a ne sve do "theme:" — tako provjera
+    // preživi preuređivanje konfiguracije.
+    const content = config.match(/content:\s*\[[^\]]*\]/)?.[0];
+    expect(content, "content popis nije nađen u tailwind.config.ts").toBeDefined();
     expect(content).toContain("./lib/");
   });
 });

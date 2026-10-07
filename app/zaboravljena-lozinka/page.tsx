@@ -24,7 +24,7 @@ export default function ZaboravljenaLozinkaPage() {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-12">
-      <h1 className="page-title">
+      <h1 className="page-title mb-2">
         Zaboravljena lozinka
       </h1>
       <p className="mb-6 text-sm text-muted">

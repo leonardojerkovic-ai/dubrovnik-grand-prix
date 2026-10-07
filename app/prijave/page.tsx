@@ -24,7 +24,7 @@ export default async function PrijavePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="page-title">
+      <h1 className="page-title mb-6">
         Prijave na turnire
       </h1>
 

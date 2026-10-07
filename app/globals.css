@@ -46,13 +46,16 @@
 
   /**
    * Naslov stranice. Prije je stajao kao niz od pet klasa koje su se
-   * ponavljale u dvadesetak datoteka, a razmak ispod se razlikovao od
-   * stranice do stranice (mb-1, mb-2, mb-4, mb-6, mb-8) bez pravila. Razmak
-   * je sada dio naslova; stranica koja stvarno treba drukčiji doda svoju mb
-   * klasu, koja kao utility nadjača ovu.
+   * ponavljale u dvadesetak datoteka.
+   *
+   * Razmak ispod naslova NIJE u ovoj klasi. Prvo je bio (mb-6), ali naslov
+   * stoji u previše različitih okruženja da bi jedan razmak bio točan: u
+   * flex retku uz gumb ili navigaciju razmak uopće ne treba, a kad naslov
+   * ima podnaslov odmah ispod sebe treba mu 4 ili 8 px, ne 24. Razmak zato
+   * ostaje uz samu stranicu, koja jedina zna što je ispod naslova.
    */
   .page-title {
-    @apply mb-6 font-display text-2xl font-bold text-navy;
+    @apply font-display text-2xl font-bold text-navy;
   }
 
   /**

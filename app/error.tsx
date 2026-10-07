@@ -14,7 +14,7 @@ export default function Error({
       <span className="rank-badge mb-4" data-parity="even">
         !
       </span>
-      <h1 className="page-title">
+      <h1 className="page-title mb-2">
         Nešto je pošlo po zlu
       </h1>
       <p className="mb-6 text-muted">

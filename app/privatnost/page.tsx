@@ -1,7 +1,7 @@
 export default function PrivatnostPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 prose prose-sm max-w-none">
-      <h1 className="page-title">
+      <h1 className="page-title mb-8">
         Politika privatnosti i zaštite osobnih podataka
       </h1>
 

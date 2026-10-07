@@ -39,7 +39,7 @@ function PrijavaForm() {
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center px-4 py-12">
-      <h1 className="page-title">Prijava</h1>
+      <h1 className="page-title mb-6">Prijava</h1>
 
       {justRegistered && (
         <p className="mb-4 rounded-md bg-gold/10 px-3 py-2 text-sm text-navy">

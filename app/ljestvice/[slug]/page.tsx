@@ -46,7 +46,7 @@ export default async function StandingsPage(props: {
   if (!activeSeason) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-12">
-        <h1 className="page-title">
+        <h1 className="page-title mb-4">
           {config.title}
         </h1>
         <p className="text-muted">

@@ -57,7 +57,7 @@ U `@layer components` u `app/globals.css`:
 
 | | |
 |---|---|
-| `.page-title` | naslov stranice, s razmakom ispod |
+| `.page-title` | naslov stranice (bez razmaka ispod — razmak je stvar stranice) |
 | `.btn-primary` / `.btn-secondary` | glavna i sporedna radnja |
 | `.btn-prijava` / `.btn-odjava` | prijava na turnir (zlatna) i odjava (crimson) |
 | `.btn-sm` / `.btn-lg` | veličine; modifikatori stoje iza osnovnih pravila |

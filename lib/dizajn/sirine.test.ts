@@ -20,7 +20,12 @@ import { jeKomentar, sviIzvori } from "./izvori";
  * graf rejtinga) su nešto drugo i slobodna su.
  */
 
-const SPREMNIK = /mx-auto[^"'`]*?\bmax-w-([a-z0-9]+)/g;
+/*
+  Oba poretka: "mx-auto … max-w-4xl" i "max-w-4xl … mx-auto". Prva inačica
+  je tražila samo prvi, pa bi spremnik napisan obrnuto prošao nezapažen.
+*/
+const SPREMNIK =
+  /mx-auto[^"'`]*?\bmax-w-([a-z0-9]+)|\bmax-w-([a-z0-9]+)[^"'`]*?\bmx-auto/g;
 const DOPUSTENE = new Set(["6xl", "3xl", "sm", "md"]);
 
 function odstupanja(): string[] {
@@ -29,7 +34,7 @@ function odstupanja(): string[] {
     sadrzaj.split("\n").forEach((red, i) => {
       if (jeKomentar(red)) return;
       for (const m of red.matchAll(SPREMNIK)) {
-        const sirina = m[1];
+        const sirina = m[1] ?? m[2];
         if (sirina !== undefined && !DOPUSTENE.has(sirina)) {
           nadeno.push(`${oznaka}:${i + 1} — max-w-${sirina}`);
         }
