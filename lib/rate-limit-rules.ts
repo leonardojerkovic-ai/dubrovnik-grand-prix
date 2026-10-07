@@ -73,6 +73,10 @@ export type RateLimitAction = keyof typeof RATE_LIMITS;
 /**
  * Najdulji prozor od svih pravila. Zapis stariji od ovoga više ne broji
  * nijedan brojač i smije se obrisati, bez obzira na ključ.
+ *
+ * Ista vrijednost stoji i u .github/workflows/keep-alive.yml (interval
+ * '1 hour'), koji briše zapise kad na stranici dugo nitko ništa ne pokuša.
+ * Promjena ovdje traži promjenu i tamo, i u izjavi o privatnosti (12.3).
  */
 export const NAJDULJI_PROZOR_MS = Math.max(
   ...Object.values(RATE_LIMITS).map((r) => r.windowMs),

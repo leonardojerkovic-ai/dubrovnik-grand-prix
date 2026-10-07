@@ -585,9 +585,10 @@ export default function PrivatnostPage() {
           <h3 className="font-display font-bold text-navy">12.3. Zapisi o pokušajima prijave</h3>
           <p>
             Zapisi opisani u točki 3.5., koji služe isključivo
-            ograničavanju broja pokušaja, brišu se automatski čim isteknu
-            razdoblja unutar kojih se broje. Ta razdoblja iznose najviše
-            jedan sat. Ti se zapisi ne koriste ni u koju drugu svrhu i ne
+            ograničavanju broja pokušaja, brišu se automatski nakon što
+            isteknu razdoblja unutar kojih se broje, a najkasnije u roku
+            od četiri dana. Ta razdoblja iznose najviše jedan sat. Ti se
+            zapisi ne koriste ni u koju drugu svrhu i ne
             povezuju se s ponašanjem korisnika na stranici.
           </p>
 
@@ -847,7 +848,7 @@ export default function PrivatnostPage() {
           </ul>
           <p>Važeća verzija Politike privatnosti bit će dostupna na ovoj internetskoj stranici.</p>
           <p className="font-medium text-navy">
-            Datum zadnje izmjene: 30. rujna 2026.
+            Datum zadnje izmjene: 7. listopada 2026.
           </p>
         </section>
 

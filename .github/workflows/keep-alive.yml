@@ -6,6 +6,12 @@ name: Održavanje projekta budnim
 # uvoz rejtinga radi tek jednom mjesečno.
 #
 # Svaka tri dana, dakle s dovoljno zalihe prije praga od sedam.
+#
+# Usput briše zapise o pokušajima prijave koje checkRateLimit nije stigao
+# obrisati jer na stranici dugo nitko nije ništa pokušao. Izjava o
+# privatnosti (12.3) obećaje da se brišu najkasnije u roku od četiri dana;
+# */3 po danu u mjesecu daje najviše tri dana razmaka (28. -> 1.), pa ta
+# tvrdnja ima dan zalihe i u veljači.
 on:
   schedule:
     - cron: "30 4 */3 * *"
@@ -16,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Dodirni bazu
+      - name: Dodirni bazu i počisti stare zapise o pokušajima
         env:
           PGURL: ${{ secrets.DATABASE_URL }}
         run: |
@@ -29,5 +35,18 @@ jobs:
           fi
           # Adresa se NE širi u ljusci domaćina nego unutar kontejnera —
           # inače bi se pojavila u popisu procesa.
-          docker run --rm -e PGURL postgres:17 \
-            sh -c 'psql "$PGURL" -Atc "select count(*) from public.players"'
+          #
+          # SQL ide kroz stdin. ON_ERROR_STOP je nužan: bez njega psql nakon
+          # greške u delete nastavi, izađe s 0 i ping tiho ne radi ništa.
+          #
+          # '1 hour' MORA biti jednak NAJDULJI_PROZOR_MS u
+          # lib/rate-limit-rules.ts. Manje bi brisalo retke koje brojač po
+          # računu još broji; više bi kršilo izjavu o privatnosti.
+          #
+          # count iza brisanja ostaje kao dokaz da baza odgovara na upit.
+          docker run --rm -i -e PGURL postgres:17 \
+            sh -c 'psql "$PGURL" -At -v ON_ERROR_STOP=1' <<'SQL'
+          delete from public.rate_limit_hits
+            where "createdAt" < now() - interval '1 hour';
+          select count(*) from public.players;
+          SQL
