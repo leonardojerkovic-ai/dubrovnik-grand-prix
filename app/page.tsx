@@ -257,9 +257,16 @@ export default async function HomePage() {
         {upcomingTournaments.length > 0 ? (
           <ul className="border-t border-navy/20">
             {upcomingTournaments.map((t) => (
+              /*
+                Ispod sm je redak mreža s dva stupca: datum i naziv u prvom
+                redu, bedž i gumb u drugom, poravnati pod nazivom. U jednom
+                flex retku se na 375 px naziv lomio u uski stupac. Od sm je
+                raspored isti kao prije — omotač bedža i gumba tada je
+                display:contents, pa su oni ponovno izravni članovi flexa.
+              */
               <li
                 key={t.id}
-                className="flex items-center gap-4 border-b border-navy/[0.07] px-1 py-3.5"
+                className="grid grid-cols-[3rem_1fr] items-center gap-x-4 gap-y-2.5 border-b border-navy/[0.07] px-1 py-3.5 sm:flex sm:gap-4"
               >
                 {/*
                   Datum je vodeći podatak, ne redni broj u popisu. Prije je
@@ -274,7 +281,7 @@ export default async function HomePage() {
                     {t.date.toLocaleDateString("hr-HR", { month: "short" })}
                   </div>
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <Link
                     href={`/turniri/${t.id}`}
                     className="font-medium text-navy hover:text-crimson hover:underline"
@@ -295,16 +302,18 @@ export default async function HomePage() {
                       .join(" · ")}
                   </p>
                 </div>
-                <span
-                  className={`badge-title ${t.seasonSystem === "AKADEMIJA" ? "bg-academy/10 text-academy" : ""}`}
-                >
-                  {t.seasonSystem === "AKADEMIJA"
-                    ? "Akademija"
-                    : LEVEL_LABELS[t.level ?? ""] ?? t.level ?? t.tempo}
-                </span>
-                {t.status === "PRIJAVE_OTVORENE" && (
-                  <RegisterButton tournamentId={t.id} size="sm" />
-                )}
+                <div className="col-start-2 flex flex-wrap items-center gap-2 sm:contents">
+                  <span
+                    className={`badge-title ${t.seasonSystem === "AKADEMIJA" ? "bg-academy/10 text-academy" : ""}`}
+                  >
+                    {t.seasonSystem === "AKADEMIJA"
+                      ? "Akademija"
+                      : LEVEL_LABELS[t.level ?? ""] ?? t.level ?? t.tempo}
+                  </span>
+                  {t.status === "PRIJAVE_OTVORENE" && (
+                    <RegisterButton tournamentId={t.id} size="sm" />
+                  )}
+                </div>
               </li>
             ))}
           </ul>
