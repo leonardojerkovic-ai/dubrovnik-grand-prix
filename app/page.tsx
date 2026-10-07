@@ -173,9 +173,14 @@ export default async function HomePage() {
             </span>
           </h1>
           <span className="mt-6 block h-0.5 w-10 bg-gold" />
+          {/*
+            Akademija je ravnopravan sustav bodovanja, a ne podskupina Općeg
+            GP-a, pa se u podnaslovu navodi posebno — u bedževima iznad i u
+            pregledu poretka ispod stoji jednako istaknuto.
+          */}
           <p className="mt-5 max-w-xl text-sky-light">
-            Pratite poredak Općeg GP-a i svih kategorijskih ljestvica ŠK
-            Dubrovnik kroz cijelu natjecateljsku sezonu.
+            Pratite poredak Općeg GP-a, kategorijskih ljestvica i GP-a
+            Akademije ŠK Dubrovnik kroz cijelu natjecateljsku sezonu.
           </p>
           <div className="mt-8 flex gap-3">
             <Link
