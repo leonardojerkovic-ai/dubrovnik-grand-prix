@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { JOIN_LINK, PRIMARY_NAV as NAV, SECONDARY_NAV } from "@/lib/nav";
+import { jeAktivna, jeAktivnaSkupina } from "@/lib/nav-aktivno";
 
 const LJESTVICE = [
   { href: "/ljestvice/opci-gp", label: "Opći GP" },
@@ -17,10 +19,48 @@ const LJESTVICE = [
   { href: "/ljestvice/akademija", label: "Akademija" },
 ];
 
+const LJESTVICE_HREFOVI = LJESTVICE.map((item) => item.href);
+
+/**
+ * Aktivna stavka se ne označava samo bojom: zlatna crta na papiru ima
+ * kontrast 2,04:1, pa bi onome kome boje slabije razlikuje bila nevidljiva.
+ * Nosi ju i podebljani font, a čitaču zaslona aria-current="page".
+ */
+const STAVKA = "relative transition-colors hover:text-crimson";
+const STAVKA_AKTIVNA =
+  `${STAVKA} font-semibold after:absolute after:-bottom-1.5 after:left-0 after:h-0.5 after:w-full after:rounded-full after:bg-gold`;
+
+const PADAJUCA = "rounded px-2 py-1 hover:bg-sky-light";
+const PADAJUCA_AKTIVNA = `${PADAJUCA} bg-sky-light font-semibold`;
+
+const MOBILNA = "rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light active:bg-sky-light";
+const MOBILNA_AKTIVNA = `${MOBILNA} bg-sky-light font-semibold`;
 
 export function SiteHeader() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [ljestviceOpen, setLjestviceOpen] = useState(false);
+  const ljestviceRef = useRef<HTMLDivElement>(null);
+
+  const pathname = usePathname();
+  const ljestviceAktivne = jeAktivnaSkupina(pathname, LJESTVICE_HREFOVI);
+
+  /*
+    Izbornik se dosad zatvarao samo Escapeom i odlaskom miša. Na dodirnom
+    zaslonu nema odlaska miša, pa je ostajao otvoren i nakon klika pokraj
+    njega. pointerdown pokriva i miš i dodir, a sluša se samo dok je
+    izbornik otvoren.
+  */
+  useEffect(() => {
+    if (!ljestviceOpen) return;
+    function zatvoriIzvan(e: PointerEvent) {
+      const okvir = ljestviceRef.current;
+      if (okvir && e.target instanceof Node && !okvir.contains(e.target)) {
+        setLjestviceOpen(false);
+      }
+    }
+    document.addEventListener("pointerdown", zatvoriIzvan);
+    return () => document.removeEventListener("pointerdown", zatvoriIzvan);
+  }, [ljestviceOpen]);
 
   const { data: session, status } = useSession();
   const user = session?.user as
@@ -51,14 +91,15 @@ export function SiteHeader() {
             Izbornik se dosad otvarao samo na group-hover, pa se tipkovnicom
             do ljestvica nije moglo doći — a na zaslonima ≥1024 px ovo je
             jedini put do njih. Sada ga otvara i klik (ili Enter/Space na
-            gumbu), zatvara Escape i odabir, a aria-expanded čitaču zaslona
-            kaže u kojem je stanju. Hover je ostao kakav je bio.
+            gumbu), zatvara Escape, odabir i klik izvan njega, a aria-expanded
+            čitaču zaslona kaže u kojem je stanju. Hover je ostao kakav je bio.
 
             focus-within:flex je izbačen: iz zatvorenog stanja nikad ne bi ni
             proradio (skrivene poveznice nisu fokusirljive), a otvoreni je
             izbornik držao otvorenim i kad ga Escape zatvori.
           */}
           <div
+            ref={ljestviceRef}
             className="group relative"
             onMouseLeave={() => setLjestviceOpen(false)}
             onKeyDown={(e) => {
@@ -70,7 +111,7 @@ export function SiteHeader() {
               aria-expanded={ljestviceOpen}
               aria-controls="izbornik-ljestvice"
               onClick={() => setLjestviceOpen((v) => !v)}
-              className="hover:text-crimson transition-colors"
+              className={ljestviceAktivne ? STAVKA_AKTIVNA : STAVKA}
             >
               Ljestvice
             </button>
@@ -80,23 +121,35 @@ export function SiteHeader() {
                 ljestviceOpen ? "flex" : "hidden"
               } group-hover:flex flex-col gap-1 rounded-md border border-navy/10 bg-paper p-2 shadow-lg min-w-[160px]`}
             >
-              {LJESTVICE.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setLjestviceOpen(false)}
-                  className="rounded px-2 py-1 hover:bg-sky-light"
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {LJESTVICE.map((item) => {
+                const aktivna = jeAktivna(pathname, item.href);
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setLjestviceOpen(false)}
+                    aria-current={aktivna ? "page" : undefined}
+                    className={aktivna ? PADAJUCA_AKTIVNA : PADAJUCA}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </div>
-          {NAV.map((item) => (
-            <Link key={item.href} href={item.href} className="hover:text-crimson transition-colors">
-              {item.label}
-            </Link>
-          ))}
+          {NAV.map((item) => {
+            const aktivna = jeAktivna(pathname, item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={aktivna ? "page" : undefined}
+                className={aktivna ? STAVKA_AKTIVNA : STAVKA}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-2">
@@ -178,32 +231,40 @@ export function SiteHeader() {
             Ljestvice
           </p>
           <div className="mb-4 grid grid-cols-2 gap-1">
-            {LJESTVICE.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light active:bg-sky-light"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {LJESTVICE.map((item) => {
+              const aktivna = jeAktivna(pathname, item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={aktivna ? "page" : undefined}
+                  className={aktivna ? MOBILNA_AKTIVNA : MOBILNA}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
 
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink/60">
             Stranice
           </p>
           <div className="mb-4 grid gap-1">
-            {[...NAV, JOIN_LINK, ...SECONDARY_NAV].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="rounded px-2 py-2.5 text-sm text-navy hover:bg-sky-light active:bg-sky-light"
-              >
-                {item.label}
-              </Link>
-            ))}
+            {[...NAV, JOIN_LINK, ...SECONDARY_NAV].map((item) => {
+              const aktivna = jeAktivna(pathname, item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  aria-current={aktivna ? "page" : undefined}
+                  className={aktivna ? MOBILNA_AKTIVNA : MOBILNA}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </div>
 
           {signedIn ? (
