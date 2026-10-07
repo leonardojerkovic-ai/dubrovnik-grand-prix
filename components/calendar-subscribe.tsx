@@ -26,7 +26,7 @@ export function CalendarSubscribe() {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+        className="btn-secondary"
       >
         Dodaj u svoj kalendar
       </button>
@@ -41,7 +41,7 @@ export function CalendarSubscribe() {
           <div className="flex flex-wrap gap-2">
             <a
               href={webcal}
-              className="rounded-md bg-navy px-3.5 py-2 text-sm font-semibold text-paper hover:bg-navy-light"
+              className="btn-primary"
             >
               Apple, Outlook i ostali
             </a>
@@ -49,7 +49,7 @@ export function CalendarSubscribe() {
               href={google}
               target="_blank"
               rel="noopener noreferrer"
-              className="rounded-md border border-navy/20 px-3.5 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+              className="btn-secondary"
             >
               Google Kalendar
             </a>
@@ -60,7 +60,7 @@ export function CalendarSubscribe() {
                 setCopied(true);
                 setTimeout(() => setCopied(false), 2000);
               }}
-              className="rounded-md border border-navy/20 px-3.5 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+              className="btn-secondary"
             >
               {copied ? "Kopirano." : "Kopiraj poveznicu"}
             </button>

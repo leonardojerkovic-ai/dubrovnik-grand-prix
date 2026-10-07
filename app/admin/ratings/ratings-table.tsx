@@ -100,7 +100,7 @@ export function RatingsTable({ players }: { players: PlayerRow[] }) {
         <button
           onClick={handleSave}
           disabled={isPending}
-          className="rounded-md bg-navy px-5 py-2.5 text-sm font-semibold text-paper hover:bg-navy-light disabled:opacity-50"
+          className="btn-primary btn-lg"
         >
           {isPending ? "Spremanje…" : "Spremi sve rejtinge"}
         </button>

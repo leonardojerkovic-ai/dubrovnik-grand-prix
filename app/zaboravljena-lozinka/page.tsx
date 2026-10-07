@@ -12,7 +12,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-navy px-4 py-2.5 font-semibold text-paper hover:bg-navy-light transition-colors disabled:opacity-50"
+      className="btn-primary"
     >
       {pending ? "Slanje…" : "Pošalji poveznicu za reset"}
     </button>
@@ -24,7 +24,7 @@ export default function ZaboravljenaLozinkaPage() {
 
   return (
     <div className="mx-auto max-w-sm px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-navy mb-2">
+      <h1 className="page-title">
         Zaboravljena lozinka
       </h1>
       <p className="mb-6 text-sm text-muted">

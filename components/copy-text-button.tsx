@@ -26,7 +26,7 @@ export function CopyTextButton({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="rounded-md border border-navy/20 px-3.5 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+        className="btn-secondary"
       >
         {label}
       </button>
@@ -46,7 +46,7 @@ export function CopyTextButton({
               setCopied(true);
               setTimeout(() => setCopied(false), 2000);
             }}
-            className="mt-2 rounded-md bg-navy px-3.5 py-2 text-sm font-semibold text-paper hover:bg-navy-light"
+            className="btn-primary mt-2"
           >
             {copied ? "Kopirano." : "Kopiraj tekst"}
           </button>

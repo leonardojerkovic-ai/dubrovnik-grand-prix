@@ -108,7 +108,7 @@ export default async function KalendarPage(props: {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-navy mb-2">
+      <h1 className="page-title">
         Kalendar
       </h1>
       <p className="mb-6 max-w-prose text-sm text-subtle">

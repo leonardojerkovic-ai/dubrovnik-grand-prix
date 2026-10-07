@@ -104,7 +104,7 @@ export default async function NajavePage() {
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-navy mb-8">
+      <h1 className="page-title">
         Najave turnira
       </h1>
 

@@ -304,7 +304,7 @@ export function NovcaneNagradeAlat() {
             <button
               type="button"
               onClick={spremi}
-              className="rounded-md border border-navy/20 px-3 py-1.5 font-medium text-navy hover:bg-navy/5"
+              className="btn-secondary btn-sm"
             >
               Spremi kao predložak
             </button>
@@ -547,7 +547,7 @@ export function NovcaneNagradeAlat() {
           <button
             type="button"
             onClick={() => setRedci((prev) => [...prev, noviRedak()])}
-            className="rounded-md border border-navy/20 px-3 py-1.5 font-medium text-navy hover:bg-navy/5"
+            className="btn-secondary btn-sm"
           >
             + Dodaj nagradu
           </button>
@@ -629,7 +629,7 @@ export function NovcaneNagradeAlat() {
               <button
                 type="button"
                 onClick={preuzmiCsv}
-                className="rounded-md border border-navy/20 px-3 py-1.5 font-medium text-navy hover:bg-navy/5"
+                className="btn-secondary btn-sm"
               >
                 Preuzmi CSV
               </button>

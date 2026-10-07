@@ -199,7 +199,7 @@ export function ResultsForm({
         <button
           type="button"
           onClick={addRow}
-          className="rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+          className="btn-secondary"
         >
           + Dodaj red
         </button>
@@ -211,7 +211,7 @@ export function ResultsForm({
               ? undefined
               : "Rezultati su konačni — otključajte ih da biste spremili izmjene."
           }
-          className="rounded-md bg-navy px-5 py-2.5 text-sm font-semibold text-paper hover:bg-navy-light disabled:opacity-50"
+          className="btn-primary btn-lg"
         >
           {isPending ? "Računam bodove…" : "Izračunaj i spremi bodove"}
         </button>

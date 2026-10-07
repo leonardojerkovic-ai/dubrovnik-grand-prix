@@ -16,7 +16,7 @@ export function CsvDownload({
     <a
       href={href}
       download
-      className="mt-4 inline-flex items-center gap-2 rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+      className="btn-secondary mt-4 gap-2"
     >
       <span aria-hidden>↓</span>
       {label}

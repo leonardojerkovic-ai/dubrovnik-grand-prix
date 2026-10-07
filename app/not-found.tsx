@@ -6,7 +6,7 @@ export default function NotFound() {
       <span className="rank-badge mb-4" data-parity="odd">
         ?
       </span>
-      <h1 className="font-display text-2xl font-bold text-navy mb-2">
+      <h1 className="page-title">
         Stranica nije pronađena
       </h1>
       <p className="mb-6 text-muted">
@@ -15,7 +15,7 @@ export default function NotFound() {
       </p>
       <Link
         href="/"
-        className="rounded-md bg-navy px-5 py-2.5 font-semibold text-paper hover:bg-navy-light transition-colors"
+        className="btn-primary btn-lg"
       >
         Natrag na naslovnicu
       </Link>

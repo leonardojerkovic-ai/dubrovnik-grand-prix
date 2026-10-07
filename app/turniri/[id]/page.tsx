@@ -207,7 +207,7 @@ export default async function TournamentDetailPage(props: {
         {tournament.isFinal && <span className="badge-title ml-2">Finale</span>}
       </div>
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-display text-2xl font-bold text-navy">
+        <h1 className="page-title">
           {tournament.name}
         </h1>
         {tournament.status === "PRIJAVE_OTVORENE" && (
@@ -258,7 +258,7 @@ export default async function TournamentDetailPage(props: {
           href={tournament.announcementUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="mb-8 inline-block rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+          className="btn-secondary mb-8"
         >
           Raspis turnira
         </a>
@@ -368,7 +368,7 @@ export default async function TournamentDetailPage(props: {
         <div className="mt-4 flex flex-wrap items-center gap-4">
           <Link
             href={standingsHref}
-            className="rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+            className="btn-secondary"
           >
             {standingsLabel} →
           </Link>

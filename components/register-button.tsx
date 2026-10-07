@@ -24,7 +24,9 @@ export function RegisterButton({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const pad = size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm";
+  // Veličina ide kroz zajedničku .btn-sm klasu, da se padding ne upisuje
+  // ovdje ponovno; zadana veličina gumba je ona bez modifikatora.
+  const vel = size === "sm" ? "btn-sm" : "";
 
   // Dok se sesija i prijave učitavaju ne prikazuje se ništa — treptanje
   // između stanja izgledalo bi kao greška.
@@ -34,7 +36,7 @@ export function RegisterButton({
     return (
       <Link
         href="/prijava"
-        className={`inline-block rounded-md border border-navy/20 font-semibold text-navy hover:bg-navy/5 ${pad}`}
+        className={`btn-secondary ${vel}`}
       >
         Prijavi se
       </Link>
@@ -47,7 +49,7 @@ export function RegisterButton({
     return (
       <Link
         href="/moji-igraci"
-        className={`inline-block rounded-md border border-navy/15 font-medium text-muted hover:bg-navy/5 ${pad}`}
+        className={`btn-secondary ${vel} font-medium text-muted`}
         title="Račun još nije povezan s igračkim profilom."
       >
         Poveži profil
@@ -77,9 +79,7 @@ export function RegisterButton({
         disabled={isPending}
         onClick={() => toggle(playerId, isRegistered)}
         className={
-          isRegistered
-            ? `rounded-md border border-crimson/40 font-semibold text-crimson hover:bg-crimson/5 disabled:opacity-50 ${pad}`
-            : `rounded-md bg-gold font-semibold text-navy hover:bg-gold-light disabled:opacity-50 ${pad}`
+          isRegistered ? `btn-odjava ${vel}` : `btn-prijava ${vel}`
         }
       >
         {isPending

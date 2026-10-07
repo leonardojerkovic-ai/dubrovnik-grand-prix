@@ -39,7 +39,7 @@ function PrijavaForm() {
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-sm flex-col justify-center px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-navy mb-6">Prijava</h1>
+      <h1 className="page-title">Prijava</h1>
 
       {justRegistered && (
         <p className="mb-4 rounded-md bg-gold/10 px-3 py-2 text-sm text-navy">
@@ -80,7 +80,7 @@ function PrijavaForm() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-navy px-4 py-2.5 font-semibold text-paper hover:bg-navy-light transition-colors disabled:opacity-50"
+          className="btn-primary"
         >
           {loading ? "Prijava…" : "Prijavi se"}
         </button>

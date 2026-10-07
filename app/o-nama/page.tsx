@@ -9,7 +9,7 @@ export default function ONamaPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
       <span className="badge-title mb-3 inline-block">Od 1933.</span>
-      <h1 className="font-display text-2xl font-bold text-navy mb-6">
+      <h1 className="page-title">
         O nama
       </h1>
       <div className="prose prose-sm max-w-none text-subtle grid gap-4">

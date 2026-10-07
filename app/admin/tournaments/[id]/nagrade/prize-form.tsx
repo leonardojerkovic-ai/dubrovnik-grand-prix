@@ -135,7 +135,7 @@ export function PrizeForm({
               key={preset.id}
               type="button"
               onClick={() => applyPreset(preset.id)}
-              className="rounded-md border border-navy/20 px-3 py-1 text-xs font-medium text-navy hover:bg-navy/5"
+              className="btn-secondary btn-sm"
             >
               {preset.label}
             </button>

@@ -62,7 +62,7 @@ export default async function PlayerProfilePage(props: {
               {player.title}
             </span>
           )}
-          <h1 className="font-display text-2xl font-bold text-white">
+          <h1 className="page-title text-white">
             {player.firstName} {player.lastName}
           </h1>
         </div>

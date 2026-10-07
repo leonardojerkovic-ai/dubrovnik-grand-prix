@@ -123,7 +123,7 @@ export function PlayerLink({
             type="button"
             disabled={isPending || !selected}
             onClick={() => run(() => linkUserToPlayer(userId, selected))}
-            className="rounded-md bg-navy px-3 py-1.5 text-xs font-semibold text-paper disabled:opacity-50"
+            className="btn-primary btn-sm"
           >
             Poveži
           </button>

@@ -44,6 +44,56 @@
     @apply inline-flex items-center rounded-full bg-gold/20 px-2 py-0.5 text-xs font-semibold text-navy;
   }
 
+  /**
+   * Naslov stranice. Prije je stajao kao niz od pet klasa koje su se
+   * ponavljale u dvadesetak datoteka, a razmak ispod se razlikovao od
+   * stranice do stranice (mb-1, mb-2, mb-4, mb-6, mb-8) bez pravila. Razmak
+   * je sada dio naslova; stranica koja stvarno treba drukčiji doda svoju mb
+   * klasu, koja kao utility nadjača ovu.
+   */
+  .page-title {
+    @apply mb-6 font-display text-2xl font-bold text-navy;
+  }
+
+  /**
+   * Gumbi. Primarna radnja je puna navy ploha, sporedna je obrub. Veličine
+   * su bile razasute — šest različitih paddinga od px-3 py-1.5 do px-5
+   * py-2.5 — pa je isti gumb na dvije stranice izgledao različito.
+   *
+   * Tri veličine: .btn-sm za radnje u retku tablice, zadana za izbornik i
+   * obrasce, .btn-lg za glavnu radnju na stranici. Modifikatori stoje iza
+   * osnovnih pravila jer u istom sloju pobjeđuje kasnije pravilo.
+   */
+  .btn-primary {
+    @apply inline-flex items-center justify-center rounded-md bg-navy px-4 py-2 text-sm font-semibold text-paper transition-colors hover:bg-navy-light disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-navy/5 disabled:opacity-50;
+  }
+
+  /**
+   * Prijava na turnir ima svoje dvije boje jer nije ni primarna ni sporedna
+   * radnja stranice nego jedina radnja na retku turnira: zlatna poziva,
+   * crimson odjavljuje. Kontrast: navy na zlatnoj 6,37:1, crimson na papiru
+   * 5,40:1.
+   */
+  .btn-prijava {
+    @apply inline-flex items-center justify-center rounded-md bg-gold px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold-light disabled:opacity-50;
+  }
+
+  .btn-odjava {
+    @apply inline-flex items-center justify-center rounded-md border border-crimson/40 px-4 py-2 text-sm font-semibold text-crimson transition-colors hover:bg-crimson/5 disabled:opacity-50;
+  }
+
+  .btn-sm {
+    @apply px-3 py-1.5 text-xs;
+  }
+
+  .btn-lg {
+    @apply px-5 py-2.5 text-base;
+  }
+
   .input {
     @apply rounded-md border border-navy/20 bg-white px-3 py-2 text-sm text-ink focus:border-navy;
   }

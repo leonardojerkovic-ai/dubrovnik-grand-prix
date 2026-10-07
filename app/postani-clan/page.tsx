@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 export default function PostaniClanPage() {
   return (
     <div className="mx-auto max-w-3xl px-4 py-12">
-      <h1 className="font-display text-2xl font-bold text-navy mb-6">
+      <h1 className="page-title">
         Postani član
       </h1>
       <div className="grid gap-4 text-subtle mb-8">
@@ -49,7 +49,7 @@ export default function PostaniClanPage() {
                 href="https://www.skdubrovnik.hr/upisnica/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md bg-navy px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-light transition-colors"
+                className="btn-primary"
               >
                 Ispuni online pristupnicu
               </a>
@@ -57,7 +57,7 @@ export default function PostaniClanPage() {
                 href="https://www.skdubrovnik.hr/dokumenti/upisnica.pdf"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5 transition-colors"
+                className="btn-secondary"
               >
                 Preuzmi pristupnicu (PDF)
               </a>
@@ -157,7 +157,7 @@ export default function PostaniClanPage() {
 
       <Link
         href="/registracija"
-        className="inline-block rounded-md bg-navy px-5 py-2.5 font-semibold text-paper hover:bg-navy-light transition-colors"
+        className="btn-primary btn-lg"
       >
         Registriraj se
       </Link>

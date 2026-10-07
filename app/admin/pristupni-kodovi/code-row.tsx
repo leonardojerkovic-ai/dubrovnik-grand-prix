@@ -67,7 +67,7 @@ export function CodeRow({
           type="button"
           disabled={isPending}
           onClick={() => run(() => issueLinkCode(playerId))}
-          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-semibold text-navy hover:bg-navy/5 disabled:opacity-50"
+          className="btn-secondary btn-sm"
         >
           {hasCode ? "Izdaj novi" : "Izdaj kod"}
         </button>
@@ -76,7 +76,7 @@ export function CodeRow({
           type="button"
           disabled={isPending}
           onClick={() => setShowEmail((v) => !v)}
-          className="rounded-md border border-navy/20 px-3 py-1.5 text-xs font-semibold text-navy hover:bg-navy/5 disabled:opacity-50"
+          className="btn-secondary btn-sm"
         >
           Pošalji mailom
         </button>
@@ -106,7 +106,7 @@ export function CodeRow({
             type="button"
             disabled={isPending || !email}
             onClick={() => run(() => issueAndEmailLinkCode(playerId, email))}
-            className="rounded-md bg-navy px-3 py-1.5 text-xs font-semibold text-paper disabled:opacity-50"
+            className="btn-primary btn-sm"
           >
             Izdaj i pošalji
           </button>

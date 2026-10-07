@@ -160,7 +160,7 @@ export function SiteHeader() {
               {isAdmin && (
                 <Link
                   href="/admin"
-                  className="rounded-md border border-navy/20 px-3 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+                  className="btn-secondary"
                 >
                   Admin
                 </Link>
@@ -168,7 +168,7 @@ export function SiteHeader() {
               {isSudac && (
                 <Link
                   href="/alati/nagrade"
-                  className="rounded-md border border-navy/20 px-3 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+                  className="btn-secondary"
                 >
                   Nagrade
                 </Link>
@@ -198,7 +198,7 @@ export function SiteHeader() {
               </Link>
               <Link
                 href="/prijava"
-                className="hidden sm:inline-block rounded-md bg-navy px-4 py-2 text-sm font-semibold text-paper hover:bg-navy-light transition-colors"
+                className="btn-primary hidden sm:inline-block"
               >
                 Prijava
               </Link>
@@ -311,7 +311,7 @@ export function SiteHeader() {
             <Link
               href="/prijava"
               onClick={() => setMobileOpen(false)}
-              className="block rounded-md bg-navy px-4 py-2 text-center text-sm font-semibold text-paper hover:bg-navy-light"
+              className="btn-primary block text-center"
             >
               Prijava
             </Link>

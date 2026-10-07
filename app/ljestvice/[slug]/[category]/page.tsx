@@ -91,7 +91,7 @@ export default async function ArchivedStandingsPage(props: {
             Sezona {season.yearLabel}
             {season.rulebookVersion && ` · pravilnik ${season.rulebookVersion}`}
           </span>
-          <h1 className="font-display text-2xl font-bold text-navy">
+          <h1 className="page-title">
             {config.title}
           </h1>
         </div>

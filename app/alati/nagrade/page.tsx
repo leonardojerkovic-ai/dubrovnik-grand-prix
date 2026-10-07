@@ -13,7 +13,7 @@ export default async function NovcaneNagradePage() {
   return (
     <div className="mx-auto grid max-w-6xl gap-6 px-4 py-8">
       <div>
-        <h1 className="font-display text-xl font-bold text-navy">
+        <h1 className="page-title text-xl">
           Raspodjela novčanih nagrada
         </h1>
         <p className="mt-1 max-w-3xl text-sm text-subtle">

@@ -51,6 +51,24 @@ ograničenja — `max-w-prose` za odlomak, `max-w-xl` za obrazac, `max-w-3xl` za
 graf rejtinga — su nešto drugo i slobodna su. Čuva ga
 `lib/dizajn/sirine.test.ts`.
 
+## Zajedničke klase
+
+U `@layer components` u `app/globals.css`:
+
+| | |
+|---|---|
+| `.page-title` | naslov stranice, s razmakom ispod |
+| `.btn-primary` / `.btn-secondary` | glavna i sporedna radnja |
+| `.btn-prijava` / `.btn-odjava` | prijava na turnir (zlatna) i odjava (crimson) |
+| `.btn-sm` / `.btn-lg` | veličine; modifikatori stoje iza osnovnih pravila |
+| `.rank-badge` / `.rank-number` | mjesto na ljestvici |
+| `.badge-title`, `.input` | oznaka i polje obrasca |
+
+Prije njih je isti gumb na dvije stranice imao različit padding (šest
+inačica) i naslov različit razmak ispod sebe (pet inačica). Utility klasa
+nadjača klasu iz `@layer components`, pa se iznimka i dalje piše uz samu
+komponentu. Čuva ih `lib/dizajn/zajednicke-klase.test.ts`.
+
 ## Pristupačnost
 
 - Fokus prsten je dvobojan (navy obrub, papirnati prsten u razmaku) jer jedna

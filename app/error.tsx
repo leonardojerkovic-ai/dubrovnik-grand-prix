@@ -14,7 +14,7 @@ export default function Error({
       <span className="rank-badge mb-4" data-parity="even">
         !
       </span>
-      <h1 className="font-display text-2xl font-bold text-navy mb-2">
+      <h1 className="page-title">
         Nešto je pošlo po zlu
       </h1>
       <p className="mb-6 text-muted">
@@ -23,13 +23,13 @@ export default function Error({
       <div className="flex gap-3">
         <button
           onClick={reset}
-          className="rounded-md bg-navy px-5 py-2.5 font-semibold text-paper hover:bg-navy-light transition-colors"
+          className="btn-primary btn-lg"
         >
           Pokušaj ponovno
         </button>
         <Link
           href="/"
-          className="rounded-md border border-navy/20 px-5 py-2.5 font-semibold text-navy hover:bg-navy/5 transition-colors"
+          className="btn-secondary btn-lg"
         >
           Naslovnica
         </Link>

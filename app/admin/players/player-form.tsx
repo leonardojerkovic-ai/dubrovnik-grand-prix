@@ -33,7 +33,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="rounded-md bg-navy px-5 py-2.5 font-semibold text-paper hover:bg-navy-light transition-colors disabled:opacity-50"
+      className="btn-primary btn-lg"
     >
       {pending ? "Spremanje…" : "Spremi igrača"}
     </button>

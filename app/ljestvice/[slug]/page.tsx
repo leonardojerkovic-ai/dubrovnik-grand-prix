@@ -46,7 +46,7 @@ export default async function StandingsPage(props: {
   if (!activeSeason) {
     return (
       <div className="mx-auto max-w-6xl px-4 py-12">
-        <h1 className="font-display text-2xl font-bold text-navy mb-4">
+        <h1 className="page-title">
           {config.title}
         </h1>
         <p className="text-muted">
@@ -82,7 +82,7 @@ export default async function StandingsPage(props: {
           >
             Sezona {activeSeason.yearLabel}
           </span>
-          <h1 className="font-display text-2xl font-bold text-navy">
+          <h1 className="page-title">
             {config.title}
           </h1>
         </div>

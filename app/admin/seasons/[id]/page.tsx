@@ -119,7 +119,7 @@ export default async function EditSeasonPage(props: {
           >
             <button
               type="submit"
-              className="rounded-md border border-navy/20 px-4 py-2 text-sm font-semibold text-navy hover:bg-navy/5"
+              className="btn-secondary"
             >
               Izračunaj medalje konačnog poretka
             </button>

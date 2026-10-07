@@ -27,7 +27,7 @@ export default async function AdminLayout({
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex items-center gap-4 border-b border-navy/10 pb-4">
-        <h1 className="font-display text-xl font-bold text-navy">Admin</h1>
+        <h1 className="page-title text-xl">Admin</h1>
         <nav className="flex gap-4 text-sm text-subtle">
           <Link href="/admin/players" className="hover:text-crimson">
             Igrači
