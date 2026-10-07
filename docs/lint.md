@@ -27,8 +27,11 @@ tipski posve ispravne:
 `text-[40px]`, a propuštalo `text-[0.625rem]` — istih 10 px napisanih
 drukčije. Granicu od 12 px zato čuva test `lib/dizajn/velicina-teksta.test.ts`,
 koji vrijednost pretvori u piksele i u poruci ispiše datoteku, redak i
-izračun. Ni on ne vidi `fontSize` atribut u SVG-u (graf rejtinga), jer to
-nije Tailwind klasa.
+izračun. Čita `.ts`, `.tsx` i `.css` u `app/` i `components/`, pa hvata i
+`@apply text-[10px]` i `font-size: 10px`, a komentare preskače da ne bi pao
+na objašnjenju zašto je neka veličina uklonjena. Ni on ne vidi `fontSize`
+atribut u SVG-u (graf rejtinga), jer to nije ni Tailwind klasa ni CSS
+deklaracija.
 
 Raspored ruta. Greška koja je 19.9. srušila build — dva različita naziva
 dinamičkog segmenta na istoj razini putanje — ne vidi se ni linterom ni
