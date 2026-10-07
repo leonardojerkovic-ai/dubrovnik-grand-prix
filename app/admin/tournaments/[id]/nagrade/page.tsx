@@ -173,7 +173,7 @@ export default async function AdminPrizesPage(props: {
                         </span>
                       )}
                       {prize.shortLabel && (
-                        <span className="ml-2 rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-navy">
+                        <span className="ml-2 rounded bg-gold/20 px-1.5 py-0.5 text-xs font-semibold text-navy">
                           {prize.shortLabel}
                         </span>
                       )}

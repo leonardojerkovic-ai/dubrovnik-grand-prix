@@ -30,7 +30,7 @@ function Unit({ value, label }: { value: number; label: string }) {
       <div className="font-hero text-2xl leading-none text-gold tabular-nums md:text-3xl">
         {value}
       </div>
-      <div className="mt-1 text-[10px] uppercase tracking-widest text-paper/55">
+      <div className="mt-1 text-xs uppercase tracking-widest text-paper/55">
         {label}
       </div>
     </div>
@@ -77,7 +77,7 @@ export function TournamentCountdown({
         <span className="font-hero text-2xl text-gold">Igra se danas</span>
       )}
       <div className="min-w-0">
-        <p className="text-[10px] uppercase tracking-[0.2em] text-paper/50">
+        <p className="text-xs uppercase tracking-[0.2em] text-paper/50">
           Sljedeći turnir
         </p>
         <Link href={href} className="font-medium text-paper hover:underline">

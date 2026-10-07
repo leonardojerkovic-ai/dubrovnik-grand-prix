@@ -151,7 +151,7 @@ export default async function AdminAuditPage(props: {
                         <summary className="cursor-pointer text-xs text-ink/60 hover:text-navy">
                           Detalji
                         </summary>
-                        <pre className="mt-2 max-h-64 overflow-auto rounded bg-navy/5 p-2 text-[11px] leading-relaxed text-ink/80">
+                        <pre className="mt-2 max-h-64 overflow-auto rounded bg-navy/5 p-2 text-xs leading-relaxed text-ink/80">
                           {JSON.stringify({ prije: e.before, poslije: e.after }, null, 2)}
                         </pre>
                       </details>

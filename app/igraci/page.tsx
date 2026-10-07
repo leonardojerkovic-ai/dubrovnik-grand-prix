@@ -186,7 +186,7 @@ export default async function PlayersPage(props: {
                       }`}
                     >
                       {label}
-                      <span aria-hidden className="text-[10px]">
+                      <span aria-hidden className="text-xs">
                         {arrow(key)}
                       </span>
                     </Link>

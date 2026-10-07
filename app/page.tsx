@@ -141,7 +141,7 @@ export default async function HomePage() {
               priority
             />
           </div>
-          <p className="mb-3 text-[11px] uppercase tracking-[0.2em] text-gold">
+          <p className="mb-3 text-xs uppercase tracking-[0.2em] text-gold">
             Šahovski klub Dubrovnik · osnovan 1933.
           </p>
           <div className="mb-4 flex flex-wrap gap-2">
@@ -250,7 +250,7 @@ export default async function HomePage() {
                   <div className="font-hero text-xl leading-none text-navy">
                     {t.date.getDate()}
                   </div>
-                  <div className="mt-1 text-[10px] uppercase tracking-widest text-ink/60">
+                  <div className="mt-1 text-xs uppercase tracking-widest text-ink/60">
                     {t.date.toLocaleDateString("hr-HR", { month: "short" })}
                   </div>
                 </div>

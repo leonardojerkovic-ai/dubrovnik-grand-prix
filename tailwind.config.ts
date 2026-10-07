@@ -27,6 +27,11 @@ const config: Config = {
         ink: "#161616", // primarni tekst
         academy: "#1F5C3F", // zelena vrpca — vizualno razlikuje GP Akademije od glavnog GP-a
       },
+      /**
+       * Najmanja veličina teksta na stranici je text-xs (12 px). Ispod toga
+       * se u kombinaciji s uppercase, tracking i text-ink/60 na mobitelu
+       * teško čita, pa se text-[10px] i text-[11px] ne koriste.
+       */
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         // Serif, samo za naslov na naslovnici.

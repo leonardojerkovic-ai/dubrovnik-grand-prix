@@ -149,7 +149,7 @@ export default async function AdminMedalsPage(props: {
                             {medal.player.lastName} {medal.player.firstName}
                           </span>
                           {medal.manual && (
-                            <span className="ml-2 rounded bg-gold/20 px-1.5 py-0.5 text-[10px] font-semibold text-navy">
+                            <span className="ml-2 rounded bg-gold/20 px-1.5 py-0.5 text-xs font-semibold text-navy">
                               ručno
                             </span>
                           )}

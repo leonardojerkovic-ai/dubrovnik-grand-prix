@@ -32,7 +32,7 @@ export async function generateMetadata(props: {
 function Rating({ label, value }: { label: string; value: number | null }) {
   return (
     <div className="bg-paper px-4 py-3">
-      <p className="text-[10px] uppercase tracking-wide text-ink/60">{label}</p>
+      <p className="text-xs uppercase tracking-wide text-ink/60">{label}</p>
       <p className="font-mono text-xl font-semibold text-navy">
         {value ?? "—"}
       </p>
@@ -82,7 +82,7 @@ export default async function PlayerProfilePage(props: {
 
         {player.isClubMember && (
           <p className="mt-2">
-            <span className="rounded bg-gold px-2 py-1 text-[10px] font-medium text-navy-dark">
+            <span className="rounded bg-gold px-2 py-1 text-xs font-medium text-navy-dark">
               Član ŠK Dubrovnik
               {memberSinceYear ? ` od ${memberSinceYear}.` : ""}
             </span>

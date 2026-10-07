@@ -41,7 +41,7 @@ function StatusBadge({
 }) {
   return (
     <span
-      className={`shrink-0 rounded px-2 py-0.5 text-[11px] font-semibold ${STATUS_CLASSES[status]}`}
+      className={`shrink-0 rounded px-2 py-0.5 text-xs font-semibold ${STATUS_CLASSES[status]}`}
     >
       {statusLabel(status, startDate)}
     </span>

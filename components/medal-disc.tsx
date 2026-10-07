@@ -46,8 +46,8 @@ export function MedalDisc({
   return (
     <span
       aria-hidden
-      className={`inline-flex h-7 shrink-0 items-center justify-center rounded-full font-bold ${toneFor(place)} ${
-        special ? "w-auto px-2 text-[10px] tracking-tight" : "w-7 text-xs"
+      className={`inline-flex h-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${toneFor(place)} ${
+        special ? "w-auto px-2 tracking-tight" : "w-7"
       }`}
     >
       {special ? CATEGORY_SHORT[category] : place}
@@ -88,8 +88,8 @@ export function AwardDisc({
   return (
     <span
       aria-hidden
-      className={`inline-flex h-7 shrink-0 items-center justify-center rounded-full font-bold ${toneFor(place)} ${
-        special ? "w-auto px-2 text-[10px] tracking-tight" : "w-7 text-xs"
+      className={`inline-flex h-7 shrink-0 items-center justify-center rounded-full text-xs font-bold ${toneFor(place)} ${
+        special ? "w-auto px-2 tracking-tight" : "w-7"
       }`}
     >
       {special ? label : place}

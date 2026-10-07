@@ -78,7 +78,7 @@ export function StandingsPreview({
                 className="min-w-0 flex-1 truncate text-navy"
               >
                 {row.title !== "NONE" && (
-                  <span className="mr-1 text-[10px] font-semibold text-ink/60">
+                  <span className="mr-1 text-xs font-semibold text-ink/60">
                     {row.title}
                   </span>
                 )}
