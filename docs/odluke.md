@@ -37,3 +37,38 @@ kaže da je netko pokušao otvoriti račun.
 Ograničenje broja pokušaja registracije (6 na sat po adresi, vidi
 `lib/rate-limit-rules.ts`) u svakom slučaju sprječava da netko kroz ovo
 provuče cijeli popis adresa.
+
+## Prijava se ne zaključava po računu
+
+Pokušaji prijave broje se po tri ključa: par adresa + IP, stroj, i račun.
+Prva dva odbijaju; brojač po računu samo upisuje upozorenje u log kad
+račun u sat vremena dobije 50 pokušaja.
+
+**Zašto.** Dok je i on odbijao, dvije IP adrese bile su dovoljne da se
+tuđi račun drži zaključanim. Svaka granica po računu je po svojoj prirodi
+i način da se račun zaključa, a zaključavanje vlasnika procijenjeno je kao
+veći stvarni rizik za ovu stranicu.
+
+**Što to košta.** Raspršeno pogađanje jednog računa nema gornju među:
+svaka nova adresa donosi 32 pokušaja na sat. Zapis pomaže samo ako ga
+netko čita. Detalji i brojke stoje uz `prijavaRacun` u
+`lib/rate-limit-rules.ts`.
+
+**Što bi promijenilo odluku.** Znak da netko stvarno pogađa (upozorenja u
+logu), ili podaci na stranici koji vrijede više od klupske ljestvice. Tada
+se blokada vraća, ali uz kolačić poznatog uređaja, da napadač ne može
+zaključati vlasnika na njegovim strojevima.
+
+## vite među razvojnim ovisnostima
+
+Projekt je Next.js i vite sam ne koristi. U `devDependencies` stoji samo
+zato što ga vitest od verzije 5 traži kao peer ovisnost, umjesto da ga
+donosi sam. Bez izravnog navoda npm install odbija razriješiti stablo jer
+stari vite iz lockfilea ne odgovara.
+
+Iz istog razloga je `@types/node` na ^24 (vitest 5 traži ^22 ili ≥24), a
+Node u workflowima na 24.
+
+**Kad se može maknuti.** Ako vitest ikad ode iz projekta, vite ide s njim.
+Pri nadogradnji vitesta treba provjeriti njegov peer raspon za vite
+(`npm view vitest@<verzija> peerDependencies`) i podići vite zajedno s njim.
