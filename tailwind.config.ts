@@ -6,17 +6,18 @@ import { BOJE } from "./lib/design-tokens";
  *
  * Boje stoje u lib/design-tokens.ts da ih može čitati i kod koji ne ide
  * kroz Tailwind (SVG atributi u grafu rejtinga).
+ *
+ * Najmanja veličina teksta je text-xs (12 px) — ispod toga se uz uppercase,
+ * tracking i text-ink/60 na mobitelu teško čita. Pravilo ne stoji ovdje kao
+ * dogovor nego ga provodi ESLint (no-restricted-syntax u .eslintrc.json),
+ * koji odbija text-[10px] i slične zapise. U SVG-u (fontSize atribut) lint
+ * ne može pomoći, pa tamo vrijedi pažnja.
  */
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: BOJE,
-      /**
-       * Najmanja veličina teksta na stranici je text-xs (12 px). Ispod toga
-       * se u kombinaciji s uppercase, tracking i text-ink/60 na mobitelu
-       * teško čita, pa se text-[10px] i text-[11px] ne koriste.
-       */
       fontFamily: {
         display: ["var(--font-display)", "sans-serif"],
         // Serif, samo za naslov na naslovnici.
