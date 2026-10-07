@@ -8,7 +8,14 @@ import { buildCalendar, type CalendarEvent } from "@/lib/ical";
  * kalendar je poslije sam provjerava. Promijeni li se datum turnira, za koji
  * sat je promijenjen i kod svih pretplaćenih, bez ikakve njihove radnje.
  */
-export const dynamic = "force-dynamic";
+/**
+ * Kalendarske aplikacije provjeravaju pretplatu često i same, bez ičije
+ * radnje, pa bi force-dynamic značio upit u bazu na svaki njihov dolazak.
+ * Pet minuta nitko ne primijeti — datumi turnira se ne mijenjaju u minuti —
+ * a broj upita padne na jedan po prozoru bez obzira koliko ih je
+ * pretplaćeno.
+ */
+export const revalidate = 300;
 
 const TEMPO: Record<string, string> = {
   STANDARD: "standardni tempo",
