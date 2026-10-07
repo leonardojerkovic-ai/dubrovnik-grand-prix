@@ -67,6 +67,9 @@ export async function registerPlayer(
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
+    // Ovdje se NAMJERNO kaže da račun postoji, dok reset lozinke jednako
+    // namjerno šuti. Obrazloženje te nedosljednosti i uvjeti pod kojima je
+    // treba promijeniti stoje u docs/odluke.md.
     return { errors: { email: ["Račun s ovim emailom već postoji."] } };
   }
 

@@ -52,7 +52,7 @@ app/                        — javne stranice + admin panel (App Router)
   api/auth/[...nextauth]/     — auth endpoint
 components/                 — dijeljene UI komponente
 docs/                       — dizajn sustav, lint, rejtinzi, sigurnosna kopija,
-                              nadogradnja Nexta
+                              nadogradnja Nexta, svjesne odluke
 .github/workflows/          — provjere, sigurnosna kopija, uvoz rejtinga
 ```
 
