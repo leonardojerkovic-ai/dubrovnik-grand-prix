@@ -95,6 +95,19 @@ export default async function HomePage() {
   const akademijaSeason = activeSeasons.find((s) => s.system === "AKADEMIJA");
   const primaryLjestvicaHref = gpSeason ? "/ljestvice/opci-gp" : "/ljestvice/akademija";
 
+  /*
+    Podnaslov navodi samo sustave koji stvarno imaju aktivnu sezonu — kao i
+    bedževi ispod njega. Dok je tekst bio nepromjenjiv, obećavao je poredak
+    Akademije i kad Akademija nije igrala, a ispod toga nije bilo ni bedža ni
+    pregleda poretka. Kad nijedan sustav nije aktivan, opisuje cijeli sustav.
+  */
+  const podnaslov =
+    gpSeason && !akademijaSeason
+      ? "Pratite poredak Općeg GP-a i kategorijskih ljestvica ŠK Dubrovnik kroz cijelu natjecateljsku sezonu."
+      : akademijaSeason && !gpSeason
+        ? "Pratite poredak GP-a Akademije ŠK Dubrovnik kroz cijelu natjecateljsku sezonu."
+        : "Pratite poredak Općeg GP-a, kategorijskih ljestvica i GP-a Akademije ŠK Dubrovnik kroz cijelu natjecateljsku sezonu.";
+
   // Vrh obiju ljestvica. Dohvaća se usporedno jer su to dva neovisna upita.
   // Obje funkcije vraćaju null ako sezona nema ljestvicu, pa se odmah svodi
   // na prazan niz — naslovnica u tom slučaju samo ne prikazuje tu karticu.
@@ -178,10 +191,7 @@ export default async function HomePage() {
             GP-a, pa se u podnaslovu navodi posebno — u bedževima iznad i u
             pregledu poretka ispod stoji jednako istaknuto.
           */}
-          <p className="mt-5 max-w-xl text-sky-light">
-            Pratite poredak Općeg GP-a, kategorijskih ljestvica i GP-a
-            Akademije ŠK Dubrovnik kroz cijelu natjecateljsku sezonu.
-          </p>
+          <p className="mt-5 max-w-xl text-sky-light">{podnaslov}</p>
           <div className="mt-8 flex gap-3">
             <Link
               href={primaryLjestvicaHref}
