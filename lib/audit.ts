@@ -2,12 +2,16 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import type { AdminRole } from "@/lib/require-admin";
 
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "RECALCULATE";
+/** WARNING je sigurnosno upozorenje koje upisuje sama aplikacija. */
+export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "RECALCULATE" | "WARNING";
 
 export interface AuditActor {
   email: string;
-  role: AdminRole;
+  role: AdminRole | "SUSTAV";
 }
+
+/** Upisivač za zapise koje ne radi čovjek nego aplikacija sama. */
+export const SUSTAV: AuditActor = { email: "sustav", role: "SUSTAV" };
 
 interface LogAuditInput {
   actor: AuditActor;

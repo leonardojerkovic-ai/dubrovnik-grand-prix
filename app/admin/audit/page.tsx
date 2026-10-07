@@ -1,3 +1,4 @@
+import { AUDIT_SADRZAJ_MJESECI, AUDIT_TRAG_GODINA, sadrzajIstekao } from "@/lib/audit-rokovi";
 import { prisma } from "@/lib/prisma";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -5,6 +6,7 @@ const ACTION_LABELS: Record<string, string> = {
   UPDATE: "Izmijenjeno",
   DELETE: "Obrisano",
   RECALCULATE: "Preračunato",
+  WARNING: "Upozorenje",
 };
 
 const ACTION_STYLES: Record<string, string> = {
@@ -12,6 +14,7 @@ const ACTION_STYLES: Record<string, string> = {
   UPDATE: "bg-gold/20 text-navy",
   DELETE: "bg-crimson/10 text-crimson",
   RECALCULATE: "bg-navy/10 text-navy",
+  WARNING: "bg-crimson/10 text-crimson",
 };
 
 const PAGE_SIZE = 100;
@@ -57,8 +60,11 @@ export default async function AdminAuditPage(props: {
         Trag izmjena
       </h2>
       <p className="mb-4 text-sm text-muted">
-        Zapis o svakoj izmjeni u adminu. Služi za razrješavanje prigovora na
-        izračun (čl. 29). Zapisi se ne mogu mijenjati ni brisati.
+        Zapis o svakoj izmjeni u adminu i sigurnosna upozorenja. Služi za
+        razrješavanje prigovora na izračun (čl. 29). Zapisi se ne mogu
+        mijenjati ni brisati iz aplikacije. Sadržaj izmjene čuva se{" "}
+        {AUDIT_SADRZAJ_MJESECI} mjeseci, a sam zapis {AUDIT_TRAG_GODINA}{" "}
+        godine.
       </p>
 
       <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
@@ -146,7 +152,7 @@ export default async function AdminAuditPage(props: {
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-ink">{e.summary}</span>
-                    {(e.before || e.after) && (
+                    {e.before || e.after ? (
                       <details className="mt-1">
                         <summary className="cursor-pointer text-xs text-muted hover:text-navy">
                           Detalji
@@ -155,6 +161,14 @@ export default async function AdminAuditPage(props: {
                           {JSON.stringify({ prije: e.before, poslije: e.after }, null, 2)}
                         </pre>
                       </details>
+                    ) : (
+                      // Kad je sadržaj ispražnjen, neka to piše, da se
+                      // izostanak detalja ne pročita kao greška.
+                      sadrzajIstekao(e.at) && (
+                        <span className="mt-1 block text-xs text-muted">
+                          Sadržaj izmjene čuva se {AUDIT_SADRZAJ_MJESECI} mjeseci.
+                        </span>
+                      )
                     )}
                   </td>
                 </tr>

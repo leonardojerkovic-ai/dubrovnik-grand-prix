@@ -566,7 +566,7 @@ export default function PrivatnostPage() {
             <li>sigurnosti sustava,</li>
             <li>zaštite prava Kluba,</li>
             <li>rješavanja sporova,</li>
-            <li>dokazivanja izvršenih radnji,</li>
+            <li>dokazivanja izvršenih radnji (vidi točku 12.5.),</li>
             <li>očuvanja vjerodostojnosti sportskih rezultata.</li>
           </ul>
 
@@ -600,6 +600,28 @@ export default function PrivatnostPage() {
           <p>
             Nakon isteka razdoblja čuvanja podaci će se, kada je moguće,
             izbrisati ili anonimizirati.
+          </p>
+
+          <h3 className="font-display font-bold text-navy">12.5. Trag izmjena i sigurnosna upozorenja</h3>
+          <p>
+            Platforma bilježi svaku izmjenu koju u administraciji izvrši
+            ovlaštena osoba: tko ju je izvršio (adresa e-pošte i uloga),
+            kada, što je promijenjeno i, gdje je to primjenjivo, sadržaj
+            podataka prije i poslije izmjene. Taj sadržaj može uključivati
+            podatke o igraču. U isti trag upisuju se i sigurnosna upozorenja
+            iz točke 3.5., primjerice kad na jedan korisnički račun stigne
+            neuobičajeno mnogo pokušaja prijave; takvo upozorenje sadrži
+            adresu e-pošte tog računa.
+          </p>
+          <p>
+            Trag služi razrješavanju prigovora na rezultate i izračune te
+            otkrivanju neovlaštenog pristupa. Zato se ne briše zajedno s
+            korisničkim računom ili zapisom igrača na koji se odnosi.
+          </p>
+          <p>
+            Sadržaj podataka prije i poslije izmjene briše se automatski
+            nakon šest mjeseci. Ostatak zapisa — tko, kada, što i kratak
+            opis — briše se automatski nakon dvije godine.
           </p>
         </section>
 

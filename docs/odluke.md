@@ -41,8 +41,12 @@ provuče cijeli popis adresa.
 ## Prijava se ne zaključava po računu
 
 Pokušaji prijave broje se po tri ključa: par adresa + IP, stroj, i račun.
-Prva dva odbijaju; brojač po računu samo upisuje upozorenje u log kad
-račun u sat vremena dobije 50 pokušaja.
+Prva dva odbijaju; brojač po računu samo upisuje upozorenje u trag
+izmjena (`/admin/audit`) kad račun u sat vremena dobije 50 pokušaja.
+
+Upozorenje ide u `audit_log`, a ne u log platforme, jer tamo traje koliko
+kaže izjava o privatnosti (12.5). Rok čuvanja Vercelova loga određuje
+Vercel i mijenja se s planom, pa ga izjava ne bi mogla točno navesti.
 
 **Zašto.** Dok je i on odbijao, dvije IP adrese bile su dovoljne da se
 tuđi račun drži zaključanim. Svaka granica po računu je po svojoj prirodi
@@ -50,8 +54,8 @@ i način da se račun zaključa, a zaključavanje vlasnika procijenjeno je kao
 veći stvarni rizik za ovu stranicu.
 
 **Što to košta.** Raspršeno pogađanje jednog računa nema gornju među:
-svaka nova adresa donosi 32 pokušaja na sat. Zapis pomaže samo ako ga
-netko čita. Detalji i brojke stoje uz `prijavaRacun` u
+svaka nova adresa donosi 32 pokušaja na sat. Upozorenje pomaže samo ako
+ga netko pogleda. Detalji i brojke stoje uz `prijavaRacun` u
 `lib/rate-limit-rules.ts`.
 
 **Što bi promijenilo odluku.** Znak da netko stvarno pogađa (upozorenja u

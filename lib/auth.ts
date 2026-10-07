@@ -1,3 +1,4 @@
+import { logAudit, SUSTAV } from "@/lib/audit";
 import { normalizeEmail } from "@/lib/email-address";
 import { checkRateLimit } from "@/lib/rate-limit";
 import {
@@ -115,14 +116,22 @@ export const authOptions: AuthOptions = {
         // Svjesna odluka: brojač po računu ne zaključava, samo javlja. Zašto
         // i što to košta piše uz prijavaRacun u rate-limit-rules.ts.
         // Zapisuje se trenutak prelaska praga, a ne svaki pokušaj iznad
-        // njega, da raspršeni napad ne zatrpa log.
+        // njega, da raspršeni napad ne zatrpa trag.
+        //
+        // Upozorenje ide u audit_log, a ne u log platforme: tamo se vidi u
+        // /admin/audit i traje koliko kaže izjava o privatnosti (12.5), a
+        // ne koliko odluči pružatelj hostinga.
         const poRacunu = await checkRateLimit("prijavaRacun", email);
         if (poRacunu.allowed && poRacunu.remaining === 0) {
-          console.warn(
-            `[prijava] račun ${email} je u zadnjih sat vremena dobio ` +
+          await logAudit({
+            actor: SUSTAV,
+            action: "WARNING",
+            entity: "Prijava",
+            summary:
+              `Račun ${email} je u zadnjih sat vremena dobio ` +
               `${RATE_LIMITS.prijavaRacun.limit} pokušaja prijave s više IP ` +
               "adresa — moguće raspršeno pogađanje lozinke. Prijava se ne blokira.",
-          );
+          });
         }
 
         // Bez poznatog IP-a se ovaj brojač preskače. Da se umjesto adrese

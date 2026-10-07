@@ -42,7 +42,8 @@ export const RATE_LIMITS = {
    * nov.
    *
    * OVO JE PRAG ZA ZAPIS, NE GRANICA. Prijava se ne odbija kad se dosegne,
-   * nego se u log upiše upozorenje (lib/auth.ts).
+   * nego se u trag izmjena (audit_log, /admin/audit) upiše upozorenje
+   * (lib/auth.ts).
    *
    * Zašto ne blokira: dok je blokirao, par je dopuštao 32 pokušaja na sat s
    * jednog stroja, pa su DVIJE adrese bile dovoljne da se tuđi račun drži
@@ -53,7 +54,7 @@ export const RATE_LIMITS = {
    * Što to košta, bez uljepšavanja: raspršeno pogađanje jednog računa sada
    * nema gornju među. Svaka nova adresa donosi još 32 pokušaja na sat; sto
    * adresa je oko 3 200 na sat. Lozinka od 8 znakova s popisa čestih pada
-   * brzo. Zapis pomaže samo ako ga netko čita.
+   * brzo. Upozorenje pomaže samo ako ga netko pogleda.
    *
    * Prag 50 je ostao jer ga vlasnik s jednog stroja ne može dosegnuti (par
    * ga zaustavi na 32), pa prelazak znači da pokušaji stižu s barem dvije

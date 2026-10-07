@@ -11,7 +11,8 @@ name: Održavanje projekta budnim
 # obrisati jer na stranici dugo nitko nije ništa pokušao. Izjava o
 # privatnosti (12.3) obećaje da se brišu najkasnije u roku od četiri dana;
 # */3 po danu u mjesecu daje najviše tri dana razmaka (28. -> 1.), pa ta
-# tvrdnja ima dan zalihe i u veljači.
+# tvrdnja ima dan zalihe i u veljači. Isto tako prazni i briše stari trag
+# izmjena (audit_log) po rokovima iz točke 12.5.
 on:
   schedule:
     - cron: "30 4 */3 * *"
@@ -43,10 +44,20 @@ jobs:
           # lib/rate-limit-rules.ts. Manje bi brisalo retke koje brojač po
           # računu još broji; više bi kršilo izjavu o privatnosti.
           #
+          # Trag izmjena (audit_log) ima dva roka, izjava o privatnosti 12.5:
+          # sadržaj izmjene (before/after) šest mjeseci, ostatak retka dvije
+          # godine. Iste vrijednosti stoje u lib/audit-rokovi.ts.
+          #
           # count iza brisanja ostaje kao dokaz da baza odgovara na upit.
           docker run --rm -i -e PGURL postgres:17 \
             sh -c 'psql "$PGURL" -At -v ON_ERROR_STOP=1' <<'SQL'
           delete from public.rate_limit_hits
             where "createdAt" < now() - interval '1 hour';
+          update public.audit_log
+            set before = null, after = null
+            where at < now() - interval '6 months'
+              and (before is not null or after is not null);
+          delete from public.audit_log
+            where at < now() - interval '2 years';
           select count(*) from public.players;
           SQL

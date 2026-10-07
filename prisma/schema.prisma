@@ -563,6 +563,12 @@ model GuardianLink {
 /// Čl. 29 daje igraču pravo prigovora na izračun u roku od 7 dana. Bez
 /// zapisa tko je, kada i što promijenio, prigovor se svodi na sjećanje.
 /// Zapisi se samo dodaju — nikad se ne mijenjaju ni brišu iz aplikacije.
+/// Rokove čuvanja provodi keep-alive.yml izvan aplikacije: before/after se
+/// prazne nakon šest mjeseci, redak se briše nakon dvije godine (izjava o
+/// privatnosti 12.5, lib/audit-rokovi.ts).
+///
+/// Osim izmjena u adminu tu stoje i sigurnosna upozorenja koja upisuje
+/// sama aplikacija (action WARNING, actorEmail "sustav").
 model AuditLog {
   id String @id @default(cuid())
   at DateTime @default(now())
@@ -572,7 +578,7 @@ model AuditLog {
   actorEmail String
   actorRole  String
 
-  action   String  // CREATE | UPDATE | DELETE | RECALCULATE
+  action   String // CREATE | UPDATE | DELETE | RECALCULATE | WARNING
   entity   String  // Player, Tournament, Season, TournamentResult, ...
   entityId String?
 
