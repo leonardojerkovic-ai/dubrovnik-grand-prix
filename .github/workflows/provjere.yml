@@ -1,0 +1,45 @@
+name: Provjere
+
+# Tipovi, lint i testovi na svaki push i svaki PR.
+#
+# Dosad ih je pokretao samo čovjek, na svom računalu, prije pusha. Vercelov
+# build pokriva typecheck i lint (oboje su namjerno uključeni u
+# next.config.mjs), ali vitest nije pokretao nitko osim ruke — a u testovima
+# je bodovni sustav, dakle onaj dio koji odlučuje tko je prvi na ljestvici.
+#
+# Baza ovdje ne treba: `prisma generate` samo stvara klijenta iz sheme, a
+# nijedan test ne dira Prismu (čista logika je zato i izdvojena u module bez
+# Prisme). Zato nema ni DATABASE_URL tajne.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  provjere:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # Bez generiranog klijenta tsc ne zna tipove modela i javi stotine
+      # grešaka koje s kodom nemaju veze.
+      - run: npx prisma generate
+
+      - name: Tipovi
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Testovi
+        run: npm test
