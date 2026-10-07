@@ -19,6 +19,40 @@ import { prisma } from "./prisma";
 const ROLE_REFRESH_MS = 60_000;
 
 /**
+ * IP s kojeg stiže pokušaj prijave, ili null ako se nije mogao pročitati.
+ *
+ * Prvo iz zaglavlja koja NextAuth sam predaje u authorize — to je izravan
+ * put i ne ovisi o tome izvršava li se kod unutar Nextovog zahtjeva. Ako ih
+ * nema, pokušava se next/headers. Kad ni to ne uspije, vraća se null:
+ * prijava se nastavlja, ali bez ograničenja po stroju.
+ *
+ * Zapisuje se samo u produkciji. Lokalno `next dev` ne dobiva ni
+ * x-forwarded-for ni x-real-ip — preglednik ih ne šalje, a pred njim nema
+ * posrednika — pa bi svaka prijava u razvoju ispisala grešku i naučila nas
+ * da je preskačemo. U produkciji iza Vercela je izostanak tih zaglavlja
+ * stvarno neobičan i treba se vidjeti.
+ */
+async function adresaPrijave(req: unknown): Promise<string | null> {
+  const zaglavlja = (
+    req as { headers?: Record<string, string | string[] | undefined> } | undefined
+  )?.headers;
+
+  const izAuth = adresaIzZaglavlja(zaglavlja);
+  if (izAuth !== null) return izAuth;
+
+  const izZahtjeva = await requestIp();
+  if (izZahtjeva !== ADRESA_NEPOZNATA) return izZahtjeva;
+
+  if (process.env.NODE_ENV === "production") {
+    console.error(
+      "[prijava] IP se nije mogao pročitati ni iz authorize ni iz next/headers; " +
+        "ograničenje po stroju se preskače za ovaj pokušaj.",
+    );
+  }
+  return null;
+}
+
+/**
  * Prijava ide isključivo emailom i lozinkom.
  *
  * Google prijava je uklonjena jer je bila nedovršena i, što je važnije,
@@ -32,33 +66,6 @@ const ROLE_REFRESH_MS = 60_000;
  * Credentials provider ne radi ništa, a tražio bi tablice Account,
  * Session i VerificationToken kojih u shemi nema.
  */
-/**
- * IP s kojeg stiže pokušaj prijave, ili null ako se nije mogao pročitati.
- *
- * Prvo iz zaglavlja koja NextAuth sam predaje u authorize — to je izravan
- * put i ne ovisi o tome izvršava li se kod unutar Nextovog zahtjeva. Ako ih
- * nema, pokušava se next/headers. Kad ni to ne uspije, vraća se null i to
- * se zapisuje: prijava se nastavlja, ali bez ograničenja po stroju, i u
- * logu stoji zašto.
- */
-async function adresaPrijave(req: unknown): Promise<string | null> {
-  const zaglavlja = (
-    req as { headers?: Record<string, string | string[] | undefined> } | undefined
-  )?.headers;
-
-  const izAuth = adresaIzZaglavlja(zaglavlja);
-  if (izAuth !== null) return izAuth;
-
-  const izZahtjeva = await requestIp();
-  if (izZahtjeva !== ADRESA_NEPOZNATA) return izZahtjeva;
-
-  console.error(
-    "[prijava] IP se nije mogao pročitati ni iz authorize ni iz next/headers; " +
-      "ograničenje po stroju se preskače za ovaj pokušaj.",
-  );
-  return null;
-}
-
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
   pages: {

@@ -19,9 +19,11 @@ export async function requestIp(): Promise<string> {
   } catch (e) {
     // Tiho vraćanje zajedničke oznake značilo bi da svi neprepoznati dijele
     // jedan brojač, a da se to nigdje ne vidi. Pozivatelj odlučuje što će s
-    // tim (prijava preskače ograničenje po stroju), ali u logu mora ostati
-    // trag.
-    console.error("[request-ip] zaglavlja se nisu mogla pročitati:", e);
+    // tim (prijava preskače ograničenje po stroju), ali u produkciji mora
+    // ostati trag. Lokalno se preskače — vidi adresaPrijave u lib/auth.ts.
+    if (process.env.NODE_ENV === "production") {
+      console.error("[request-ip] zaglavlja se nisu mogla pročitati:", e);
+    }
     return ADRESA_NEPOZNATA;
   }
 }

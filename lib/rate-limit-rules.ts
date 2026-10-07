@@ -41,10 +41,17 @@ export const RATE_LIMITS = {
    * ne vidi jer je svaki par nov, a ni brojač po stroju jer je svaki stroj
    * nov — ostaje ova gornja granica.
    *
-   * Namjerno je visoka i u duljem prozoru. Niža bi vratila upravo onu rupu
-   * zbog koje je par i uveden: tko zna tuđu adresu mogao bi je napuniti i
-   * zaključati vlasnika. Pedeset pokušaja na sat sa svaki put drugog stroja
-   * nije nešto što netko radi slučajno, a jest nešto što košta.
+   * Koliko ovo stvarno košta napadača, bez uljepšavanja: par dopušta 8
+   * pokušaja na 15 minuta, dakle 32 na sat s jednog stroja na isti račun.
+   * Pedeset na sat se zato dostiže s DVIJE adrese. Zaključavanje tuđeg
+   * računa time nije nestalo — samo je postalo dvostruko skuplje nego kad
+   * je bila dovoljna jedna adresa.
+   *
+   * Ovo je svjesno prihvaćena ravnoteža, ne previd. Svaka granica po računu
+   * je po svojoj prirodi i način da se račun zaključa; jedini način da
+   * zaključavanja uopće nema jest da granice po računu nema, a tada
+   * raspršeno pogađanje nema nikakvu gornju među. Za usporedbu, granica od
+   * 200 na sat tražila bi 7 adresa, 500 njih 16.
    */
   prijavaRacun: { limit: 50, windowMs: HOUR },
   /** Svaki zahtjev troši jedan e-mail iz Resendove kvote. */

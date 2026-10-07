@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  ADRESA_NEPOZNATA,
   RATE_LIMITS,
   adresaIzZaglavlja,
   izvuciAdresu,
@@ -113,12 +112,6 @@ describe("adresaIzZaglavlja", () => {
     expect(adresaIzZaglavlja({})).toBeNull();
     expect(adresaIzZaglavlja({ "x-forwarded-for": "  " })).toBeNull();
     expect(adresaIzZaglavlja({ "x-forwarded-for": [] })).toBeNull();
-  });
-
-  it("null znači 'nemam adresu', ne zajednička oznaka", () => {
-    // Zajednička oznaka bi sve neprepoznate strpala u jedan brojač; null
-    // govori pozivatelju da ograničenje po stroju jednostavno preskoči.
-    expect(adresaIzZaglavlja({})).not.toBe(ADRESA_NEPOZNATA);
   });
 });
 
