@@ -134,11 +134,19 @@ export function RatingChart({
                 r={3.5}
                 fill={s.color}
               />
+              {/*
+                Brojka je navy, ne u boji svoje serije: sky na bijelom daje
+                2,4:1, a gold 2,04:1, oboje ispod 4,5:1 koliko WCAG traži za
+                tekst. Boju i dalje nosi krivulja i točka na njezinu kraju,
+                uz koju brojka stoji, pa se i bez boje zna čija je — a ista
+                je vrijednost ispisana i u legendi iznad grafa.
+              */}
               <text
                 x={x(last.date.getTime()) + 7}
                 y={y(last.value) + 4}
                 fontSize="12"
-                fill={s.color}
+                fill={BOJE.navy.DEFAULT}
+                fontWeight="600"
               >
                 {last.value}
               </text>
