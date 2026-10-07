@@ -71,7 +71,7 @@ export default async function ArchivedStandingsPage(props: {
   });
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
+    <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="mb-6 flex items-center gap-4">
         {config.system === "AKADEMIJA" && (
           <Image

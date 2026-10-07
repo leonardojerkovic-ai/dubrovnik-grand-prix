@@ -196,7 +196,7 @@ export default async function TournamentDetailPage(props: {
   const timeControl = formatTimeControl(tournament.baseMinutes, tournament.incrementSeconds);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12">
+    <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="mb-2">
         <span
           className={`badge-title ${tournament.season.system === "AKADEMIJA" ? "bg-academy/15 text-academy" : ""}`}

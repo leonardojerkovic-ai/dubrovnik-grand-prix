@@ -107,7 +107,7 @@ export default async function KalendarPage(props: {
   today.setHours(0, 0, 0, 0);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
+    <div className="mx-auto max-w-6xl px-4 py-12">
       <h1 className="font-display text-2xl font-bold text-navy mb-2">
         Kalendar
       </h1>

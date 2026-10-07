@@ -45,7 +45,7 @@ export default async function StandingsPage(props: {
 
   if (!activeSeason) {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-12">
+      <div className="mx-auto max-w-6xl px-4 py-12">
         <h1 className="font-display text-2xl font-bold text-navy mb-4">
           {config.title}
         </h1>
@@ -63,7 +63,7 @@ export default async function StandingsPage(props: {
       : await getAkademijaStandings(activeSeason.id);
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12">
+    <div className="mx-auto max-w-6xl px-4 py-12">
       <div className="mb-6 flex items-center gap-4">
         {config.system === "AKADEMIJA" && (
           <Image

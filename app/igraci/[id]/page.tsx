@@ -54,7 +54,7 @@ export default async function PlayerProfilePage(props: {
   ]);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <header className="mb-6 rounded-lg bg-navy p-5">
         <div className="flex items-baseline gap-2">
           {player.title !== "NONE" && (
@@ -96,7 +96,13 @@ export default async function PlayerProfilePage(props: {
         <Rating label="Blitz" value={player.current.blitz} />
       </div>
 
-      <div className="mb-8">
+      {/*
+        Graf je SVG s viewBoxom 640×200 i rastezao bi se na punu širinu
+        stranice, pa bi na širokom zaslonu bio visok preko 350 px. Omeđen je
+        vlastitom širinom — to je unutarnje ograničenje, kao max-w-prose za
+        tekst, i ne dira pravilo o dvjema širinama stranice.
+      */}
+      <div className="mb-8 max-w-3xl">
         <h2 className="mb-2 text-sm font-semibold text-navy">
           Kretanje rejtinga
         </h2>
