@@ -39,19 +39,27 @@ export const RATE_LIMITS = {
   /**
    * Jedan račun napadan s mnogo različitih IP adresa. Par adresa + IP toga
    * ne vidi jer je svaki par nov, a ni brojač po stroju jer je svaki stroj
-   * nov — ostaje ova gornja granica.
+   * nov.
    *
-   * Koliko ovo stvarno košta napadača, bez uljepšavanja: par dopušta 8
-   * pokušaja na 15 minuta, dakle 32 na sat s jednog stroja na isti račun.
-   * Pedeset na sat se zato dostiže s DVIJE adrese. Zaključavanje tuđeg
-   * računa time nije nestalo — samo je postalo dvostruko skuplje nego kad
-   * je bila dovoljna jedna adresa.
+   * OVO JE PRAG ZA ZAPIS, NE GRANICA. Prijava se ne odbija kad se dosegne,
+   * nego se u log upiše upozorenje (lib/auth.ts).
    *
-   * Ovo je svjesno prihvaćena ravnoteža, ne previd. Svaka granica po računu
-   * je po svojoj prirodi i način da se račun zaključa; jedini način da
-   * zaključavanja uopće nema jest da granice po računu nema, a tada
-   * raspršeno pogađanje nema nikakvu gornju među. Za usporedbu, granica od
-   * 200 na sat tražila bi 7 adresa, 500 njih 16.
+   * Zašto ne blokira: dok je blokirao, par je dopuštao 32 pokušaja na sat s
+   * jednog stroja, pa su DVIJE adrese bile dovoljne da se tuđi račun drži
+   * zaključanim. Svaka granica po računu je po svojoj prirodi i način da se
+   * račun zaključa. Odlučeno je da je zaključavanje vlasnika veći stvarni
+   * rizik za ovu stranicu nego raspršeno pogađanje.
+   *
+   * Što to košta, bez uljepšavanja: raspršeno pogađanje jednog računa sada
+   * nema gornju među. Svaka nova adresa donosi još 32 pokušaja na sat; sto
+   * adresa je oko 3 200 na sat. Lozinka od 8 znakova s popisa čestih pada
+   * brzo. Zapis pomaže samo ako ga netko čita.
+   *
+   * Prag 50 je ostao jer ga vlasnik s jednog stroja ne može dosegnuti (par
+   * ga zaustavi na 32), pa prelazak znači da pokušaji stižu s barem dvije
+   * adrese. Ako se blokada ikad vrati, pravo rješenje je kolačić poznatog
+   * uređaja: pokušaji s njim ne idu kroz ovaj brojač, pa napadač ne može
+   * zaključati vlasnika na njegovim strojevima.
    */
   prijavaRacun: { limit: 50, windowMs: HOUR },
   /** Svaki zahtjev troši jedan e-mail iz Resendove kvote. */

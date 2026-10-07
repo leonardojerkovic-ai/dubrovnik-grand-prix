@@ -4,6 +4,7 @@ import {
   ADRESA_NEPOZNATA,
   adresaIzZaglavlja,
   kljucPrijave,
+  RATE_LIMITS,
 } from "@/lib/rate-limit-rules";
 import { requestIp } from "@/lib/request-ip";
 import bcrypt from "bcryptjs";
@@ -84,14 +85,15 @@ export const authOptions: AuthOptions = {
         const email = normalizeEmail(credentials.email);
 
         /*
-          Tri ograničenja, jer nijedno ne pokriva sva tri napada:
+          Tri brojača, jer nijedan ne vidi sva tri napada:
 
             par adresa + IP   8 / 15 min   pogađanje jednog računa s jednog
                                            stroja; dok se brojalo samo po
                                            adresi, tko zna tuđu adresu mogao
                                            ju je zaključati
             račun             50 / sat     isti račun s mnogo IP adresa, što
-                                           par ne vidi jer je svaki par nov
+                                           par ne vidi jer je svaki par nov;
+                                           SAMO ZAPISUJE, ne odbija
             stroj             30 / 15 min  mnogo računa s jednog stroja, što
                                            par ne vidi jer svaka adresa ima
                                            svoju kvotu
@@ -110,8 +112,18 @@ export const authOptions: AuthOptions = {
         const poParu = await checkRateLimit("prijava", kljucPrijave(email, ip ?? ADRESA_NEPOZNATA));
         if (!poParu.allowed) return null;
 
+        // Svjesna odluka: brojač po računu ne zaključava, samo javlja. Zašto
+        // i što to košta piše uz prijavaRacun u rate-limit-rules.ts.
+        // Zapisuje se trenutak prelaska praga, a ne svaki pokušaj iznad
+        // njega, da raspršeni napad ne zatrpa log.
         const poRacunu = await checkRateLimit("prijavaRacun", email);
-        if (!poRacunu.allowed) return null;
+        if (poRacunu.allowed && poRacunu.remaining === 0) {
+          console.warn(
+            `[prijava] račun ${email} je u zadnjih sat vremena dobio ` +
+              `${RATE_LIMITS.prijavaRacun.limit} pokušaja prijave s više IP ` +
+              "adresa — moguće raspršeno pogađanje lozinke. Prijava se ne blokira.",
+          );
+        }
 
         // Bez poznatog IP-a se ovaj brojač preskače. Da se umjesto adrese
         // upisivala zajednička oznaka, svi neprepoznati dijelili bi jedan

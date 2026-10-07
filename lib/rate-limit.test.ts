@@ -130,11 +130,15 @@ describe("granice", () => {
   });
 
   /*
-    Ovo je granica koja se najlakše slučajno pokvari. Ako bi se po računu
-    dopuštalo manje nego po paru, par bi postao nevidljiv i vratila bi se
-    rupa zbog koje je uveden: tko zna tuđu adresu mogao bi je zaključati.
+    Brojač po računu samo zapisuje, a prag mu mora biti iznad onoga što
+    vlasnik može nakupiti s jednog stroja. Inače bi upozorenje skakalo i na
+    običnog člana koji je zaboravio lozinku, i log bi nas naučio da ga
+    preskačemo.
   */
-  it("po računu se dopušta barem onoliko koliko po jednom paru", () => {
-    expect(RATE_LIMITS.prijavaRacun.limit).toBeGreaterThanOrEqual(RATE_LIMITS.prijava.limit);
+  it("prag po računu je iznad onoga što jedan par stigne u njegovu prozoru", () => {
+    const poParuUProzoru =
+      RATE_LIMITS.prijava.limit *
+      (RATE_LIMITS.prijavaRacun.windowMs / RATE_LIMITS.prijava.windowMs);
+    expect(RATE_LIMITS.prijavaRacun.limit).toBeGreaterThan(poParuUProzoru);
   });
 });
