@@ -72,7 +72,12 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
                       <span className="ml-1 text-xs text-ink/75" aria-hidden>
                         =
                       </span>
-                      <span className="sr-only">dijeljeno mjesto</span>
+                      {/*
+                        Zarez i razmak nisu kozmetika: bez njih bi čitač
+                        zaslona mogao spojiti broj iz bedža i ovaj tekst u
+                        "3dijeljeno mjesto".
+                      */}
+                      <span className="sr-only">, dijeljeno mjesto</span>
                     </>
                   )}
                 </td>
