@@ -1,6 +1,10 @@
 import { normalizeEmail } from "@/lib/email-address";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { kljucPrijave } from "@/lib/rate-limit-rules";
+import {
+  ADRESA_NEPOZNATA,
+  adresaIzZaglavlja,
+  kljucPrijave,
+} from "@/lib/rate-limit-rules";
 import { requestIp } from "@/lib/request-ip";
 import bcrypt from "bcryptjs";
 import type { AuthOptions } from "next-auth";
@@ -28,6 +32,33 @@ const ROLE_REFRESH_MS = 60_000;
  * Credentials provider ne radi ništa, a tražio bi tablice Account,
  * Session i VerificationToken kojih u shemi nema.
  */
+/**
+ * IP s kojeg stiže pokušaj prijave, ili null ako se nije mogao pročitati.
+ *
+ * Prvo iz zaglavlja koja NextAuth sam predaje u authorize — to je izravan
+ * put i ne ovisi o tome izvršava li se kod unutar Nextovog zahtjeva. Ako ih
+ * nema, pokušava se next/headers. Kad ni to ne uspije, vraća se null i to
+ * se zapisuje: prijava se nastavlja, ali bez ograničenja po stroju, i u
+ * logu stoji zašto.
+ */
+async function adresaPrijave(req: unknown): Promise<string | null> {
+  const zaglavlja = (
+    req as { headers?: Record<string, string | string[] | undefined> } | undefined
+  )?.headers;
+
+  const izAuth = adresaIzZaglavlja(zaglavlja);
+  if (izAuth !== null) return izAuth;
+
+  const izZahtjeva = await requestIp();
+  if (izZahtjeva !== ADRESA_NEPOZNATA) return izZahtjeva;
+
+  console.error(
+    "[prijava] IP se nije mogao pročitati ni iz authorize ni iz next/headers; " +
+      "ograničenje po stroju se preskače za ovaj pokušaj.",
+  );
+  return null;
+}
+
 export const authOptions: AuthOptions = {
   session: { strategy: "jwt" },
   pages: {
@@ -40,30 +71,49 @@ export const authOptions: AuthOptions = {
         email: { label: "Email", type: "email" },
         password: { label: "Lozinka", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = normalizeEmail(credentials.email);
 
         /*
-          Dva ograničenja, jer jedno ne pokriva oba napada.
+          Tri ograničenja, jer nijedno ne pokriva sva tri napada:
 
-          Po IP-u: isti stroj koji pogađa po mnogo različitih računa.
-          Po paru adresa + IP: pogađanje jednog računa. Dok se brojalo samo
-          po adresi, tko zna tuđu adresu mogao je s osam krivih lozinki
-          svakih 15 minuta trajno držati vlasnika izvan vlastitog računa —
-          ograničenje je tako postalo oružje protiv onoga koga štiti.
+            par adresa + IP   8 / 15 min   pogađanje jednog računa s jednog
+                                           stroja; dok se brojalo samo po
+                                           adresi, tko zna tuđu adresu mogao
+                                           ju je zaključati
+            račun             50 / sat     isti račun s mnogo IP adresa, što
+                                           par ne vidi jer je svaki par nov
+            stroj             30 / 15 min  mnogo računa s jednog stroja, što
+                                           par ne vidi jer svaka adresa ima
+                                           svoju kvotu
+
+          Redoslijed nije slučajan. Najuži brojač ide prvi i, ako odbije,
+          vraća se odmah — pokušaj koji je on zaustavio ne smije trošiti ni
+          kvotu računa ni kvotu stroja. Inače bi netko tko u dvorani uporno
+          pogađa jedan račun potrošio zajedničku kvotu te mreže i izbacio sve
+          ostale s tog wi-fija.
 
           Neuspjeli pokušaj se broji jednako kao uspjeli, jer upravo njih ima
           puno kad netko pogađa lozinku.
         */
-        const ip = await requestIp();
+        const ip = await adresaPrijave(req);
 
-        const poStroju = await checkRateLimit("prijavaIp", ip);
-        if (!poStroju.allowed) return null;
+        const poParu = await checkRateLimit("prijava", kljucPrijave(email, ip ?? ADRESA_NEPOZNATA));
+        if (!poParu.allowed) return null;
 
-        const limit = await checkRateLimit("prijava", kljucPrijave(email, ip));
-        if (!limit.allowed) return null;
+        const poRacunu = await checkRateLimit("prijavaRacun", email);
+        if (!poRacunu.allowed) return null;
+
+        // Bez poznatog IP-a se ovaj brojač preskače. Da se umjesto adrese
+        // upisivala zajednička oznaka, svi neprepoznati dijelili bi jedan
+        // brojač od 30 i prvih trideset pokušaja zaključalo bi prijavu
+        // cijeloj stranici — tiho, jer ništa ne bi puklo.
+        if (ip !== null) {
+          const poStroju = await checkRateLimit("prijavaIp", ip);
+          if (!poStroju.allowed) return null;
+        }
 
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user || !user.passwordHash) return null;

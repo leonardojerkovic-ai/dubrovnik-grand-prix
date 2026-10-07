@@ -36,6 +36,17 @@ export const RATE_LIMITS = {
    * wi-fiju.
    */
   prijavaIp: { limit: 30, windowMs: 15 * MINUTE },
+  /**
+   * Jedan račun napadan s mnogo različitih IP adresa. Par adresa + IP toga
+   * ne vidi jer je svaki par nov, a ni brojač po stroju jer je svaki stroj
+   * nov — ostaje ova gornja granica.
+   *
+   * Namjerno je visoka i u duljem prozoru. Niža bi vratila upravo onu rupu
+   * zbog koje je par i uveden: tko zna tuđu adresu mogao bi je napuniti i
+   * zaključati vlasnika. Pedeset pokušaja na sat sa svaki put drugog stroja
+   * nije nešto što netko radi slučajno, a jest nešto što košta.
+   */
+  prijavaRacun: { limit: 50, windowMs: HOUR },
   /** Svaki zahtjev troši jedan e-mail iz Resendove kvote. */
   resetLozinke: { limit: 4, windowMs: HOUR },
   /** Registracija je rijetka radnja; ovo je zaštita od masovnog upisa. */
@@ -57,6 +68,9 @@ export function kljucPrijave(email: string, ip: string): string {
   return `${adresa}|${stroj}`;
 }
 
+/** Oznaka koja stoji umjesto IP-a kad se adresa nije mogla pročitati. */
+export const ADRESA_NEPOZNATA = "nepoznato";
+
 /**
  * IP klijenta iz zaglavlja posrednika.
  *
@@ -71,7 +85,27 @@ export function izvuciAdresu(
   const prvi = (forwardedFor ?? "").split(",")[0]?.trim() ?? "";
   if (prvi !== "") return prvi;
   const rezerva = (realIp ?? "").trim();
-  return rezerva === "" ? "nepoznato" : rezerva;
+  return rezerva === "" ? ADRESA_NEPOZNATA : rezerva;
+}
+
+/**
+ * IP iz zaglavlja koja NextAuth predaje u authorize(credentials, req).
+ *
+ * Tamo su zaglavlja obično objekt, a ne Headers, i vrijednost može biti i
+ * niz. Vraća null kad se adresa ne može pročitati — pozivatelj tada zna da
+ * nema IP-a, umjesto da svi neprepoznati dijele jedan brojač.
+ */
+export function adresaIzZaglavlja(
+  zaglavlja: Record<string, string | string[] | undefined> | undefined,
+): string | null {
+  if (!zaglavlja) return null;
+  const jedno = (ime: string): string | null => {
+    const v = zaglavlja[ime];
+    if (Array.isArray(v)) return v[0] ?? null;
+    return v ?? null;
+  };
+  const adresa = izvuciAdresu(jedno("x-forwarded-for"), jedno("x-real-ip"));
+  return adresa === ADRESA_NEPOZNATA ? null : adresa;
 }
 
 export type RateLimitResult = {

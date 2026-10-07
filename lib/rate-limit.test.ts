@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { RATE_LIMITS, izvuciAdresu, kljucPrijave, rateLimitMessage } from "./rate-limit-rules";
+import {
+  ADRESA_NEPOZNATA,
+  RATE_LIMITS,
+  adresaIzZaglavlja,
+  izvuciAdresu,
+  kljucPrijave,
+  rateLimitMessage,
+} from "./rate-limit-rules";
 
 describe("rateLimitMessage", () => {
   const now = new Date("2026-09-30T10:00:00Z");
@@ -88,12 +95,53 @@ describe("izvuciAdresu", () => {
   });
 });
 
-describe("granice", () => {
-  it("ograničenje po IP-u je blaže od onoga po računu", () => {
-    expect(RATE_LIMITS.prijavaIp.limit).toBeGreaterThan(RATE_LIMITS.prijava.limit);
+describe("adresaIzZaglavlja", () => {
+  it("čita x-forwarded-for iz objekta zaglavlja", () => {
+    expect(adresaIzZaglavlja({ "x-forwarded-for": "1.2.3.4, 10.0.0.1" })).toBe("1.2.3.4");
   });
 
-  it("oba prozora su jednako dugačka, pa se ne razilaze", () => {
+  it("podnosi vrijednost zapisanu kao niz", () => {
+    expect(adresaIzZaglavlja({ "x-forwarded-for": ["1.2.3.4", "5.6.7.8"] })).toBe("1.2.3.4");
+  });
+
+  it("pada na x-real-ip", () => {
+    expect(adresaIzZaglavlja({ "x-real-ip": "9.9.9.9" })).toBe("9.9.9.9");
+  });
+
+  it("vraća null kad zaglavlja ne postoje ili su prazna", () => {
+    expect(adresaIzZaglavlja(undefined)).toBeNull();
+    expect(adresaIzZaglavlja({})).toBeNull();
+    expect(adresaIzZaglavlja({ "x-forwarded-for": "  " })).toBeNull();
+    expect(adresaIzZaglavlja({ "x-forwarded-for": [] })).toBeNull();
+  });
+
+  it("null znači 'nemam adresu', ne zajednička oznaka", () => {
+    // Zajednička oznaka bi sve neprepoznate strpala u jedan brojač; null
+    // govori pozivatelju da ograničenje po stroju jednostavno preskoči.
+    expect(adresaIzZaglavlja({})).not.toBe(ADRESA_NEPOZNATA);
+  });
+});
+
+describe("granice", () => {
+  it("par adresa + IP je najuži", () => {
+    expect(RATE_LIMITS.prijava.limit).toBeLessThan(RATE_LIMITS.prijavaIp.limit);
+    expect(RATE_LIMITS.prijava.limit).toBeLessThan(RATE_LIMITS.prijavaRacun.limit);
+  });
+
+  it("prozori para i stroja su jednaki, pa se ne razilaze", () => {
     expect(RATE_LIMITS.prijavaIp.windowMs).toBe(RATE_LIMITS.prijava.windowMs);
+  });
+
+  it("granica po računu je u duljem prozoru, jer pokriva rasprseni napad", () => {
+    expect(RATE_LIMITS.prijavaRacun.windowMs).toBeGreaterThan(RATE_LIMITS.prijava.windowMs);
+  });
+
+  /*
+    Ovo je granica koja se najlakše slučajno pokvari. Ako bi se po računu
+    dopuštalo manje nego po paru, par bi postao nevidljiv i vratila bi se
+    rupa zbog koje je uveden: tko zna tuđu adresu mogao bi je zaključati.
+  */
+  it("po računu se dopušta barem onoliko koliko po jednom paru", () => {
+    expect(RATE_LIMITS.prijavaRacun.limit).toBeGreaterThanOrEqual(RATE_LIMITS.prijava.limit);
   });
 });

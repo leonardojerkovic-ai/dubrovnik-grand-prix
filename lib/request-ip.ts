@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { izvuciAdresu } from "@/lib/rate-limit-rules";
+import { ADRESA_NEPOZNATA, izvuciAdresu } from "@/lib/rate-limit-rules";
 
 /**
  * Adresa s koje je stigao zahtjev, onoliko pouzdano koliko je moguće iza
@@ -16,7 +16,12 @@ export async function requestIp(): Promise<string> {
   try {
     const h = await headers();
     return izvuciAdresu(h.get("x-forwarded-for"), h.get("x-real-ip"));
-  } catch {
-    return "nepoznato";
+  } catch (e) {
+    // Tiho vraćanje zajedničke oznake značilo bi da svi neprepoznati dijele
+    // jedan brojač, a da se to nigdje ne vidi. Pozivatelj odlučuje što će s
+    // tim (prijava preskače ograničenje po stroju), ali u logu mora ostati
+    // trag.
+    console.error("[request-ip] zaglavlja se nisu mogla pročitati:", e);
+    return ADRESA_NEPOZNATA;
   }
 }
