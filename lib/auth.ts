@@ -127,16 +127,24 @@ export const authOptions: AuthOptions = {
         // (vlasnik se prijavi), a ne obara authorize(). Ostala dva brojača
         // su zatvorena i pri padu odbijaju.
         //
-        // Greška se bilježi samo po imenu: poruka Prisma može sadržavati
-        // upit, a upit sadrži adresu e-pošte.
+        // Greška se bilježi po kodu, ne po poruci: Prismina poruka može
+        // sadržavati upit, a upit sadrži adresu e-pošte.
         let poRacunu: RateLimitResult | null = null;
         try {
           poRacunu = await checkRateLimit("prijavaRacun", email);
         } catch (greska) {
-          console.error(
-            "prijavaRacun nedostupan, prijava se nastavlja:",
-            greska instanceof Error ? greska.name : typeof greska
-          );
+          // Kod, ne poruka: Prismina poruka može sadržavati upit, a upit sadrži
+          // adresu e-pošte. Kod 55P03 (lock_not_available) znači da je isteklo
+          // čekanje na bravu — zagušenje, prolazno. Sve ostalo znači da baza ne
+          // odgovara, što je ozbiljnije i traži pogled u Supabase.
+          const detalj =
+            typeof greska === "object" && greska !== null && "code" in greska
+              ? `${(greska as { code?: unknown }).code}/` +
+                `${(greska as { meta?: { code?: unknown } }).meta?.code ?? "?"}`
+              : greska instanceof Error
+                ? greska.name
+                : typeof greska;
+          console.error("prijavaRacun nedostupan, prijava se nastavlja:", detalj);
         }
         if (poRacunu?.allowed && poRacunu.remaining === 0) {
           await logAudit({
