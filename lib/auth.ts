@@ -6,6 +6,7 @@ import {
   adresaIzZaglavlja,
   kljucPrijave,
   RATE_LIMITS,
+  type RateLimitResult,
 } from "@/lib/rate-limit-rules";
 import { requestIp } from "@/lib/request-ip";
 import bcrypt from "bcryptjs";
@@ -121,8 +122,23 @@ export const authOptions: AuthOptions = {
         // Upozorenje ide u audit_log, a ne u log platforme: tamo se vidi u
         // /admin/audit i traje koliko kaže izjava o privatnosti (12.5), a
         // ne koliko odluči pružatelj hostinga.
-        const poRacunu = await checkRateLimit("prijavaRacun", email);
-        if (poRacunu.allowed && poRacunu.remaining === 0) {
+        // Brojač koji ne odlučuje ni o čemu ne smije ni iznimkom odlučivati o
+        // prijavi. Pad brave ili baze ovdje propušta prijavu i upozorenje
+        // (vlasnik se prijavi), a ne obara authorize(). Ostala dva brojača
+        // su zatvorena i pri padu odbijaju.
+        //
+        // Greška se bilježi samo po imenu: poruka Prisma može sadržavati
+        // upit, a upit sadrži adresu e-pošte.
+        let poRacunu: RateLimitResult | null = null;
+        try {
+          poRacunu = await checkRateLimit("prijavaRacun", email);
+        } catch (greska) {
+          console.error(
+            "prijavaRacun nedostupan, prijava se nastavlja:",
+            greska instanceof Error ? greska.name : typeof greska
+          );
+        }
+        if (poRacunu?.allowed && poRacunu.remaining === 0) {
           await logAudit({
             actor: SUSTAV,
             action: "WARNING",

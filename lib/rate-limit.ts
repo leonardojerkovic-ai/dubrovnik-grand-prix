@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import {
   NAJDULJI_PROZOR_MS,
   RATE_LIMITS,
+  sqlLockTimeout,
+  TRANSAKCIJA_BRAVE,
   type RateLimitAction,
   type RateLimitResult,
 } from "@/lib/rate-limit-rules";
@@ -43,6 +45,10 @@ export async function checkRateLimit(
     broji po bucketu, ne po bravi.
   */
   return prisma.$transaction(async (tx) => {
+    // Prva naredba: najdulje čekanje na bravu. Bez ovoga bi zahtjev koji
+    // čeka iza zagušene brave visio do isteka `timeout`-a, a s njim i cijela
+    // prijava. Naredba je konstanta, pa Unsafe varijanta nema što injektirati.
+    await tx.$executeRawUnsafe(sqlLockTimeout());
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${bucket}))`;
 
     const recent = await tx.rateLimitHit.findMany({
@@ -76,5 +82,10 @@ export async function checkRateLimit(
     });
 
     return { allowed: true, remaining: rule.limit - recent.length - 1 };
+  }, {
+    // Rokovi su pod testom (rate-limit.test.ts). Brava se čeka unutar
+    // `timeout`-a, pa je lockTimeoutMs kraći od njega.
+    maxWait: TRANSAKCIJA_BRAVE.maxWait,
+    timeout: TRANSAKCIJA_BRAVE.timeout,
   });
 }

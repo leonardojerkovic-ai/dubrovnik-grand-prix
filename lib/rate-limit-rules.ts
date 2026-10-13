@@ -159,3 +159,32 @@ export function rateLimitMessage(retryAt?: Date, now: Date = new Date()): string
   }
   return `Previše pokušaja. Pokušaj ponovno za ${minutes === 1 ? "minutu" : `${minutes} min`}.`;
 }
+
+/**
+ * Vremena za transakciju brojača. Ovo su rokovi, ne ponašanje, pa su pod
+ * testom: ako ih netko promijeni, test padne.
+ *
+ * Ispod ~2 s počinje se odbijati ljude zbog mrežnog štucanja, a ne zbog
+ * napada. Brojač je zajednički za sve granice, pa rok vrijedi i za prijavu
+ * i za prijavaIp, koje su zatvorene: pri padu odbijaju prijavu.
+ *
+ * Ništa od ovoga ne dokazuje da brava radi pod opterećenjem. Test provjerava
+ * iznose i da se SQL naredba zaista šalje, a ne ponašanje baze.
+ */
+export const TRANSAKCIJA_BRAVE = {
+  /** Koliko se čeka da Prisma dobije konekciju iz poola. */
+  maxWait: 2_000,
+  /** Ukupno trajanje transakcije, uključujući čekanje na bravu. */
+  timeout: 3_000,
+  /**
+   * Koliko se čeka na pg_advisory_xact_lock prije nego baza baci grešku.
+   * Čekanje na bravu troši `timeout`, ne `maxWait`, pa ovo mora biti kraće
+   * od `timeout`, inače bi transakciju prekinuo Prisma, a ne baza.
+   */
+  lockTimeoutMs: 2_000,
+} as const;
+
+/** Prva naredba transakcije: najdulje čekanje na bravu. */
+export function sqlLockTimeout(ms: number = TRANSAKCIJA_BRAVE.lockTimeoutMs): string {
+  return `SET LOCAL lock_timeout = '${ms}ms'`;
+}

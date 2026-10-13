@@ -63,6 +63,28 @@ logu), ili podaci na stranici koji vrijede više od klupske ljestvice. Tada
 se blokada vraća, ali uz kolačić poznatog uređaja, da napadač ne može
 zaključati vlasnika na njegovim strojevima.
 
+## Pad brojača pri prijavi pokazuje se kao kriva lozinka
+
+Brojač po računu (`prijavaRacun`) ne smije ni iznimkom odlučivati o prijavi,
+pa je pad brave ili baze na njemu propušten: vlasnik se prijavi, a upozorenje
+se eventualno izgubi. Brojači po paru i po stroju su zatvoreni i pri padu
+odbijaju prijavu.
+
+**Što korisnik vidi.** Kad `prijava` ili `prijavaIp` padnu, `authorize()`
+vrati `null`, a NextAuth iz toga napiše generičku poruku o pogrešnoj lozinci.
+Čovjeku kojem je zastoj baze odbio prijavu to izgleda kao pogrešna lozinka, pa
+će je možda pokušati promijeniti. Ovo nije ispravljeno jer bi razlikovanje
+zahtijevalo drukčiju poruku, a ona bi mogla otkriti stanje brojača.
+
+**Zašto ostavljeno.** Rokovi (`TRANSAKCIJA_BRAVE` u `lib/rate-limit-rules.ts`)
+su 2 s za čekanje konekcije i za bravu, 3 s ukupno. Kraće od ~2 s odbijalo bi
+ljude zbog mrežnog štucanja, a ne zbog napada.
+
+**Što bi promijenilo odluku.** Prijave u logu koje se podudaraju s
+`prijavaIp`/`prijava` padom baze, ili pritužbe da se ljudi ne mogu prijaviti
+dok je baza u redu. Tada se razlikuje poruka za zastoj, uz provjeru da ne
+otkriva stanje brojača.
+
 ## vite među razvojnim ovisnostima
 
 Projekt je Next.js i vite sam ne koristi. U `devDependencies` stoji samo

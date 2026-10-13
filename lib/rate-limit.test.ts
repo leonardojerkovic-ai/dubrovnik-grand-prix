@@ -2,11 +2,32 @@ import { describe, expect, it } from "vitest";
 import {
   NAJDULJI_PROZOR_MS,
   RATE_LIMITS,
+  TRANSAKCIJA_BRAVE,
   adresaIzZaglavlja,
   izvuciAdresu,
   kljucPrijave,
   rateLimitMessage,
+  sqlLockTimeout,
 } from "./rate-limit-rules";
+
+// Provjera iznosa i SQL naredbe, ne ponašanja brave. Ovo štiti od toga da se
+// vrijednost izgubi pri budućoj izmjeni. Ne dokazuje da brava radi pod
+// opterećenjem; to zahtijeva bazu, a testovi je nemaju.
+describe("TRANSAKCIJA_BRAVE", () => {
+  it("ima dogovorene iznose", () => {
+    expect(TRANSAKCIJA_BRAVE.maxWait).toBe(2_000);
+    expect(TRANSAKCIJA_BRAVE.timeout).toBe(3_000);
+    expect(TRANSAKCIJA_BRAVE.lockTimeoutMs).toBe(2_000);
+  });
+
+  it("čekanje na bravu staje unutar roka transakcije", () => {
+    expect(TRANSAKCIJA_BRAVE.lockTimeoutMs).toBeLessThan(TRANSAKCIJA_BRAVE.timeout);
+  });
+
+  it("prva naredba postavlja lock_timeout na tu vrijednost", () => {
+    expect(sqlLockTimeout()).toBe("SET LOCAL lock_timeout = '2000ms'");
+  });
+});
 
 describe("rateLimitMessage", () => {
   const now = new Date("2026-09-30T10:00:00Z");
