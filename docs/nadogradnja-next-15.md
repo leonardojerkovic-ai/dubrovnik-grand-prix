@@ -63,3 +63,59 @@ npm run build
 ```
 
 `npm install` je nužan jer se mijenjaju React, Next i njihovi tipovi.
+
+---
+
+# Nadogradnja na Next.js 16 (i ESLint 9)
+
+Napravljeno 13. listopada 2026. Prethodna verzija bila je 15.5.26.
+
+## Zašto
+
+Next 15 ostaje bez zakrpa za one npm audit stavke koje dolaze iz samog
+Nexta (lanac `postcss` unutar `next`). Next 16.4.0 ih zatvara. Ostatak
+audita dolazi iz Tailwinda 3 i eslint-config-next-ovog lanca `fast-glob`;
+njih ne zatvara ova nadogradnja, nego Tailwind 4 (odgođen).
+
+## Što je promijenjeno
+
+**`next lint` → `eslint .`.** Next 16 više nema `next lint`. `npm run lint`
+ostaje isto ime jer ga zove `.github/workflows/provjere.yml`.
+
+**`.eslintrc.json` → `eslint.config.mjs`.** ESLint 9 čita samo flat config.
+`extends` je zamijenjen uvozom `eslint-config-next/core-web-vitals` i
+`eslint-config-next/typescript`. Oba `overrides` bloka prenesena su
+doslovno (vidi `docs/lint.md`).
+
+**Novo pravilo `react-hooks/set-state-in-effect`** dolazi s
+eslint-config-next 16 i u 15 nije postojalo. Pogađa tri mjesta gdje se stanje
+namjerno sinkronizira u efektu: `components/registrations-provider.tsx`,
+`components/tournament-countdown.tsx` i `app/alati/nagrade/alat.tsx`. Pravilo
+je spušteno na `warn`, a ne prepisuje se kod u ovom koraku. Komentar je u
+`eslint.config.mjs`.
+
+**`experimental.serverActions.bodySizeLimit`** ostaje pod `experimental`.
+Provjereno u `node_modules/next/dist/server/config-schema.js`: ključ je još
+tamo, a Next 16 ga čita iz istog mjesta. Ograničenje od 2 MB time vrijedi.
+Stvarno ponašanje (odbijanje veće datoteke) nije provjereno pokretanjem,
+nego samo prisutnošću ključa i uspješnim buildom.
+
+**Middleware.** Projekt nema `middleware.ts` ni `proxy.ts`, pa se ništa ne
+seli.
+
+**Node.** Next 16 traži Node `>=20.9.0`. Lokalno i u CI-ju je 24. Postavka
+na Vercelu se ne može provjeriti iz repozitorija; provjeriti u Vercel
+postavkama projekta prije deploya (Settings → Node.js Version).
+
+## Provjere
+
+- `npm run typecheck`: prolazi.
+- `npm run lint`: 0 grešaka, 3 upozorenja (`react-hooks/set-state-in-effect`).
+- `npm test`: 504 prolaze.
+- `npm run build`: prolazi, bez upozorenja u logu.
+
+## Redoslijed deploya
+
+Ova nadogradnja ide zasebnim PR-om i zasebnim deployem, prije promjene na
+putu prijave. Ako nešto pukne na produkciji, mora biti jasno da je uzrok
+ova nadogradnja, a ne prijava.

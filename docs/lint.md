@@ -1,6 +1,12 @@
 # Lint
 
-`npm run lint` pokreće ESLint s postavkama iz `.eslintrc.json`.
+`npm run lint` pokreće ESLint 9 s postavkama iz `eslint.config.mjs` (flat
+config). Skripta je izravni poziv `eslint .`; `next lint` je u Nextu 16
+uklonjen.
+
+Pravila koja su se u staroj konfiguraciji nalazila u `overrides` sada su u
+`eslint.config.mjs`: `no-console` je isključen za `scripts/**`,
+`lib/fide/**` i `lib/email.ts`, a `no-unused-vars` za testove.
 
 ## Zašto ova pravila
 
