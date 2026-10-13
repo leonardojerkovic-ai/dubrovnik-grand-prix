@@ -49,6 +49,9 @@ export function RegistrationsProvider({
   useEffect(() => {
     if (status !== "authenticated") {
       if (status === "unauthenticated") {
+        // Brisanje stanja nakon odjave. Sinkrono je namjerno: ne smije ostati
+        // prikaz prijava prethodnog korisnika.
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setPlayers([]);
         setMap({});
       }

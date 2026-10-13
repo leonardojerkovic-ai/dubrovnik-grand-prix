@@ -88,11 +88,12 @@ ostaje isto ime jer ga zove `.github/workflows/provjere.yml`.
 doslovno (vidi `docs/lint.md`).
 
 **Novo pravilo `react-hooks/set-state-in-effect`** dolazi s
-eslint-config-next 16 i u 15 nije postojalo. Pogađa tri mjesta gdje se stanje
-namjerno sinkronizira u efektu: `components/registrations-provider.tsx`,
-`components/tournament-countdown.tsx` i `app/alati/nagrade/alat.tsx`. Pravilo
-je spušteno na `warn`, a ne prepisuje se kod u ovom koraku. Komentar je u
-`eslint.config.mjs`.
+eslint-config-next 16 i u 15 nije postojalo. Pravilo je na `error`. Tri mjesta
+gdje se stanje namjerno sinkronizira u efektu imaju `eslint-disable-next-line`
+s razlogom uz kod: `components/tournament-countdown.tsx` (hydration),
+`app/alati/nagrade/alat.tsx` (localStorage ne postoji na poslužitelju) i
+`components/registrations-provider.tsx` (brisanje stanja nakon odjave). Svaki
+novi nenamjerni setState u efektu sada ruši lint.
 
 **`experimental.serverActions.bodySizeLimit`** ostaje pod `experimental`.
 Provjereno u `node_modules/next/dist/server/config-schema.js`: ključ je još
@@ -110,7 +111,7 @@ postavkama projekta prije deploya (Settings → Node.js Version).
 ## Provjere
 
 - `npm run typecheck`: prolazi.
-- `npm run lint`: 0 grešaka, 3 upozorenja (`react-hooks/set-state-in-effect`).
+- `npm run lint`: čisto (`react-hooks/set-state-in-effect` je na error, tri namjerna mjesta imaju disable s razlogom).
 - `npm test`: 504 prolaze.
 - `npm run build`: prolazi, bez upozorenja u logu.
 

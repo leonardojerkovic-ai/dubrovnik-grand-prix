@@ -52,6 +52,9 @@ export function TournamentCountdown({
   const [now, setNow] = useState(() => new Date(serverNowIso).getTime());
 
   useEffect(() => {
+    // Prvo iscrtavanje koristi vrijeme s poslužitelja; ovdje se prelazi na
+    // vrijeme preglednika. Inače bi nastalo hydration neslaganje.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNow(Date.now());
     const id = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(id);

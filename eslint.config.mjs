@@ -21,11 +21,10 @@ const eslintConfig = [
       "no-console": ["warn", { allow: ["warn", "error"] }],
       eqeqeq: ["warn", "smart"],
       "prefer-const": "warn",
-      // Novo u eslint-config-next 16, nije postojalo u 15. Tri mjesta
-      // (registrations-provider, tournament-countdown, app/alati/nagrade/alat)
-      // sinkroniziraju stanje u efektu namjerno. Ostaje upozorenje dok se
-      // ne prepišu, da se ne bi razbio build pri nadogradnji.
-      "react-hooks/set-state-in-effect": "warn",
+      // Novo u eslint-config-next 16. Tri namjerna mjesta imaju
+      // eslint-disable s razlogom uz kod; svaki novi nenamjerni setState u
+      // efektu sada ruši lint.
+      "react-hooks/set-state-in-effect": "error",
     },
   },
   // Skripte i ono što piše u log namjerno smiju koristiti console.

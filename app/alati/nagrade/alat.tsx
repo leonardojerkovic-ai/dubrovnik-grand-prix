@@ -98,6 +98,9 @@ export function NovcaneNagradeAlat() {
   // na poslužitelju localStorage ne postoji.
   const [predlosci, setPredlosci] = useState<Predlosci<Redak>>({});
   const [odabrani, setOdabrani] = useState("");
+  // localStorage ne postoji na poslužitelju, pa se predlošci čitaju tek nakon
+  // montiranja. Čitanje pri prvom iscrtavanju dalo bi hydration neslaganje.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setPredlosci(ucitajPredloske<Redak>()), []);
 
   const naziviPredlozaka = Object.keys(predlosci).sort((a, b) =>
