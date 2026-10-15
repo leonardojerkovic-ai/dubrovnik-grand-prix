@@ -58,7 +58,7 @@ export default async function AdminPlayersPage(props: {
                   {p.fideId ?? "—"}
                 </td>
                 <td className="px-4 py-3 font-mono tabular-nums">
-                  {p.ratingsCurrent?.standard ?? 0}
+                  {p.ratingsCurrent?.standard ?? "—"}
                 </td>
                 <td className="px-4 py-3">
                   {p.isClubMember ? (

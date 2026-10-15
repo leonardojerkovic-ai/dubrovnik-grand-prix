@@ -98,3 +98,36 @@ Node u workflowima na 24.
 **Kad se može maknuti.** Ako vitest ikad ode iz projekta, vite ide s njim.
 Pri nadogradnji vitesta treba provjeriti njegov peer raspon za vite
 (`npm view vitest@<verzija> peerDependencies`) i podići vite zajedno s njim.
+
+## Rejting 0 postaje prazno, ali samo u tekućoj tablici
+
+Nula u bazi znači „nema rejtinga", ne rejting nula. Tako je zapisuju FIDE
+liste i Swiss-Manager, pa je kroz uvoz takva dospjela i ovamo: u listopadu
+2026. imalo ju je 86 od 123 igrača u barem jednom tempu, a 43 u sva tri.
+
+**Što je promijenjeno.** `scripts/ocisti-nule-rejtinga.ts`
+(`npm run rejtinzi:nule`) nule u `player_ratings_current` zamjenjuje
+praznim. Obrazac `/admin/ratings` to ne može za sva tri tempa odjednom:
+akcija odbacuje redak u kojem su sve tri vrijednosti prazne, jer je to
+nerazlučivo od „igrača nitko nije dirao".
+
+**Zašto je neutralno.** Nijedan izračun ne mijenja ishod. F_R
+(`lib/scoring/gp/formulas.ts`) gleda `r == null || r === 0 ? 1400 : r`;
+`isInU1800Category` daje isto za 0 i za 1400, oba su pod 1800; nagrade
+(`lib/scoring/prizes.ts`) po istom pravilu. Mijenja se samo prikaz —
+`/igraci` i `/admin/players` sada pišu crticu.
+
+**Što NIJE dirano i zašto.** Nule u `player_rating_snapshots` ostaju.
+`ratingValue` je `Int`, pa tamo nula ne može postati prazno, nego bi se
+morala izbrisati — a `lib/ratings/na-datum.ts` traži zadnji snimak do dana
+turnira, pa bi izbrisana nula otkrila stariji snimak sa stvarnom vrijednošću
+i promijenila F_R na turnirima koji su već objavljeni. Sezone 2025. i 2026.
+su zaključane.
+
+**Posljedica koju treba znati pri čitanju povijesti.** Snimci od 3., 9., 10.
+i 16.9.2026. imaju nule preko stvarnih vrijednosti (Mateljan je 1.9. imao
+rapid 1588, pa nulu, pa 30.9. ponovno 1588). Pravo na bodove u Akademiji
+utvrđivalo se 12.9., kad je zadnji snimak bio nula, pa u svim zapisima
+`academy_eligibility` za sezonu 2026/27 stoji `rapidRatingAtFirst = null`.
+Odluke su ispravne — nijedan igrač s pravom nije imao rapid ≥ 1600 ni tada
+ni danas — ali taj `null` ne znači da je igrač bio bez rejtinga.

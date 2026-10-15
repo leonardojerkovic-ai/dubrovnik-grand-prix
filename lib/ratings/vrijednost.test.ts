@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bezNule, tempoKaoPolje } from "./vrijednost";
+import { bezNule, TEMPO_POLJA, tempoKaoPolje } from "./vrijednost";
 
 describe("bezNule", () => {
   it("nula znači bez rejtinga, ne rejting nula", () => {
@@ -23,5 +23,12 @@ describe("tempoKaoPolje", () => {
     expect(tempoKaoPolje("STANDARD")).toBe("standard");
     expect(tempoKaoPolje("RAPID")).toBe("rapid");
     expect(tempoKaoPolje("BLITZ")).toBe("blitz");
+  });
+});
+
+describe("TEMPO_POLJA", () => {
+  it("pokriva točno ona polja na koja tempoKaoPolje preslikava", () => {
+    const iz = (["STANDARD", "RAPID", "BLITZ"] as const).map(tempoKaoPolje);
+    expect([...TEMPO_POLJA]).toEqual(iz);
   });
 });
