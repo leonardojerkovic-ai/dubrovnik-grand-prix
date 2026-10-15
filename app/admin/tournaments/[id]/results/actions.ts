@@ -5,7 +5,7 @@ import { logAudit } from "@/lib/audit";
 
 import { revalidatePath } from "next/cache";
 import { revalidateStandings } from "@/lib/revalidate";
-import { Prisma } from "@prisma/client";
+import { Prisma, type Title } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import {
   calculateAverageRating,
@@ -171,6 +171,7 @@ export async function saveTournamentResults(
         isClubMember: true,
         memberSince: true,
         memberUntil: true,
+        title: true,
       },
     });
     const membershipById = new Map(membershipPlayers.map((p) => [p.id, p]));
@@ -178,6 +179,18 @@ export async function saveTournamentResults(
       const p = membershipById.get(playerId);
       return p ? wasClubMemberOn(p, tournament.date) : false;
     };
+
+    /**
+     * Titula u trenutku spremanja. Nije snimak po datumu kao rejting —
+     * povijest titula se ne vodi — nego vrijednost kakva je sada. Bez nje
+     * bi tablica turnira iz 2027. pokazivala napredovanje iz 2028.
+     *
+     * Igrač kojeg nema u popisu zapisuje se kao NONE, a ne kao prazno:
+     * prazno znači „spremljeno prije ove izmjene" i prikaz ga tumači kao
+     * poziv da uzme današnju titulu.
+     */
+    const titleOnSave = (playerId: string): Title =>
+      membershipById.get(playerId)?.title ?? "NONE";
 
     if (tournament.season.system === "GP") {
       if (!tournament.level) {
@@ -391,6 +404,7 @@ export async function saveTournamentResults(
               gamesPlayed: true,
               wasClubMember: memberOnDate(row.playerId),
               ratingSnapshotUsed: calc.ratingUsed,
+              titleSnapshotUsed: titleOnSave(row.playerId),
               // Ručno unesena vrijednost — ako je polje bilo prazno, ništa
               // nije nadglasano, pa ni oznaka ne stoji.
               ratingOverridden: calc.ratingUsed !== null,
@@ -402,6 +416,7 @@ export async function saveTournamentResults(
               gamesPlayed: true,
               wasClubMember: memberOnDate(row.playerId),
               ratingSnapshotUsed: calc.ratingUsed,
+              titleSnapshotUsed: titleOnSave(row.playerId),
               ratingOverridden: calc.ratingUsed !== null,
               gpPoints: calc.points,
               scoringSnapshot: calc.snapshot as unknown as Prisma.InputJsonObject,

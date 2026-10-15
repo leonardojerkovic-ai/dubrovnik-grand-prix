@@ -6,6 +6,7 @@ import {
   sortPlayersByRatingTitleSurname,
   type SortablePlayerEntry,
 } from "@/lib/players/sort";
+import { prikazanaTitula } from "@/lib/players/titula";
 import { PlayerName } from "@/components/player-name";
 import { RegisterButton } from "@/components/register-button";
 import { MedalList } from "@/components/medal-list";
@@ -151,7 +152,9 @@ export default async function TournamentDetailPage(props: {
       id: res.player.id,
       firstName: res.player.firstName,
       lastName: res.player.lastName,
-      title: res.player.title,
+      // Titula iz trenutka spremanja rezultata, ne današnja — vidi
+      // lib/players/titula.ts.
+      title: prikazanaTitula(res.titleSnapshotUsed, res.player.title),
       isClubMember: res.player.isClubMember,
       rating: rejtingZa(res.player.id, res.ratingSnapshotUsed),
       rank: res.rank,

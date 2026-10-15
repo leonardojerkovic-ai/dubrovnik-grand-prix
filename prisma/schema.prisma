@@ -448,6 +448,21 @@ model TournamentResult {
   ratingSnapshotUsed Int?
   ratingOverridden   Boolean @default(false)
 
+  /// Titula igrača U TRENUTKU SPREMANJA rezultata (GM…MK, I–V). Tablica
+  /// odigranog turnira inače bi se mijenjala svaki put kad igrač napreduje:
+  /// tko je 2027. bio IV, u 2028. bi i na turniru iz 2027. stajao kao II.
+  ///
+  /// Za razliku od `ratingSnapshotUsed`, ovo NIJE snimak po datumu —
+  /// povijest titula se ne vodi, pa ponovno spremanje starog turnira upiše
+  /// današnju titulu. To je svjesna odluka: titula ne ulazi u nijedan
+  /// izračun, a prespremanje se u praksi radi u danima nakon turnira.
+  /// Nuspojava je korisna — pogrešno upisana titula ispravi se ponovnim
+  /// spremanjem.
+  ///
+  /// Prazno znači „turnir spremljen prije ove izmjene"; prikaz tada pada na
+  /// igračevu trenutnu titulu (vidi lib/players/titula.ts).
+  titleSnapshotUsed  Title?
+
   gpPoints Int? // izračunati GP bodovi za ovaj rezultat (spremljeno radi audit traga)
 
   /// Kako su bodovi nastali: svi faktori, N, R, omjer i verzija pravilnika.

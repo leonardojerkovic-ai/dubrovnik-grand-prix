@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { csvFileName, csvResponse, toCsv } from "@/lib/csv";
 import { bezNule, rejtinziNaDatum } from "@/lib/ratings/na-datum";
+import { prikazanaTitula } from "@/lib/players/titula";
+import type { Title } from "@prisma/client";
 
 /**
  * Izvoz rezultata turnira u CSV.
@@ -43,6 +45,15 @@ export async function GET(
     datum: tournament.date,
   });
 
+  /** Titula za ispis: iz trenutka spremanja, a bez titule je prazna ćelija. */
+  const titula = (r: {
+    titleSnapshotUsed: Title | null;
+    player: { title: Title };
+  }): string => {
+    const t = prikazanaTitula(r.titleSnapshotUsed, r.player.title);
+    return t === "NONE" ? "" : t;
+  };
+
   const csv = toCsv(
     [
       "Plasman",
@@ -55,7 +66,8 @@ export async function GET(
     ],
     tournament.results.map((r) => [
       r.rank,
-      r.player.title === "NONE" ? "" : r.player.title,
+      // Kao na stranici turnira: titula iz trenutka spremanja rezultata.
+      titula(r),
       `${r.player.lastName} ${r.player.firstName}`,
       bezNule(r.ratingSnapshotUsed) ?? rejtinziTada.get(r.playerId) ?? "",
       r.gpPoints ?? "",
