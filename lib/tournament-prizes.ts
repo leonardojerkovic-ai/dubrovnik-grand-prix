@@ -230,11 +230,14 @@ export async function getTournamentPrizes(
     results.map((r) => [r.playerId, r.rank])
   );
 
+  // Vrijednost se u ovom upitu učitava samo zato da bi se izračunalo tko je
+  // što dobio (i je li prenesena). Javni objekt se gradi eksplicitno, pa ona
+  // ne može otići klijentu ni ako netko kasnije doda polje.
   return awards
     .map((award) => {
       const prize = byId.get(award.prizeId);
       if (!prize) return null;
-      return {
+      const view: TournamentPrizeView = {
         prizeId: prize.id,
         label: prize.label,
         shortLabel: prize.shortLabel,
@@ -254,17 +257,16 @@ export async function getTournamentPrizes(
           toDefinition(efektivne.get(prize.id) ?? prize),
           ranking
         ),
-        // Pri VRIJEDNOST redoslijed nagrada bi odavao njihovu vrijednost, pa se
-        // javni popis slaže po mjestu igrača na turniru.
-        sortKey:
-          nacin === "RUCNO"
-            ? prize.priority
-            : (rankOf.get(award.playerId) ?? 0),
       };
+      // Pri VRIJEDNOST redoslijed nagrada bi odavao njihovu vrijednost, pa se
+      // javni popis slaže po mjestu igrača na turniru.
+      const sortKey =
+        nacin === "RUCNO" ? prize.priority : (rankOf.get(award.playerId) ?? 0);
+      return { sortKey, view };
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
-    .sort((a, b) => a.sortKey - b.sortKey || a.place - b.place)
-    .map(({ sortKey: _sortKey, ...rest }) => rest);
+    .sort((a, b) => a.sortKey - b.sortKey || a.view.place - b.view.place)
+    .map((x) => x.view);
 }
 
 export interface PlayerPrizeView {
