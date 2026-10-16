@@ -154,3 +154,33 @@ kompatibilne unatrag:
 
 **Što je ostalo.** Nema zasebne preview baze. Ako se to promijeni, preview
 bi trebao dobiti vlastiti `DATABASE_URL` u Vercel okolini „Preview“.
+
+## Dva motora nagrada su namjerno odvojena
+
+**Odluka.** Novčane nagrade (`lib/nagrade/dodjela.ts`, kalkulator) i nagrade
+turnira (`lib/scoring/prizes.ts`, motor) imaju odvojene modele uvjeta. Ne
+spajaju se u jedan komparator ni u jedan model.
+
+**Razlike koje već postoje.**
+- Kalkulator ima `rejtingDoUkljucivo`, pa gornja granica rejtinga može biti
+  i `≤` i `<`. Motor turnira ima samo `ratingMax`, i ona je uvijek strogo
+  isključiva.
+- Kalkulator ima `titule` (doslovno poklapanje, WIM nije IM) i `oznaku`
+  (dobna oznaka za igrače čije godište nije poznato). Motor nema nijedno od
+  to dvoje.
+- Posebnost: kalkulator ima eksplicitnu zastavicu `posebna`, a motor je
+  izvodi iz kriterija (opća = nijedan kriterij).
+
+**Zašto se pravilo izjednačenja ponavlja.** Pravilo „opća ili posebna prva
+pri jednakoj vrijednosti“ postoji na oba mjesta. Zajednički komparator bi
+morao primati tri pristupnika kao parametre, pa bi bio dulji od onoga što
+zamjenjuje. Umjesto toga, `lib/pravilo-izjednacenja.test.ts` izvodi iste
+scenarije nad oba motora. Ako test padne na jednom, a prolazi na drugom,
+pravilo se razišlo.
+
+**Što bi spajanje značilo.** Spajanje modela uvjeta (rejting ≤/<, titule,
+oznake) je odluka o pravilniku, a ne refaktor. Mijenja što se smije tražiti
+kao uvjet nagrade. Ide zajedno s razdvajanjem `app/alati/nagrade/alat.tsx`.
+
+**Zašto je to važno.** Razlika u granici rejtinga ne bi se vidjela dok netko
+ne dodijeli nagradu igraču s rejtingom točno na granici.
