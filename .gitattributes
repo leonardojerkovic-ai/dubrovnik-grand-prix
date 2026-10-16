@@ -22,3 +22,4 @@
 *.md    text eol=lf
 *.sql   text eol=lf
 *.prisma text eol=lf
+*.mts     text eol=lf
