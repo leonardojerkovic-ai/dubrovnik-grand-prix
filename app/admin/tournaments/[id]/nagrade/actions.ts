@@ -98,6 +98,8 @@ export async function createPrize(
       ratingMin: optionalInt(formData.get("ratingMin")),
       ratingMax: optionalInt(formData.get("ratingMax")),
       clubMembersOnly: formData.get("clubMembersOnly") === "on",
+      // Interna vrijednost — koristi se samo za redoslijed, nikad se ne prikazuje.
+      vrijednost: optionalInt(formData.get("vrijednost")),
     },
   });
 
@@ -176,6 +178,14 @@ export async function movePrize(
   if (!prize) return;
   await provjeriZakljucanost(prize.tournamentId);
 
+  // Pri VRIJEDNOST redoslijed slijedi vrijednosti, pa ručno pomicanje nema
+  // smisla. Gumbi se za taj način i ne prikazuju; ovo je samo zaštita.
+  const turnir = await prisma.tournament.findUnique({
+    where: { id: prize.tournamentId },
+    select: { nagradeRedoslijed: true },
+  });
+  if (turnir?.nagradeRedoslijed === "VRIJEDNOST") return;
+
   const neighbour = await prisma.tournamentPrize.findFirst({
     where: {
       tournamentId: prize.tournamentId,
@@ -213,6 +223,57 @@ export async function movePrize(
     napomeni(
       `/admin/tournaments/${prize.tournamentId}/nagrade`,
       "Popis nagrada je izmijenjen, ali dodjela NIJE: nagrade ovog turnira već su dodijeljene i ne mijenjaju se same (čl. 29). Ako dodjelu treba uskladiti, pokreni „Preračunaj dodjelu“."
+    );
+  }
+}
+
+/**
+ * Bira kako se slažu nagrade turnira: ručno (strelice) ili po interno zadanoj
+ * vrijednosti, kao kod novčanih nagrada. Promjena mijenja dodjelu, pa vrijedi
+ * ista zaštita kao kod ostalih izmjena popisa.
+ */
+export async function setPrizeOrdering(formData: FormData): Promise<void> {
+  const actor = await requireAdmin();
+  const tournamentId = String(formData.get("tournamentId") ?? "");
+  if (!tournamentId) return;
+  await provjeriZakljucanost(tournamentId);
+
+  const nacin =
+    formData.get("nagradeRedoslijed") === "VRIJEDNOST" ? "VRIJEDNOST" : "RUCNO";
+  const pravilo =
+    formData.get("nagradePravilo") === "POSEBNA_PRIJE"
+      ? "POSEBNA_PRIJE"
+      : "OPCE_PRIJE";
+
+  const before = await prisma.tournament.findUnique({
+    where: { id: tournamentId },
+    select: { nagradeRedoslijed: true, nagradePravilo: true },
+  });
+  if (!before) return;
+
+  await prisma.tournament.update({
+    where: { id: tournamentId },
+    data: { nagradeRedoslijed: nacin, nagradePravilo: pravilo },
+  });
+
+  await logAudit({
+    actor,
+    action: "UPDATE",
+    entity: "Tournament",
+    entityId: tournamentId,
+    summary: `Redoslijed nagrada: ${nacin === "VRIJEDNOST" ? "po vrijednosti" : "ručno"}, pravilo ${pravilo}`,
+    before,
+    after: { nagradeRedoslijed: nacin, nagradePravilo: pravilo },
+  });
+
+  const posle = await syncTournamentPrizes(tournamentId);
+  revalidatePath(`/admin/tournaments/${tournamentId}/nagrade`);
+  revalidateAwards(tournamentId);
+
+  if (posle.zamrznuto) {
+    napomeni(
+      `/admin/tournaments/${tournamentId}/nagrade`,
+      "Redoslijed je promijenjen, ali dodjela NIJE: nagrade ovog turnira već su dodijeljene i ne mijenjaju se same (čl. 29). Ako dodjelu treba uskladiti, pokreni „Preračunaj dodjelu“."
     );
   }
 }

@@ -5,6 +5,7 @@ import {
 } from "@/lib/dodjela/razlike";
 import {
   assignPrizes,
+  redoslijedNagrada,
   wasPrizeTransferred,
   type PrizeCandidate,
   type PrizeDefinition,
@@ -29,7 +30,7 @@ export async function syncTournamentPrizes(
   razlike: string[];
   zamrznuto: boolean;
 }> {
-  const [prizes, results] = await Promise.all([
+  const [prizes, results, turnir] = await Promise.all([
     prisma.tournamentPrize.findMany({
       where: { tournamentId },
       orderBy: { priority: "asc" },
@@ -40,6 +41,10 @@ export async function syncTournamentPrizes(
       include: {
         player: { select: { birthYear: true, gender: true } },
       },
+    }),
+    prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      select: { nagradeRedoslijed: true, nagradePravilo: true },
     }),
   ]);
 
@@ -62,7 +67,11 @@ export async function syncTournamentPrizes(
     wasClubMember: r.wasClubMember,
   }));
 
-  const definitions: PrizeDefinition[] = prizes.map(toDefinition);
+  const definitions: PrizeDefinition[] = redoslijedNagrada(
+    prizes,
+    turnir?.nagradeRedoslijed ?? "RUCNO",
+    turnir?.nagradePravilo ?? "OPCE_PRIJE"
+  ).map(toDefinition);
 
   const manual = await prisma.tournamentPrizeAward.findMany({
     where: { tournamentId, manual: true },
@@ -172,7 +181,7 @@ export interface TournamentPrizeView {
 export async function getTournamentPrizes(
   tournamentId: string
 ): Promise<TournamentPrizeView[]> {
-  const [prizes, awards, results] = await Promise.all([
+  const [prizes, awards, results, turnir] = await Promise.all([
     prisma.tournamentPrize.findMany({
       where: { tournamentId },
       orderBy: { priority: "asc" },
@@ -190,9 +199,22 @@ export async function getTournamentPrizes(
       orderBy: { rank: "asc" },
       include: { player: { select: { birthYear: true, gender: true } } },
     }),
+    prisma.tournament.findUnique({
+      where: { id: tournamentId },
+      select: { nagradeRedoslijed: true, nagradePravilo: true },
+    }),
   ]);
 
   if (awards.length === 0) return [];
+
+  const nacin = turnir?.nagradeRedoslijed ?? "RUCNO";
+  const efektivne = new Map(
+    redoslijedNagrada(
+      prizes,
+      nacin,
+      turnir?.nagradePravilo ?? "OPCE_PRIJE"
+    ).map((d) => [d.id, d])
+  );
 
   const ranking: PrizeCandidate[] = results.map((r) => ({
     playerId: r.playerId,
@@ -229,15 +251,20 @@ export async function getTournamentPrizes(
             place: award.place,
             rank: rankOf.get(award.playerId) ?? 0,
           },
-          toDefinition(prize),
+          toDefinition(efektivne.get(prize.id) ?? prize),
           ranking
         ),
-        priority: prize.priority,
+        // Pri VRIJEDNOST redoslijed nagrada bi odavao njihovu vrijednost, pa se
+        // javni popis slaže po mjestu igrača na turniru.
+        sortKey:
+          nacin === "RUCNO"
+            ? prize.priority
+            : (rankOf.get(award.playerId) ?? 0),
       };
     })
     .filter((x): x is NonNullable<typeof x> => x !== null)
-    .sort((a, b) => a.priority - b.priority || a.place - b.place)
-    .map(({ priority: _priority, ...rest }) => rest);
+    .sort((a, b) => a.sortKey - b.sortKey || a.place - b.place)
+    .map(({ sortKey: _sortKey, ...rest }) => rest);
 }
 
 export interface PlayerPrizeView {

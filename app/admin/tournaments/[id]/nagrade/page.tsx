@@ -4,11 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { ConfirmDeleteButton } from "@/components/confirm-delete-button";
 import { getTournamentPrizes } from "@/lib/tournament-prizes";
 import { PrizeForm } from "./prize-form";
+import { redoslijedNagrada } from "@/lib/scoring/prizes";
 import {
   createPrize,
   deletePrize,
   movePrize,
   recomputePrizes,
+  setPrizeOrdering,
 } from "./actions";
 import { AdminNotice } from "@/components/admin-notice";
 import { napomenaIzAdrese, porukaIzAdrese } from "@/lib/admin-odbijanje";
@@ -57,13 +59,21 @@ export default async function AdminPrizesPage(props: {
   });
   if (!tournament) notFound();
 
-  const [prizes, awards] = await Promise.all([
+  const [prizesRaw, awards] = await Promise.all([
     prisma.tournamentPrize.findMany({
       where: { tournamentId: tournament.id },
       orderBy: { priority: "asc" },
     }),
     getTournamentPrizes(tournament.id),
   ]);
+
+  // Popis se slaže onim redoslijedom kojim se nagrade zaista dodjeljuju.
+  const rucno = tournament.nagradeRedoslijed === "RUCNO";
+  const prizes = redoslijedNagrada(
+    prizesRaw,
+    tournament.nagradeRedoslijed,
+    tournament.nagradePravilo
+  ).map((d) => prizesRaw.find((p) => p.id === d.id)!);
 
   const winnersByPrize = new Map<string, typeof awards>();
   for (const award of awards) {
@@ -95,11 +105,40 @@ export default async function AdminPrizesPage(props: {
       <div className="mb-6 rounded-md border border-navy/10 bg-sky-light/30 px-4 py-3 text-sm text-subtle">
         Nagrade se ne kumuliraju. Igrač prima samo najvišu nagradu koju je
         ostvario, a nagrada koja time ostane slobodna pripada sljedećem igraču
-        koji zadovoljava njezine uvjete. Redoslijed na popisu odlučuje što je
-        &bdquo;više&ldquo; — zato su strelice bitne.
+        koji zadovoljava njezine uvjete. {rucno
+          ? <>Redoslijed na popisu odlučuje što je &bdquo;više&ldquo; — zato su strelice bitne.</>
+          : <>Redoslijed slijedi vrijednost nagrade (samo za admina, javno se ne prikazuje) i pravilo izjednačenja iz gornjeg obrasca.</>}
       </div>
 
       <div className="mb-8 rounded-lg border border-navy/10 bg-white p-4">
+        <form action={setPrizeOrdering} className="mb-4 flex flex-wrap items-end gap-3 border-b border-navy/10 pb-4">
+          <input type="hidden" name="tournamentId" value={tournament.id} />
+          <label className="grid gap-1 text-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">Redoslijed</span>
+            <select
+              name="nagradeRedoslijed"
+              defaultValue={tournament.nagradeRedoslijed}
+              className="rounded-md border border-navy/20 px-2 py-1.5"
+            >
+              <option value="RUCNO">Ručno (strelice)</option>
+              <option value="VRIJEDNOST">Po vrijednosti (interno)</option>
+            </select>
+          </label>
+          <label className="grid gap-1 text-sm">
+            <span className="text-xs font-semibold uppercase tracking-wide text-muted">Pri jednakoj vrijednosti</span>
+            <select
+              name="nagradePravilo"
+              defaultValue={tournament.nagradePravilo}
+              className="rounded-md border border-navy/20 px-2 py-1.5"
+            >
+              <option value="OPCE_PRIJE">Opća nagrada prva</option>
+              <option value="POSEBNA_PRIJE">Posebna nagrada prva</option>
+            </select>
+          </label>
+          <button type="submit" className="btn-secondary btn-sm">
+            Spremi redoslijed
+          </button>
+        </form>
         <PrizeForm
           action={createPrize}
           tournamentId={tournament.id}
@@ -129,7 +168,7 @@ export default async function AdminPrizesPage(props: {
                   <tr key={prize.id}>
                     <td className="px-3 py-3">
                       <div className="flex gap-1">
-                        {index > 0 && (
+                        {rucno && index > 0 && (
                           <form
                             action={async () => {
                               "use server";
@@ -145,7 +184,7 @@ export default async function AdminPrizesPage(props: {
                             </button>
                           </form>
                         )}
-                        {index < prizes.length - 1 && (
+                        {rucno && index < prizes.length - 1 && (
                           <form
                             action={async () => {
                               "use server";
@@ -175,6 +214,14 @@ export default async function AdminPrizesPage(props: {
                       {prize.shortLabel && (
                         <span className="ml-2 rounded bg-gold/20 px-1.5 py-0.5 text-xs font-semibold text-navy">
                           {prize.shortLabel}
+                        </span>
+                      )}
+                      {prize.vrijednost != null && (
+                        <span
+                          className="ml-2 text-xs text-muted"
+                          title="Interno — javno se ne prikazuje"
+                        >
+                          vrijednost {prize.vrijednost} (interno)
                         </span>
                       )}
                     </td>

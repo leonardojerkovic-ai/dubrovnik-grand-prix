@@ -152,6 +152,65 @@ export function assignPrizes(
   return awards;
 }
 
+export type NacinRedoslijeda = "RUCNO" | "VRIJEDNOST";
+export type PravilaNagrada = "OPCE_PRIJE" | "POSEBNA_PRIJE";
+
+/**
+ * Opća nagrada nema nijedan kriterij — to je ukupni poredak. Sve ostale su
+ * posebne, pa se pravilo izjednačenja odnosi na tu razliku.
+ */
+export function jeOpcaNagrada(criteria: PrizeCriteria): boolean {
+  return (
+    !criteria.gender &&
+    criteria.birthYearMin == null &&
+    criteria.birthYearMax == null &&
+    criteria.ratingMin == null &&
+    criteria.ratingMax == null &&
+    !criteria.clubMembersOnly
+  );
+}
+
+/**
+ * Određuje redoslijed priznanja turnira.
+ *
+ * RUCNO: redoslijed kakav je admin slagao (priority).
+ *
+ * VRIJEDNOST: isti redoslijed kao kod novčanih nagrada (lib/nagrade/dodjela.ts)
+ * — veća vrijednost ide prije manje; pri jednakoj vrijednosti odlučuje
+ * pravilo (opća ili posebna prva), a zatim priority. Nagrade bez vrijednosti
+ * idu zadnje.
+ *
+ * Vraća definicije s priority postavljenim na novi redoslijed, pa se
+ * assignPrizes obilazi točno ovim redom. Vrijednost se ovdje koristi samo za
+ * sortiranje i nigdje se ne vraća pozivatelju kao polje za prikaz.
+ */
+export function redoslijedNagrada<T extends PrizeDefinition & { vrijednost: number | null }>(
+  prizes: T[],
+  nacin: NacinRedoslijeda,
+  pravilo: PravilaNagrada
+): T[] {
+  if (nacin === "RUCNO") {
+    return [...prizes].sort((a, b) => a.priority - b.priority);
+  }
+
+  const sorted = [...prizes].sort((a, b) => {
+    const va = a.vrijednost ?? -Infinity;
+    const vb = b.vrijednost ?? -Infinity;
+    if (va !== vb) return vb > va ? 1 : -1;
+
+    const opcaA = jeOpcaNagrada(a);
+    const opcaB = jeOpcaNagrada(b);
+    if (opcaA !== opcaB) {
+      const opcaPrva = pravilo === "OPCE_PRIJE";
+      return opcaA === opcaPrva ? -1 : 1;
+    }
+
+    return a.priority - b.priority;
+  });
+
+  return sorted.map((p, index) => ({ ...p, priority: index + 1 }));
+}
+
 /**
  * Je li nagrada prenesena — nije pripala najbolje plasiranom igraču koji
  * zadovoljava njezine uvjete. Koristi se u prikazu, da se uz takvu nagradu

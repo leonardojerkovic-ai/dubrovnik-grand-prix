@@ -110,6 +110,22 @@ enum DocumentCategory {
   OSTALO
 }
 
+/// Kako se određuje redoslijed nagrada turnira.
+/// RUCNO: admin ga slaže strelicama (TournamentPrize.priority).
+/// VRIJEDNOST: redoslijed po internoj vrijednosti, isto kao novčane nagrade
+/// (lib/nagrade/dodjela.ts). Vrijednost se nikad ne prikazuje javno.
+enum PrizeOrder {
+  RUCNO
+  VRIJEDNOST
+}
+
+/// Pravilo pri jednakoj vrijednosti: opća nagrada (ukupni poredak) ili
+/// posebna (kriterijska) ide prva. Isto značenje kao PravilaJednakosti.
+enum PrizeTieRule {
+  OPCE_PRIJE
+  POSEBNA_PRIJE
+}
+
 /// Kategorije medalja GP-a Akademije — čl. 19. UKUPNO je poredak turnira
 /// odnosno sezone, ZENE je medalja najbolje igračice. Dobne kategorije su
 /// one iz čl. 20 (vidi lib/scoring/akademija/categories.ts).
@@ -364,6 +380,8 @@ model Tournament {
 
   isFinal       Boolean @default(false) // GP Finale / Prvenstvo Akademije
   isJuniorFinal Boolean @default(false) // Juniorsko GP Finale (samo GP sustav)
+  nagradeRedoslijed PrizeOrder @default(RUCNO)
+  nagradePravilo PrizeTieRule @default(OPCE_PRIJE)
 
   // Ograničenje prava nastupa (čl. 14 GP): npr. ["U16"], ["ZENE"], null = otvoren svima
   restrictedCategories Json?
@@ -764,6 +782,11 @@ model TournamentPrize {
   ratingMax Int?
   /// Samo članovi ŠK Dubrovnik na dan turnira (čl. 4).
   clubMembersOnly Boolean @default(false)
+
+  /// Interna vrijednost nagrade, po kojoj se redaju nagrade kad turnir ima
+  /// nagradeRedoslijed = VRIJEDNOST. Javni upiti je NE smiju vratiti.
+  /// Prazno = najniža vrijednost (ide zadnja).
+  vrijednost Int?
 
   awards TournamentPrizeAward[]
 

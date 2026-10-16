@@ -191,6 +191,21 @@ export function PrizeForm({
             <span className="text-xs text-crimson">{state.errors.count[0]}</span>
           )}
         </label>
+
+        <label className="grid gap-1 text-sm font-medium text-navy">
+          Vrijednost (interno)
+          <input
+            name="vrijednost"
+            type="number"
+            min={0}
+            step={1}
+            className="input"
+            placeholder="npr. 300"
+          />
+          <span className="text-xs text-muted">
+            Samo za redoslijed „po vrijednosti“. Javno se ne prikazuje.
+          </span>
+        </label>
       </div>
 
       <fieldset className="grid gap-3 rounded-md border border-navy/10 p-3 md:grid-cols-3">
