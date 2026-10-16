@@ -131,3 +131,26 @@ utvrđivalo se 12.9., kad je zadnji snimak bio nula, pa u svim zapisima
 `academy_eligibility` za sezonu 2026/27 stoji `rapidRatingAtFirst = null`.
 Odluke su ispravne — nijedan igrač s pravom nije imao rapid ≥ 1600 ni tada
 ni danas — ali taj `null` ne znači da je igrač bio bez rejtinga.
+
+## Migracije su kompatibilne unatrag; preview ih ne primjenjuje sam
+
+**Odluka.** `scripts/build.mjs` na produkciji (`VERCEL_ENV=production`) prvo
+primjenjuje migracije (`prisma migrate deploy`), pa generira klijenta i gradi
+aplikaciju. Svaka druga okolina (preview, lokalno) samo provjerava
+(`prisma migrate status`) i prekida build ako ima neprimijenjenih migracija.
+
+**Zašto preview ne primjenjuje migracije.** Nema zasebne preview baze: Supabase
+ima samo projekt „Grand Prix“, pa preview koristi produkcijski `DATABASE_URL`.
+Da preview sam pokreće `migrate deploy`, prva izgradnja bilo koje grane
+mijenjala bi produkcijsku shemu prije nego je itko pogleda. Migraciju zato
+primjenjuje čovjek, svjesno, s vlastitog računala.
+
+**Posljedica.** `migrate deploy` ide prije `next build`. Ako build padne nakon
+migracije, shema je ispred živog koda. Zato migracije moraju biti
+kompatibilne unatrag:
+- dodavanje stupca s `NULL` ili `DEFAULT` je u redu;
+- preimenovanje i brisanje idu u zasebnu migraciju, tek kad kod koji ih
+  koristi više nije u produkciji.
+
+**Što je ostalo.** Nema zasebne preview baze. Ako se to promijeni, preview
+bi trebao dobiti vlastiti `DATABASE_URL` u Vercel okolini „Preview“.
