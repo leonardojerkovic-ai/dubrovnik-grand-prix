@@ -114,3 +114,61 @@ export async function sendLinkCodeEmail(
     throw new Error("Slanje emaila nije uspjelo.");
   }
 }
+
+/**
+ * Javlja igraču da je s liste čekanja ušao među prijavljene.
+ *
+ * Bez ove poruke lista čekanja ne vrijedi ništa: čovjek bi morao sam
+ * osvježavati stranicu da sazna je li se netko odjavio. Šalje se i
+ * skrbnicima, jer se djeca prijavljuju preko roditeljskog računa.
+ */
+export async function sendWaitlistPromotedEmail(
+  to: string[],
+  playerName: string,
+  tournamentName: string,
+  tournamentDate: string,
+  tournamentUrl: string
+) {
+  if (to.length === 0) return;
+
+  const apiKey = process.env.RESEND_API_KEY;
+
+  if (!apiKey) {
+    console.log(
+      `[email fallback] RESEND_API_KEY nije postavljen. ${playerName} je s liste čekanja ušao na turnir ${tournamentName} (${tournamentDate}); primatelji: ${to.join(", ")}`
+    );
+    return;
+  }
+
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from:
+        process.env.RESEND_FROM_EMAIL ??
+        "Dubrovnik Grand Prix <onboarding@resend.dev>",
+      ...replyToHeader(),
+      to,
+      subject: `Mjesto na turniru je osigurano — ${tournamentName}`,
+      html: `
+        <p>Pozdrav,</p>
+        <p>Oslobodilo se mjesto, pa je <strong>${playerName}</strong> s liste
+           čekanja prešao/la među prijavljene za turnir
+           <strong>${tournamentName}</strong> (${tournamentDate}).</p>
+        <p>Mjesto je osigurano i ništa dalje ne treba učiniti.</p>
+        <p><a href="${tournamentUrl}">Pogledaj turnir</a></p>
+        <p>Ako ipak ne možeš doći, odjavi se na istoj stranici — mjesto onda
+           pripada sljedećem s liste.</p>
+      `,
+    }),
+  });
+
+  if (!res.ok) {
+    const body = await res.text();
+    console.error("Resend API greška:", res.status, body);
+    throw new Error("Slanje emaila nije uspjelo.");
+  }
+}

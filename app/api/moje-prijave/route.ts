@@ -21,10 +21,14 @@ export async function GET() {
     );
   }
 
+  // I lista čekanja se broji kao prijava. Da se ovdje gledao samo
+  // PRIJAVLJEN, igrač s liste vidio bi ponovno gumb „Prijavi" — a nova
+  // prijava mu osvježava trenutak prijave i baca ga na kraj reda. Odjava s
+  // liste je legitimna i radi istim gumbom.
   const rows = await prisma.tournamentRegistration.findMany({
     where: {
       playerId: { in: players.map((p) => p.id) },
-      status: "PRIJAVLJEN",
+      status: { in: ["PRIJAVLJEN", "NA_CEKANJU"] },
     },
     select: { tournamentId: true, playerId: true },
   });

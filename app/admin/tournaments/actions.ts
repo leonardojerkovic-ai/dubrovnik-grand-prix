@@ -13,6 +13,8 @@ import {
   ucitajZapiseTurnira,
 } from "@/lib/akademija/preracunaj-prava";
 import { napomeni } from "@/lib/admin-odbijanje";
+import { promakniSListeCekanja } from "@/lib/prijave/lista-cekanja";
+import { obradiPromaknute } from "@/lib/prijave/obavijest";
 import { tournamentSchema } from "@/lib/validation/tournament";
 import type { ActionState } from "../players/actions";
 import { fieldErrorsFrom, formValuesFrom } from "@/lib/validation/errors";
@@ -36,6 +38,7 @@ function parseFormData(formData: FormData) {
     startTime: formData.get("startTime"),
     announcementUrl: formData.get("announcementUrl"),
     academyPointsOnly: formData.get("academyPointsOnly") === "on",
+    maxPlayers: formData.get("maxPlayers"),
   };
 }
 
@@ -57,6 +60,7 @@ export async function createTournament(
     venue,
     startTime,
     announcementUrl,
+    maxPlayers,
     ...rest
   } = parsed.data;
   const blank = (v?: string) => (v && v.length > 0 ? v : null);
@@ -76,6 +80,7 @@ export async function createTournament(
       baseMinutes: baseMinutes === "" || baseMinutes == null ? null : baseMinutes,
       incrementSeconds:
         incrementSeconds === "" || incrementSeconds == null ? null : incrementSeconds,
+      maxPlayers: maxPlayers === "" || maxPlayers == null ? null : maxPlayers,
     },
   });
 
@@ -112,6 +117,7 @@ export async function updateTournament(
     venue,
     startTime,
     announcementUrl,
+    maxPlayers,
     ...rest
   } = parsed.data;
   const blank = (v?: string) => (v && v.length > 0 ? v : null);
@@ -133,6 +139,7 @@ export async function updateTournament(
       baseMinutes: baseMinutes === "" || baseMinutes == null ? null : baseMinutes,
       incrementSeconds:
         incrementSeconds === "" || incrementSeconds == null ? null : incrementSeconds,
+      maxPlayers: maxPlayers === "" || maxPlayers == null ? null : maxPlayers,
     },
   });
 
@@ -148,12 +155,24 @@ export async function updateTournament(
     after: updated,
   });
 
+  // Povišenje broja mjesta odmah pušta s liste čekanja koliko ih stane.
+  // Zove se bezuvjetno: ako kvota nije dirana ili je snižena, funkcija
+  // nikoga ne promiče (vidi kolikoPromaknuti u lib/prijave/kvota.ts).
+  const promaknuti = await promakniSListeCekanja(tournamentId);
+  await obradiPromaknute(tournamentId, promaknuti);
+
   revalidatePath("/admin/tournaments");
   revalidatePath(`/admin/tournaments/${tournamentId}`);
+  revalidatePath(`/admin/tournaments/${tournamentId}/prijave`);
   // Razina i tempo ulaze u izračun, pa se mijenjaju i ljestvice.
   revalidateSchedule(tournamentId);
   revalidateStandings(tournamentId);
-  return { message: "Spremljeno." };
+  return {
+    message:
+      promaknuti.length > 0
+        ? `Spremljeno. S liste čekanja je ušlo ${promaknuti.length} igrača.`
+        : "Spremljeno.",
+  };
 }
 
 export async function deleteTournament(tournamentId: string): Promise<void> {

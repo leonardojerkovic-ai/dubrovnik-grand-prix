@@ -184,3 +184,39 @@ kao uvjet nagrade. Ide zajedno s razdvajanjem `app/alati/nagrade/alat.tsx`.
 
 **Zašto je to važno.** Razlika u granici rejtinga ne bi se vidjela dok netko
 ne dodijeli nagradu igraču s rejtingom točno na granici.
+
+## Ograničenje broja prijava i lista čekanja
+
+Turnir može imati `maxPlayers`; prazno znači bez ograničenja, pa su svi
+turniri od prije ove mogućnosti neograničeni. Kad se mjesta popune, nove
+samostalne prijave dobivaju status `NA_CEKANJU` i odatle upadaju kad se
+netko odjavi ili kad se kvota povisi. Status je u enumu `RegistrationStatus`
+postojao od početka, a dosad ga ništa nije koristilo.
+
+**Odluke vlasnika.**
+- Kvota **ne vrijedi za administratora**. Ručni upis uvijek ide među
+  prijavljene, i preko broja mjesta — sudac na mjestu zna razloge koje
+  sustav ne zna.
+- **Povišenje kvote** odmah promiče koliko ih stane, po trenutku prijave.
+- **Sniženje ispod broja prijavljenih nikoga ne izbacuje.** Oduzeti nekome
+  potvrđeno mjesto gore je od prekoračenja; samo nema novih dok se ne
+  isprazni.
+- **Lista radi dok su prijave otvorene.** Kad turnir prijeđe u `U_TIJEKU`
+  ili `ZAVRSEN`, odjava više nikoga ne promiče: parovi su izvučeni, pa bi
+  naknadni ulazak značio igrača koji nije za stolom.
+
+**Zašto brava.** Upis i promicanje idu u transakciji s
+`pg_advisory_xact_lock` po turniru, istim obrascem kao brojači prijava
+(`lib/rate-limit.ts`), uključujući `SET LOCAL lock_timeout`. Bez nje dvije
+istodobne prijave na zadnje mjesto obje pročitaju isti broj i obje prođu, a
+to se otkrije na dan turnira kad nema ploče.
+
+**Zašto se obavijest šalje izvan transakcije.** Poruka promaknutom ide tek
+nakon što transakcija prođe. Slanje unutar nje držalo bi bravu dok traje
+poziv poštanskom servisu, pa bi njegov zastoj zaustavio prijave na tom
+turniru. Pad slanja ne ruši odjavu koja ga je izazvala: upis je već točan,
+a nedostavljena poruka manja je šteta od odjave prekinute na pola.
+
+**Ponovna prijava vraća na kraj reda.** `registeredAt` se pri ponovnoj
+prijavi postavlja na sada, inače bi otkazivanje i ponovna prijava bili
+način da se preskoči red.

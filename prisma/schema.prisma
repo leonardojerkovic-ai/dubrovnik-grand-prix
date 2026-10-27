@@ -386,6 +386,17 @@ model Tournament {
   // Ograničenje prava nastupa (čl. 14 GP): npr. ["U16"], ["ZENE"], null = otvoren svima
   restrictedCategories Json?
 
+  /// Najveći broj prijavljenih igrača; prazno znači bez ograničenja.
+  ///
+  /// Kad se mjesta popune, nove samostalne prijave idu na listu čekanja
+  /// (RegistrationStatus.NA_CEKANJU) i odatle upadaju kad se netko odjavi.
+  /// Admin smije dodati igrača i preko kvote — postoje razlozi koje sustav
+  /// ne zna, a sudac na mjestu odlučuje.
+  ///
+  /// Sniženje ispod broja već prijavljenih nikoga ne izbacuje: oduzeti
+  /// nekome potvrđeno mjesto gore je od prekoračenja. Vidi lib/prijave/kvota.ts.
+  maxPlayers Int?
+
   status TournamentStatus @default(NAJAVA)
 
   minPlayersMet Boolean @default(false) // izračunato nakon unosa rezultata (N>=6 za GP / N>=7 za Akademiju + odigran predviđen broj kola)

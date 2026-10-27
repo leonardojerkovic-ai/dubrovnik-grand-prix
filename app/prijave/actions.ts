@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { canActFor, getManagedPlayers } from "@/lib/guardian";
 import { checkEligibility } from "@/lib/scoring/eligibility";
+import { prijaviSKvotom, promakniSListeCekanja } from "@/lib/prijave/lista-cekanja";
+import { obradiPromaknute } from "@/lib/prijave/obavijest";
 
 /** Gumb za prijavu stoji na više stranica, pa se sve moraju osvježiti. */
 function revalidateRegistrations(tournamentId: string) {
@@ -122,15 +124,20 @@ export async function registerForTournament(
     return { error: eligibility.reason };
   }
 
-  await prisma.tournamentRegistration.upsert({
-    where: {
-      tournamentId_playerId: { tournamentId, playerId: player.id },
-    },
-    create: { tournamentId, playerId: player.id, status: "PRIJAVLJEN" },
-    update: { status: "PRIJAVLJEN" },
-  });
+  // Kvota i lista čekanja: upis ide pod bravom po turniru, jer bi inače
+  // dvije istodobne prijave na zadnje mjesto obje prošle.
+  const ishod = await prijaviSKvotom(tournamentId, player.id);
 
   revalidateRegistrations(tournamentId);
+
+  if (ishod.status === "NA_CEKANJU") {
+    return {
+      message:
+        `Mjesta su popunjena, pa si na listi čekanja — trenutno ` +
+        `${ishod.mjestoUReduCekanja}. u redu. Ako se netko odjavi, javit ćemo ti e-poštom.`,
+    };
+  }
+
   return { message: "Prijavljen/a si na turnir." };
 }
 
@@ -167,6 +174,12 @@ export async function cancelRegistration(
   if (count === 0) {
     return { error: "Prijava nije nađena ili je već otkazana." };
   }
+
+  // Oslobođeno mjesto pripada prvome s liste čekanja. Zove se bezuvjetno:
+  // turnir bez kvote ili bez liste ne radi ništa, a odjava s liste ne
+  // oslobađa mjesto pa ni tada nikoga ne promiče.
+  const promaknuti = await promakniSListeCekanja(tournamentId);
+  await obradiPromaknute(tournamentId, promaknuti);
 
   revalidateRegistrations(tournamentId);
   return { message: "Prijava otkazana." };

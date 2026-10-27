@@ -23,6 +23,10 @@ export function RegisterButton({
   const { ready, players, registeredFor, setRegistered } = useRegistrations();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  // Poruka akcije, ne samo greška: kad su mjesta popunjena, prijava uspije
+  // ali završi na listi čekanja — a to čovjek mora vidjeti odmah, jer se
+  // po gumbu („Odjavi") to ne razlikuje od potvrđene prijave.
+  const [poruka, setPoruka] = useState<string | null>(null);
 
   // Veličina ide kroz zajedničku .btn-sm klasu, da se padding ne upisuje
   // ovdje ponovno; zadana veličina gumba je ona bez modifikatora.
@@ -61,12 +65,17 @@ export function RegisterButton({
 
   const toggle = (playerId: string, isRegistered: boolean) => {
     setError(null);
+    setPoruka(null);
     startTransition(async () => {
       const result = isRegistered
         ? await cancelRegistration(tournamentId, playerId)
         : await registerForTournament(tournamentId, playerId);
-      if (result.error) setError(result.error);
-      else setRegistered(tournamentId, playerId, !isRegistered);
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setRegistered(tournamentId, playerId, !isRegistered);
+        if (result.message) setPoruka(result.message);
+      }
     });
   };
 
@@ -101,6 +110,9 @@ export function RegisterButton({
         </div>
       )}
       {error && <p className="mt-1 text-xs text-crimson">{error}</p>}
+      {!error && poruka && (
+        <p className="mt-1 max-w-xs text-xs text-subtle">{poruka}</p>
+      )}
     </div>
   );
 }

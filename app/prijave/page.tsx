@@ -19,7 +19,13 @@ export default async function PrijavePage() {
   const tournaments = await prisma.tournament.findMany({
     where: { status: "PRIJAVE_OTVORENE" },
     orderBy: { date: "asc" },
-    include: { season: true },
+    include: {
+      season: true,
+      // Broje se samo potvrđene prijave: lista čekanja ne zauzima mjesto.
+      _count: {
+        select: { registrations: { where: { status: "PRIJAVLJEN" } } },
+      },
+    },
   });
 
   return (
@@ -54,6 +60,13 @@ export default async function PrijavePage() {
                 </span>{" "}
                 {t.season.yearLabel}
               </p>
+              {t.maxPlayers !== null && (
+                <p className="text-sm text-subtle">
+                  {t._count.registrations >= t.maxPlayers
+                    ? `Mjesta popunjena (${t.maxPlayers}) — prijava ide na listu čekanja`
+                    : `Popunjeno ${t._count.registrations} od ${t.maxPlayers} mjesta`}
+                </p>
+              )}
             </div>
             <RegisterButton tournamentId={t.id} />
           </div>
