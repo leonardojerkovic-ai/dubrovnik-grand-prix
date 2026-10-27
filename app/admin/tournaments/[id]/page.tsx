@@ -79,6 +79,7 @@ export default async function EditTournamentPage(props: {
           venue: tournament.venue,
           startTime: tournament.startTime,
           announcementUrl: tournament.announcementUrl,
+          maxPlayers: tournament.maxPlayers,
         }}
       />
     </div>

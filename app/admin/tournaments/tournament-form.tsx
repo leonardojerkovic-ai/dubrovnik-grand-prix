@@ -46,6 +46,7 @@ type TournamentFormProps = {
     status?: string;
     baseMinutes?: number | null;
     incrementSeconds?: number | null;
+    maxPlayers?: number | null;
     restrictedCategories?: unknown;
   };
 };
@@ -244,6 +245,21 @@ export function TournamentForm({
           </span>
         </label>
       )}
+
+      <Field
+        label="Najviše prijavljenih"
+        error={state.errors?.maxPlayers}
+        hint="Prazno = bez ograničenja. Kad se mjesta popune, nove prijave idu na listu čekanja i odatle upadaju kad se netko odjavi. Tvoje ručno dodavanje igrača nije ograničeno."
+      >
+        <input
+          type="number"
+          name="maxPlayers"
+          min={1}
+          defaultValue={defaultValues.maxPlayers ?? ""}
+          placeholder="bez ograničenja"
+          className="input"
+        />
+      </Field>
 
       <div className="grid grid-cols-2 gap-4">
         <Field label="Mjesto održavanja" error={state.errors?.venue}>

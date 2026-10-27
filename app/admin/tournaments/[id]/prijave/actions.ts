@@ -52,6 +52,8 @@ async function eligibilityWarning(
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { promakniSListeCekanja } from "@/lib/prijave/lista-cekanja";
+import { obradiPromaknute } from "@/lib/prijave/obavijest";
 
 export type AdminRegistrationState = { error?: string; message?: string };
 
@@ -70,6 +72,8 @@ export async function adminAddRegistration(
     return { error: "Odaberi igrača." };
   }
 
+  // Kvota NE vrijedi za admina: sudac na mjestu zna razloge koje sustav ne
+  // zna, pa ručni upis uvijek ide među prijavljene, i preko broja mjesta.
   await prisma.tournamentRegistration.upsert({
     where: { tournamentId_playerId: { tournamentId, playerId } },
     create: { tournamentId, playerId, status: "PRIJAVLJEN" },
@@ -116,6 +120,12 @@ export async function adminRemoveRegistration(
     summary: `Otkazana prijava: ${updated.player.lastName} ${updated.player.firstName}`,
     after: { status: "OTKAZAN" },
   });
+
+  // Isto kao kod samostalne odjave: oslobođeno mjesto pripada prvome s
+  // liste čekanja. Zapis u trag izmjena i obavijest su u obradiPromaknute,
+  // da budu jednaki bez obzira tko je odjavu izazvao.
+  const promaknuti = await promakniSListeCekanja(tournamentId);
+  await obradiPromaknute(tournamentId, promaknuti);
 
   revalidatePath(`/admin/tournaments/${tournamentId}/prijave`);
 }

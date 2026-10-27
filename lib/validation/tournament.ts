@@ -34,6 +34,8 @@ export const tournamentSchema = z.object({
     .optional()
     .or(z.literal("")),
   academyPointsOnly: z.coerce.boolean().default(true),
+  /** Prazno = bez ograničenja broja prijava. Vidi lib/prijave/kvota.ts. */
+  maxPlayers: z.coerce.number().int().min(1).max(500).optional().or(z.literal("")),
   restrictedCategory: z
     .enum(GP_RESTRICTION_CODES as [string, ...string[]])
     .optional()

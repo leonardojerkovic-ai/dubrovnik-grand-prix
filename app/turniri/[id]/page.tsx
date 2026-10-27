@@ -218,6 +218,25 @@ export default async function TournamentDetailPage(props: {
         )}
       </div>
 
+      {/* Broj mjesta ima smisla samo dok se može prijaviti. Nakon što
+          prijave zatvore, popis sudionika govori sve. */}
+      {tournament.maxPlayers !== null &&
+        tournament.status === "PRIJAVE_OTVORENE" && (
+          <p className="mb-4 text-sm text-subtle">
+            {tournament.registrations.length >= tournament.maxPlayers ? (
+              <>
+                Mjesta su popunjena ({tournament.maxPlayers}). Nove prijave idu
+                na listu čekanja i ulaze ako se netko odjavi.
+              </>
+            ) : (
+              <>
+                Popunjeno {tournament.registrations.length} od{" "}
+                {tournament.maxPlayers} mjesta.
+              </>
+            )}
+          </p>
+        )}
+
       <dl className="mb-8 grid grid-cols-2 gap-4 rounded-lg border border-navy/10 bg-white p-4 text-sm md:grid-cols-4">
         <div>
           <dt className="text-xs uppercase tracking-wide text-muted">Datum</dt>
