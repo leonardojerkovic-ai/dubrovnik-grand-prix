@@ -220,3 +220,52 @@ a nedostavljena poruka manja je šteta od odjave prekinute na pola.
 **Ponovna prijava vraća na kraj reda.** `registeredAt` se pri ponovnoj
 prijavi postavlja na sada, inače bi otkazivanje i ponovna prijava bili
 način da se preskoči red.
+
+## Dobne oznake iz Swiss-Managera su ugniježđene
+
+Kad konačni poredak nema godište, jedini podatak o dobi je oznaka iz
+izvoza (`U16`, `U14`, `U10`, `S65`…). Dotad se tražilo doslovno poklapanje
+s oznakom nagrade, uz obrazloženje da se iz oznake ne smije zaključivati.
+To obrazloženje nije bilo točno: oznaka JEST granica godišta, pa iz nje
+slijedi pripadnost svim širim razredima iste obitelji.
+
+```
+U10 = rođen ≥ G−10, dakle i ≥ G−12 i ≥ G−16  →  zadovoljava U12, U16
+S65 = rođen ≤ G−65, dakle i ≤ G−60 i ≤ G−50  →  zadovoljava S60, S50
+```
+
+Smjer je suprotan za dvije obitelji, a obitelji se ne miješaju: U20 nije
+S20. Oznaka koja nije oblika `U<broj>` ili `S<broj>` i dalje se uspoređuje
+doslovno — iz nje se doista ne može ništa izvesti. Vidi `oznakaZadovoljava`
+u `lib/nagrade/dob.ts`.
+
+**Gdje toga nije bilo.** Samo u kalkulatoru novčanih nagrada, i samo na
+putu bez godišta. Kad je godište poznato, usporedba ide preko
+`birthYearMin`/`birthYearMax` i uvijek je bila ugniježđena — isto kao
+dobne kategorije glavnog GP-a (čl. 22, `lib/scoring/gp/categories.ts`) i
+Akademije (čl. 20, `lib/scoring/akademija/categories.ts`). Oba su
+provjerena i nisu mijenjana.
+
+## Redoslijed dodjele je potpun i ispisuje se
+
+`redoslijedDodjele` ima i četvrti kriterij, `id`, nakon iznosa, pravila i
+objavljenog redoslijeda. Bez njega bi dvije nagrade istog iznosa, iste
+vrste i istog objavljenog redoslijeda ovisile o tome kako
+`Array.prototype.sort` slaže jednake članove — a o tom poretku ovisi tko
+dobiva nagradu.
+
+Redoslijed se prikazuje i u alatu, iz istog poziva koji dodjeljuje, pa se
+ispis i dodjela ne mogu razići.
+
+## Nedodijeljena nagrada kaže zašto
+
+`Dodjela.razlog` razlikuje dva ishoda koja su dotad izgledala jednako:
+
+- `NEMA_KANDIDATA` — nitko ne zadovoljava uvjete. Raspis traži nešto čega
+  na turniru nema, pa se uz poruku ispisuju i uvjeti (`opisUvjeta`).
+  Organizatoru je to signal da uvjet promijeni ili nagradu ukine.
+- `SVI_NAGRADENI` — ima tko je zadovoljava, ali su svi već dobili veću.
+  Uredan ishod, novac je otišao kroz veće nagrade; nema što popravljati.
+
+Dok se javljalo samo „nije dodijeljena", drugi se slučaj čitao kao greška
+u raspisu.
