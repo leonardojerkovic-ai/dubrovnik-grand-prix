@@ -1,4 +1,5 @@
 import { matchesCriteria, type PrizeCriteria } from "../scoring/prizes";
+import { oznakaZadovoljava } from "./dob";
 
 /**
  * Raspodjela NOVČANIH nagrada na turniru.
@@ -107,11 +108,24 @@ export interface Dodjela {
   iznos: number;
   /** Koji je ovo primjerak nagrade kad ih se dodjeljuje više. */
   primjerak: number;
-  /** Prazno kad nema nijednog igrača koji zadovoljava uvjete. */
+  /** Prazno kad nagrada nije dodijeljena; zašto, kaže `razlog`. */
   ime: string | null;
   mjesto: number | null;
   /** Nagrada nije pripala najbolje plasiranom igraču koji je zadovoljava. */
   prenesena: boolean;
+  /**
+   * Zašto nagrada nije dodijeljena. Prazno kad jest.
+   *
+   * Razlika je bitna i nije kozmetička. „Nitko ne zadovoljava uvjete" znači
+   * da je razred prazan i da raspis traži nešto čega na turniru nema —
+   * organizatoru je to signal da uvjet promijeni ili nagradu ukine.
+   * „Svi koji zadovoljavaju već su nagrađeni" znači da je sve u redu i da
+   * je novac otišao kroz veće nagrade; tu nema što popravljati.
+   *
+   * Dok se javljalo samo „nije dodijeljena", ta dva slučaja izgledala su
+   * jednako, pa se uredan ishod čitao kao greška u raspisu.
+   */
+  razlog: "NEMA_KANDIDATA" | "SVI_NAGRADENI" | null;
 }
 
 /** Igrač bez rejtinga računa se kao 1400 — isto kao kod F_R (čl. 24). */
@@ -171,12 +185,16 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
   const bezRejtinga = { ...nagrada, ratingMin: null, ratingMax: null };
 
   if (trebaGodiste && n.godiste === null) {
-    // Godišta nema. Jedini preostali podatak o dobi je oznaka iz izvoza, i
-    // vrijedi samo ako se točno poklapa s oznakom nagrade — S65 ne pokriva
-    // S60, jer izvoz ne kaže je li igrač i za nju star dovoljno.
+    // Godišta nema. Jedini preostali podatak o dobi je oznaka iz izvoza.
+    // Usporedba je UGNIJEŽĐENA, kao i kod poznatog godišta: U10 zadovoljava
+    // U12, S65 zadovoljava S50 (vidi oznakaZadovoljava u ./dob.ts). Dok se
+    // tražilo doslovno poklapanje, dijete označeno U10 nije dobivalo
+    // nagradu za U12 iako joj po dobi pripada.
     if (!nagrada.oznaka) return false;
-    const trazena = nagrada.oznaka.toUpperCase();
-    if (!(n.kategorije ?? []).some((k) => k.toUpperCase() === trazena)) return false;
+    const trazena = nagrada.oznaka;
+    if (!(n.kategorije ?? []).some((k) => oznakaZadovoljava(k, trazena))) {
+      return false;
+    }
 
     // Ostali uvjeti (spol, rejting, članstvo) i dalje moraju proći, pa se
     // dobne granice privremeno maknu.
@@ -200,7 +218,17 @@ export type PravilaJednakosti = "OPCE_PRIJE" | "POSEBNA_PRIJE";
 
 export const ZADANO_PRAVILO: PravilaJednakosti = "OPCE_PRIJE";
 
-/** Redoslijed obrade: iznos, pa odabrano pravilo, pa objavljeni redoslijed. */
+/**
+ * Redoslijed obrade: iznos, pa odabrano pravilo, pa objavljeni redoslijed,
+ * pa `id`.
+ *
+ * Zadnji korak postoji da poredak bude POTPUN. Dvije nagrade s istim
+ * iznosom, iste vrste i istog objavljenog redoslijeda inače bi ovisile o
+ * tome kako `Array.prototype.sort` posloži jednake članove — a od tog
+ * poretka ovisi tko dobiva nagradu. Ovako isti unos uvijek daje istu
+ * dodjelu, pa se i ispis redoslijeda u izvještaju može čitati kao
+ * objašnjenje.
+ */
 export function redoslijedDodjele(
   nagrade: NovcanaNagrada[],
   pravilo: PravilaJednakosti = ZADANO_PRAVILO
@@ -211,7 +239,8 @@ export function redoslijedDodjele(
       const posebnaPrva = pravilo === "POSEBNA_PRIJE";
       return a.posebna === posebnaPrva ? -1 : 1;
     }
-    return a.redoslijed - b.redoslijed;
+    if (a.redoslijed !== b.redoslijed) return a.redoslijed - b.redoslijed;
+    return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
   });
 }
 
@@ -273,6 +302,7 @@ export function dodijeliNagrade(
           ime: null,
           mjesto: null,
           prenesena: false,
+          razlog: ocekivani.length === 0 ? "NEMA_KANDIDATA" : "SVI_NAGRADENI",
         });
         continue;
       }
@@ -288,6 +318,7 @@ export function dodijeliNagrade(
         ime: natjecatelj.ime,
         mjesto: natjecatelj.mjesto,
         prenesena: prirodni !== undefined && prirodni[1] !== index,
+        razlog: null,
       });
     }
   }

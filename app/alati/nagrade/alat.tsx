@@ -9,12 +9,14 @@ import {
 } from "@/lib/nagrade/dob";
 import {
   dodijeliNagrade,
+  redoslijedDodjele,
   ukupanFond,
   ukupnoIsplaceno,
   ZADANO_PRAVILO,
   type NovcanaNagrada,
   type PravilaJednakosti,
 } from "@/lib/nagrade/dodjela";
+import { opisUvjeta } from "@/lib/nagrade/opis";
 import { procitajTablicu } from "@/lib/nagrade/unos";
 import {
   obrisiPredlozak,
@@ -187,6 +189,19 @@ export function NovcaneNagradeAlat() {
   const isplaceno = ukupnoIsplaceno(dodjele);
   const fond = ukupanFond(nagrade);
   const nedodijeljeno = dodjele.filter((d) => !d.ime);
+  // Dvije vrste nedodijeljenog, i samo prva traži zahvat u raspis.
+  const bezKandidata = nedodijeljeno.filter((d) => d.razlog === "NEMA_KANDIDATA");
+  const sviNagradeni = nedodijeljeno.filter((d) => d.razlog === "SVI_NAGRADENI");
+  // Redoslijed obrade — isti poziv koji dodjeljuje, pa se ispis i dodjela
+  // ne mogu razići.
+  const poredakObrade = useMemo(
+    () => redoslijedDodjele(nagrade, pravilo),
+    [nagrade, pravilo]
+  );
+  const uvjetiPoId = useMemo(
+    () => new Map(nagrade.map((n) => [n.id, opisUvjeta(n)])),
+    [nagrade]
+  );
 
   function promijeni(id: string, dio: Partial<Redak>) {
     setRedci((prev) => prev.map((r) => (r.id === id ? { ...r, ...dio } : r)));
@@ -194,14 +209,31 @@ export function NovcaneNagradeAlat() {
 
   function preuzmiCsv() {
     const csv = toCsv(
-      ["Nagrada", "Primjerak", "Iznos (EUR)", "Dobitnik", "Mjesto", "Prenesena"],
+      [
+        "Redoslijed obrade",
+        "Nagrada",
+        "Primjerak",
+        "Iznos (EUR)",
+        "Uvjeti",
+        "Dobitnik",
+        "Mjesto",
+        "Prenesena",
+        "Zašto nije dodijeljena",
+      ],
       dodjele.map((d) => [
+        poredakObrade.findIndex((n) => n.id === d.nagradaId) + 1,
         d.naziv,
         d.primjerak,
         d.iznos,
-        d.ime ?? "nije dodijeljena",
+        uvjetiPoId.get(d.nagradaId) ?? "",
+        d.ime ?? "",
         d.mjesto ?? "",
         d.prenesena ? "da" : "",
+        d.razlog === "NEMA_KANDIDATA"
+          ? "nitko ne zadovoljava uvjete"
+          : d.razlog === "SVI_NAGRADENI"
+            ? "svi koji je zadovoljavaju već su nagrađeni"
+            : "",
       ])
     );
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
@@ -574,6 +606,33 @@ export function NovcaneNagradeAlat() {
           </p>
         ) : (
           <>
+            {/* Redoslijed obrade objašnjava svaku dodjelu koja slijedi:
+                nagrada se daje najbolje plasiranom igraču koji je
+                zadovoljava i još ništa nije dobio, pa tko je prvi na redu,
+                prvi i bira. */}
+            <details className="rounded-lg border border-navy/10 bg-paper/60 px-3 py-2 text-sm">
+              <summary className="cursor-pointer text-navy">
+                Redoslijed dodjele ({poredakObrade.length})
+              </summary>
+              <p className="mt-2 text-xs text-muted">
+                Po iznosu, veći prije manjeg; pri jednakom iznosu odlučuje
+                odabrano pravilo, pa objavljeni redoslijed. Svaka nagrada
+                pripada najbolje plasiranom igraču koji je zadovoljava i još
+                ništa nije dobio.
+              </p>
+              <ol className="mt-2 grid gap-0.5">
+                {poredakObrade.map((n, i) => (
+                  <li key={n.id} className="tabular-nums">
+                    <span className="text-muted">{i + 1}.</span> {n.naziv}{" "}
+                    <span className="text-subtle">{eur(n.iznos)}</span>
+                    {uvjetiPoId.get(n.id) && (
+                      <span className="text-muted"> — {uvjetiPoId.get(n.id)}</span>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </details>
+
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="text-left text-xs uppercase tracking-wide text-muted">
@@ -607,8 +666,20 @@ export function NovcaneNagradeAlat() {
                               </span>
                             )}
                           </>
+                        ) : d.razlog === "SVI_NAGRADENI" ? (
+                          <span
+                            className="text-muted"
+                            title="Novac je otišao kroz veće nagrade. U raspisu nema što mijenjati."
+                          >
+                            svi koji je zadovoljavaju već su nagrađeni
+                          </span>
                         ) : (
-                          <span className="text-muted">nitko ne zadovoljava uvjete</span>
+                          <span className="text-crimson">
+                            nitko ne zadovoljava uvjete
+                            {uvjetiPoId.get(d.nagradaId)
+                              ? ` (${uvjetiPoId.get(d.nagradaId)})`
+                              : ""}
+                          </span>
                         )}
                       </td>
                       <td className="py-1.5 tabular-nums text-subtle">{d.mjesto ?? "—"}</td>
@@ -624,9 +695,19 @@ export function NovcaneNagradeAlat() {
               </span>
               <span className="text-muted">Objavljeni fond: {eur(fond)}</span>
               {nedodijeljeno.length > 0 && (
+                <span className="text-subtle">
+                  Nedodijeljeno: {eur(fond - isplaceno)}
+                </span>
+              )}
+              {bezKandidata.length > 0 && (
                 <span className="text-crimson">
-                  Nedodijeljeno: {eur(fond - isplaceno)} ({nedodijeljeno.length}{" "}
-                  {nedodijeljeno.length === 1 ? "nagrada" : "nagrade/a"})
+                  Bez ijednog kandidata: {bezKandidata.length}{" "}
+                  {bezKandidata.length === 1 ? "nagrada" : "nagrade/a"}
+                </span>
+              )}
+              {sviNagradeni.length > 0 && (
+                <span className="text-muted">
+                  Već nagrađeni: {sviNagradeni.length}
                 </span>
               )}
               <button

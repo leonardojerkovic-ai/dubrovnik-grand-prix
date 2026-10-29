@@ -209,9 +209,42 @@ describe("dob iz oznake kad godišta nema", () => {
     expect(d.find((x) => x.nagradaId === "s65")!.ime).toBe("Veteran");
   });
 
-  it("oznaka se mora točno poklopiti — S65 ne pokriva S60", () => {
+  it("oznake su ugniježđene — S65 pokriva S60 i S50", () => {
+    // Rođen G−65 ili ranije je i G−60 i G−50 ili raniji. Dok se tražilo
+    // doslovno poklapanje, ovo je vraćalo prazno, i to je bila greška, ne
+    // opreznost.
     const d = dodijeliNagrade(poredak, [
       nagrada({ id: "s60", iznos: 90, posebna: true, birthYearMax: 1967, oznaka: "S60" }),
+      nagrada({ id: "s50", iznos: 80, posebna: true, birthYearMax: 1977, oznaka: "S50" }),
+    ]);
+    expect(d.find((x) => x.nagradaId === "s60")!.ime).toBe("Veteran");
+    // Nagrade nisu kumulativne: veću je već uzeo, pa S50 ostaje bez njega.
+    expect(d.find((x) => x.nagradaId === "s50")!.ime).toBeNull();
+  });
+
+  it("mlađi razred zadovoljava stariji — U10 pokriva U12 i U16", () => {
+    const djeca: Natjecatelj[] = [
+      { mjesto: 1, ime: "Desetogodišnjak", godiste: null, spol: "M", rejting: 1500, clan: false, kategorije: ["U10"] },
+      { mjesto: 2, ime: "Četrnaestogodišnjak", godiste: null, spol: "M", rejting: 1600, clan: false, kategorije: ["U14"] },
+    ];
+    const d = dodijeliNagrade(djeca, [
+      nagrada({ id: "u16", iznos: 100, posebna: true, birthYearMin: 2010, oznaka: "U16" }),
+      nagrada({ id: "u12", iznos: 50, posebna: true, birthYearMin: 2014, oznaka: "U12" }),
+    ]);
+    // U16 je veća, pa je uzima bolje plasirani — a to je dijete iz U10.
+    expect(d.find((x) => x.nagradaId === "u16")!.ime).toBe("Desetogodišnjak");
+    // U12 ostaje bez dobitnika: četrnaestogodišnjak joj po dobi ne pripada.
+    expect(d.find((x) => x.nagradaId === "u12")!.ime).toBeNull();
+  });
+
+  it("obitelji se ne miješaju — oznaka U ne zadovoljava nagradu S", () => {
+    // Junior je označen U20. Nagrada S20 traži rođene G−20 i RANIJE, dakle
+    // suprotan smjer; broj je isti, ali značenje nije.
+    const samoJunior: Natjecatelj[] = [
+      { mjesto: 1, ime: "Junior", godiste: null, spol: "M", rejting: 2100, clan: false, kategorije: ["U20"] },
+    ];
+    const d = dodijeliNagrade(samoJunior, [
+      nagrada({ id: "s20", iznos: 90, posebna: true, birthYearMax: 2007, oznaka: "S20" }),
     ]);
     expect(d[0]!.ime).toBeNull();
   });
@@ -429,5 +462,44 @@ describe("pravilo pri jednakom iznosu", () => {
     expect(dodijeliNagrade(poredak, nagrade)).toEqual(
       dodijeliNagrade(poredak, nagrade, "OPCE_PRIJE")
     );
+  });
+});
+
+describe("razlog nedodjele", () => {
+  const poredak: Natjecatelj[] = [
+    { mjesto: 1, ime: "Ana", godiste: 2000, spol: "F", rejting: 2000, clan: true },
+    { mjesto: 2, ime: "Ivo", godiste: 1990, spol: "M", rejting: 1900, clan: true },
+  ];
+
+  it("prazan razred se razlikuje od razreda u kojem su svi već nagrađeni", () => {
+    const d = dodijeliNagrade(poredak, [
+      nagrada({ id: "prva", iznos: 200 }),
+      nagrada({ id: "druga", iznos: 150 }),
+      // Treću mjesto nema tko uzeti: oba igrača su već nagrađena.
+      nagrada({ id: "treca", iznos: 100 }),
+      // Ovu ne zadovoljava nitko — na turniru nema juniora.
+      nagrada({ id: "u20", iznos: 90, posebna: true, birthYearMin: 2007 }),
+    ]);
+
+    expect(d.find((x) => x.nagradaId === "treca")!.razlog).toBe("SVI_NAGRADENI");
+    expect(d.find((x) => x.nagradaId === "u20")!.razlog).toBe("NEMA_KANDIDATA");
+  });
+
+  it("dodijeljena nagrada nema razlog", () => {
+    const d = dodijeliNagrade(poredak, [nagrada({ id: "prva", iznos: 200 })]);
+    expect(d[0]!.ime).toBe("Ana");
+    expect(d[0]!.razlog).toBeNull();
+  });
+});
+
+describe("redoslijed je potpun", () => {
+  it("nagrade istog iznosa, vrste i objavljenog redoslijeda imaju stalan poredak", () => {
+    // Bez zadnjeg kriterija ovisilo bi o tome kako sort slaže jednake
+    // članove, a o poretku ovisi tko dobiva nagradu.
+    const a = nagrada({ id: "b", iznos: 100, posebna: true, redoslijed: 0 });
+    const b = nagrada({ id: "a", iznos: 100, posebna: true, redoslijed: 0 });
+
+    expect(redoslijedDodjele([a, b]).map((n) => n.id)).toEqual(["a", "b"]);
+    expect(redoslijedDodjele([b, a]).map((n) => n.id)).toEqual(["a", "b"]);
   });
 });
