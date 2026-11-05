@@ -1,6 +1,6 @@
 name: Podsjetnik — rejtinzi
 
-# Prvog u mjesecu u 07:00 UTC, sat nakon uvoza.
+# Četvrtog u mjesecu u 07:23 UTC, dan nakon uvoza.
 #
 # Ne preuzima ništa izvana, nego samo pogleda datum najnovije liste u bazi.
 # Zadatak PADA kad su rejtinzi zastarjeli, i taj je neuspjeh cijela poanta:
@@ -8,7 +8,7 @@ name: Podsjetnik — rejtinzi
 # i da treba pogledati zašto.
 on:
   schedule:
-    - cron: "0 7 1 * *"
+    - cron: "23 7 4 * *"
   workflow_dispatch:
 
 jobs:

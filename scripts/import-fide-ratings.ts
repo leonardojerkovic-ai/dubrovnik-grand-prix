@@ -29,6 +29,7 @@ import {
   ratingListUrl,
   type FideRatingType,
 } from "../lib/fide/parse-rating-list";
+import { porukaOdbijanja, smijePisati } from "../lib/fide/prepisivanje";
 import {
   dohvatiIgraca,
   rejtinziIzOdgovora,
@@ -408,6 +409,7 @@ const POZNATE_ZASTAVICE = [
   "--type=",
   "--date=",
   "--izvor=",
+  "--prepisi",
 ];
 
 function provjeriZastavice(args: string[]): void {
@@ -426,6 +428,7 @@ function provjeriZastavice(args: string[]): void {
         "  --type=STANDARD        samo jedan tempo",
         "  --date=GGGG-MM-DD      datum liste",
         "  --izvor=lichess|fide   odakle se povlači",
+        "  --prepisi              dopusti Lichessu pisati preko postojećeg snimka",
         "",
         "Ništa nije upisano.",
       ].join("\n")
@@ -441,6 +444,7 @@ async function main() {
   const samoUsporedi = args.includes("--usporedi");
   const izvorArg = args.find((a) => a.startsWith("--izvor="))?.split("=")[1];
   const izvor: Izvor = (izvorArg ?? "lichess").toLowerCase() as Izvor;
+  const prepisi = args.includes("--prepisi");
 
   if (izvor !== "lichess" && izvor !== "fide") {
     throw new Error(`Nepoznat izvor: ${izvorArg}. Dopušteno: lichess, fide.`);
@@ -483,6 +487,31 @@ async function main() {
 
   const byFideId = new Map<string, string>();
   for (const igrac of withId) byFideId.set(igrac.fideId, igrac.id);
+
+  /*
+    Lichess ne smije pregaziti snimak koji za taj datum već postoji.
+
+    Razlog je 1.11.2026.: službeni uvoz je u 10:18 upisao studenske
+    vrijednosti, a uvoz s Lichessa u 12:31 vratio listopadske, jer Lichess
+    na prijelazu mjeseca zaostaje za službenom listom. Nijedna naredba nije
+    javila grešku; dvadeset i jedan igrač je tiho ostao na prošlomjesečnom
+    rejtingu. Vidi lib/fide/prepisivanje.ts i docs/odluke.md.
+
+    Provjera stoji prije prikupljanja, a izuzeti su --dry-run i --usporedi:
+    oni ne pišu ništa pa ih se ne tiče. Preuzimanje triju zipova od 30 MB
+    nema smisla ako upisa ionako neće biti.
+  */
+  if (!dryRun && !samoUsporedi) {
+    const postojeci = await prisma.playerRatingSnapshot.count({
+      where: { snapshotDate: listDate },
+    });
+
+    if (!smijePisati({ izvor, postojiSnimak: postojeci > 0, prepisi })) {
+      console.error(porukaOdbijanja(listDate.toISOString().slice(0, 10)));
+      process.exitCode = 1;
+      return;
+    }
+  }
 
   if (samoUsporedi) {
     const imena = new Map<string, string>();

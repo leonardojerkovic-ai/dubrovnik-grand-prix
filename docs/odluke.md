@@ -269,3 +269,30 @@ ispis i dodjela ne mogu razići.
 
 Dok se javljalo samo „nije dodijeljena", drugi se slučaj čitao kao greška
 u raspisu.
+## Lichess ne smije pregaziti postojeći snimak rejtinga
+
+**Što se dogodilo 1.11.2026.** Zakazani uvoz u 06:00 UTC nije se ni
+pokrenuo — GitHub ga je preskočio. Uvoz je zato pokrenut ručno sa
+službenih FIDE lista u 10:18 i upisao studenske vrijednosti. U 12:31 je
+pokrenut uvoz s Lichessa, koji je tog jutra **još služio listopadsku
+listu**, i prepisao 21 igrača natrag na prošlomjesečni rejting. Nijedna
+naredba nije javila grešku; otkriveno je četiri dana kasnije, jer je
+jednoj igračici rejting izgledao star.
+
+**Pravilo.** Uvoz s Lichessa odbija pisati ako za taj datum snimak već
+postoji. Obrnuti smjer je dopušten — službena lista uvijek smije ispraviti
+ono što je Lichess upisao. Prvi uvoz u mjesecu prolazi normalno, jer tada
+snimka nema. Zastavica `--prepisi` otključava i odbijeni slučaj, za kad se
+uvoz prekine na pola pa ga treba ponoviti. `--dry-run` i `--usporedi` ne
+pišu ništa pa provjeru zaobilaze. Vidi `lib/fide/prepisivanje.ts`.
+
+**Termini.** Uvoz je pomaknut s prvog na **treći u mjesecu, 06:17 UTC**, a
+podsjetnik s prvog na **četvrti, 07:23 UTC**. Prvi dan je prerano jer
+Lichess još nije prešao na novu listu, a puni sat je najgušći termin za
+zakazane zadatke, pa ih GitHub zna preskočiti. Cijena je da rejtinzi na
+stranici dva dana nose prošlomjesečne brojke — što je bolje nego da nose
+prošlomjesečne pod ovomjesečnim datumom.
+
+**Što ovo ne rješava.** Uvoz i dalje ne briše vrijednosti kojih u novoj
+listi nema: igraču koji je s liste ispao ostaje stara. Zasebno pitanje,
+otvoreno.

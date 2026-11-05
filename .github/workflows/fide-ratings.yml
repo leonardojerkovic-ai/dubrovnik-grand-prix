@@ -1,7 +1,14 @@
 name: Uvoz FIDE rejtinga
 
-# Prvog u mjesecu u 06:00 UTC. FIDE liste objavljuje krajem prethodnog
-# mjeseca, pa je prvi dan siguran termin.
+# Trećeg u mjesecu u 06:17 UTC.
+#
+# NE prvog: 1.11.2026. Lichess je tog jutra još služio listopadsku listu,
+# pa bi uvoz upisao prošlomjesečne vrijednosti pod ovomjesečnim datumom —
+# tiho i zeleno. Do trećega je Lichess uvijek prešao na novu listu.
+#
+# NE u punom satu: zakazani zadaci u :00 su u najvećoj gužvi i GitHub ih
+# zna odgoditi ili posve preskočiti, kao 1.11.2026., kad prolaza nije ni
+# bilo. Minuta 17 nije magična, samo je izvan gužve.
 #
 # Uvoz ide preko Lichessova FIDE API-ja, ne izravno s ratings.fide.com.
 # FIDE odbija promet iz podatkovnih centara — veza s GitHubovih poslužitelja
@@ -15,7 +22,7 @@ name: Uvoz FIDE rejtinga
 # Vidi docs/rejtinzi.md.
 on:
   schedule:
-    - cron: "0 6 1 * *"
+    - cron: "17 6 3 * *"
   workflow_dispatch:
     inputs:
       dry_run:
