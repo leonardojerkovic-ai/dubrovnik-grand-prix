@@ -307,3 +307,20 @@ prošlomjesečne pod ovomjesečnim datumom.
 **Što ovo ne rješava.** Uvoz i dalje ne briše vrijednosti kojih u novoj
 listi nema: igraču koji je s liste ispao ostaje stara. Zasebno pitanje,
 otvoreno.
+
+## U ovom projektu nema `prisma migrate dev`
+
+`.env` pokazuje na produkcijsku bazu, pa je svaka naredba koja je dodiruje
+zahvat na živom sustavu. `migrate dev` je razvojna naredba: osim što
+primjenjuje migracije, provjerava odstupanje sheme od njih i, kad ga nađe,
+**ponudi resetiranje baze**. Dosad odstupanja nije bilo pa se to pitanje
+nije ni pojavilo — prvi put kad se pojavi, pojavit će se nad podacima
+članova.
+
+Zato: **uvijek `migrate deploy`**, nikad `migrate dev`. Migracijski SQL
+pišemo rukom, u datoteku s vremenskom oznakom pod `prisma/migrations/`, pa
+nam `dev` ne treba ni za generiranje.
+
+Skripta `prisma:migrate` koja je pokretala `migrate dev` zamijenjena je s
+`prisma:deploy` i `prisma:status`. Naredba koja može obrisati bazu ne smije
+stajati iza jedne riječi u `package.json`.

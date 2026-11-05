@@ -8,10 +8,21 @@ GP Akademije).
 ```bash
 npm install
 cp .env.example .env.local   # popuni DATABASE_URL, DIRECT_URL, NEXTAUTH_SECRET, NEXTAUTH_URL
-npx prisma migrate dev       # kreira tablice u Supabase bazi
+npx prisma migrate deploy    # primijeni postojeće migracije
 npx prisma generate
 npm run dev
 ```
+
+> **Nikad `prisma migrate dev` u ovom projektu.** `.env` pokazuje na
+> produkcijsku bazu, a `migrate dev` je razvojna naredba: kad nađe
+> odstupanje sheme od migracija, ponudi **resetiranje baze**. Nad
+> produkcijom s podacima članova to je pitanje koje ne želiš vidjeti.
+> `migrate deploy` samo primjenjuje ono što u `prisma/migrations` već
+> stoji i ne nudi ništa.
+>
+> Migracijski SQL pišemo rukom, u datoteku s vremenskom oznakom pod
+> `prisma/migrations/`, pa nam `migrate dev` ne treba ni za generiranje.
+> Svaka migracija mora biti kompatibilna unatrag — vidi `docs/odluke.md`.
 
 Testovi bodovnog enginea i ostatka:
 
