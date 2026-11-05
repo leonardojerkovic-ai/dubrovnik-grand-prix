@@ -3,6 +3,7 @@ import {
   imaMjesta,
   kolikoPromaknuti,
   odjavaOslobadaMjesto,
+  odluciPrijavu,
   statusNovePrijave,
 } from "./kvota";
 
@@ -69,5 +70,38 @@ describe("odjavaOslobadaMjesto", () => {
   it("odjava s liste čekanja ne oslobađa ništa", () => {
     expect(odjavaOslobadaMjesto("NA_CEKANJU")).toBe(false);
     expect(odjavaOslobadaMjesto("OTKAZAN")).toBe(false);
+  });
+});
+
+describe("odluciPrijavu", () => {
+  it("potvrđenog igrača ne dira ni na popunjenom turniru", () => {
+    // Ovo je bila greška: brojanje prijavljenih uključuje i njega samog,
+    // pa bi ponovni klik iz druge kartice izbacio potvrđenog igrača na
+    // kraj liste, a mjesto ostalo prazno.
+    expect(
+      odluciPrijavu({ postojeciStatus: "PRIJAVLJEN", brojPrijavljenih: 20, maxPlayers: 20 })
+    ).toEqual({ upisati: false, status: "PRIJAVLJEN" });
+  });
+
+  it("igraču na listi ne pomiče mjesto u redu", () => {
+    expect(
+      odluciPrijavu({ postojeciStatus: "NA_CEKANJU", brojPrijavljenih: 20, maxPlayers: 20 })
+    ).toEqual({ upisati: false, status: "NA_CEKANJU" });
+  });
+
+  it("nova prijava ulazi po stanju mjesta", () => {
+    expect(
+      odluciPrijavu({ postojeciStatus: null, brojPrijavljenih: 19, maxPlayers: 20 })
+    ).toEqual({ upisati: true, status: "PRIJAVLJEN" });
+    expect(
+      odluciPrijavu({ postojeciStatus: null, brojPrijavljenih: 20, maxPlayers: 20 })
+    ).toEqual({ upisati: true, status: "NA_CEKANJU" });
+  });
+
+  it("otkazana prijava se računa kao nova", () => {
+    // Namjerno: inače bi otkazivanje i ponovna prijava preskočili red.
+    expect(
+      odluciPrijavu({ postojeciStatus: "OTKAZAN", brojPrijavljenih: 20, maxPlayers: 20 })
+    ).toEqual({ upisati: true, status: "NA_CEKANJU" });
   });
 });

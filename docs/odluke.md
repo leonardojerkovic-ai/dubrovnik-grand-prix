@@ -217,9 +217,20 @@ poziv poštanskom servisu, pa bi njegov zastoj zaustavio prijave na tom
 turniru. Pad slanja ne ruši odjavu koja ga je izazvala: upis je već točan,
 a nedostavljena poruka manja je šteta od odjave prekinute na pola.
 
-**Ponovna prijava vraća na kraj reda.** `registeredAt` se pri ponovnoj
-prijavi postavlja na sada, inače bi otkazivanje i ponovna prijava bili
-način da se preskoči red.
+**Ponovna prijava vraća na kraj reda — ali samo nakon otkazivanja.**
+`registeredAt` se postavlja na sada kad igrač nema prijavu ili ju je
+otkazao, inače bi otkazivanje i ponovna prijava bili način da se preskoči
+red.
+
+**Postojeća prijava se ne dira.** Ako igrač već ima `PRIJAVLJEN` ili
+`NA_CEKANJU`, ponovna prijava ne piše ništa i vraća zatečeno stanje. Dok
+se status računao bez obzira na postojeću prijavu, ponovni klik
+potvrđenog igrača na popunjenom turniru izbacio bi **njega samog** na kraj
+liste čekanja: brojanje prijavljenih uključuje i njegovo mjesto, pa je
+izlazilo da mjesta nema. Dovoljan je bio klik iz druge kartice, sa
+stranice iz predmemorije ili od drugog roditelja za isto dijete — mjesto
+bi ostalo prazno, a nitko ne bi bio obaviješten. Odluka je čista funkcija
+`odluciPrijavu` u `lib/prijave/kvota.ts`.
 
 ## Dobne oznake iz Swiss-Managera su ugniježđene
 

@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { sqlLockTimeout, TRANSAKCIJA_BRAVE } from "@/lib/rate-limit-rules";
-import { kolikoPromaknuti, statusNovePrijave, type StatusPrijave } from "./kvota";
+import {
+  kolikoPromaknuti,
+  odluciPrijavu,
+  type StatusPrijave,
+} from "./kvota";
 
 /**
  * Upis prijave i promicanje s liste čekanja — sve što traži bravu i
@@ -47,35 +51,56 @@ export async function prijaviSKvotom(
         select: { maxPlayers: true },
       });
 
+      // Postojeća prijava se čita PRIJE brojanja i ne dira se. Bez toga bi
+      // ponovni klik potvrđenog igrača na popunjenom turniru izbacio
+      // njega samog na kraj liste — brojanje prijavljenih uključuje i
+      // njegovo mjesto, pa izlazi da mjesta nema. Vidi odluciPrijavu.
+      const postojeca = await tx.tournamentRegistration.findUnique({
+        where: { tournamentId_playerId: { tournamentId, playerId } },
+        select: { status: true, registeredAt: true },
+      });
+
       const brojPrijavljenih = await tx.tournamentRegistration.count({
         where: { tournamentId, status: "PRIJAVLJEN" },
       });
 
-      const status = statusNovePrijave(brojPrijavljenih, turnir?.maxPlayers);
+      const odluka = odluciPrijavu({
+        postojeciStatus: postojeca?.status ?? null,
+        brojPrijavljenih,
+        maxPlayers: turnir?.maxPlayers,
+      });
 
       // Jedan trenutak za upis i za brojanje reda, da red ne ovisi o tome
       // koliko je milisekundi prošlo između dva poziva unutar transakcije.
       const sada = new Date();
+      const odKada = odluka.upisati ? sada : (postojeca?.registeredAt ?? sada);
 
-      await tx.tournamentRegistration.upsert({
-        where: { tournamentId_playerId: { tournamentId, playerId } },
-        create: { tournamentId, playerId, status, registeredAt: sada },
-        update: { status, registeredAt: sada },
-      });
+      if (odluka.upisati) {
+        await tx.tournamentRegistration.upsert({
+          where: { tournamentId_playerId: { tournamentId, playerId } },
+          create: {
+            tournamentId,
+            playerId,
+            status: odluka.status,
+            registeredAt: sada,
+          },
+          update: { status: odluka.status, registeredAt: sada },
+        });
+      }
 
-      if (status === "PRIJAVLJEN") {
-        return { status, mjestoUReduCekanja: null };
+      if (odluka.status === "PRIJAVLJEN") {
+        return { status: odluka.status, mjestoUReduCekanja: null };
       }
 
       const ispredNjega = await tx.tournamentRegistration.count({
         where: {
           tournamentId,
           status: "NA_CEKANJU",
-          registeredAt: { lt: sada },
+          registeredAt: { lt: odKada },
         },
       });
 
-      return { status, mjestoUReduCekanja: ispredNjega + 1 };
+      return { status: odluka.status, mjestoUReduCekanja: ispredNjega + 1 };
     },
     { maxWait: TRANSAKCIJA_BRAVE.maxWait, timeout: TRANSAKCIJA_BRAVE.timeout }
   );

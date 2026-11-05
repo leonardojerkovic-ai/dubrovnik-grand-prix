@@ -59,3 +59,45 @@ export function kolikoPromaknuti(
 export function odjavaOslobadaMjesto(status: string): boolean {
   return status === "PRIJAVLJEN";
 }
+
+/** Status prijave kakav već stoji u bazi, ili prazno ako je igrač nema. */
+export type PostojeciStatus = StatusPrijave | "OTKAZAN" | null;
+
+export interface OdlukaPrijave {
+  /** Treba li uopće pisati u bazu. */
+  upisati: boolean;
+  status: StatusPrijave;
+}
+
+/**
+ * Što učiniti kad stigne prijava.
+ *
+ * Ključ je da se POSTOJEĆA prijava ne dira. Dok se status računao bez
+ * obzira na nju, ponovna prijava već prijavljenog igrača na popunjenom
+ * turniru izbacila bi ga na kraj liste čekanja: brojanje prijavljenih
+ * uključuje i njega samog, pa izlazi da mjesta nema. Dovoljno je bilo da
+ * klikne iz druge kartice, sa stranice iz predmemorije, ili da oba
+ * roditelja kliknu za isto dijete. Mjesto bi ostalo prazno, a nitko ne bi
+ * bio obaviješten.
+ *
+ * Isto vrijedi za igrača koji je već na listi: ponovna prijava mu ne smije
+ * pomaknuti mjesto u redu.
+ *
+ * Otkazana prijava je nešto drugo — ona se računa kao nova, pa igrač ulazi
+ * po današnjem trenutku. Inače bi otkazivanje i ponovna prijava bili način
+ * da se preskoči red.
+ */
+export function odluciPrijavu(input: {
+  postojeciStatus: PostojeciStatus;
+  brojPrijavljenih: number;
+  maxPlayers: number | null | undefined;
+}): OdlukaPrijave {
+  if (input.postojeciStatus === "PRIJAVLJEN" || input.postojeciStatus === "NA_CEKANJU") {
+    return { upisati: false, status: input.postojeciStatus };
+  }
+
+  return {
+    upisati: true,
+    status: statusNovePrijave(input.brojPrijavljenih, input.maxPlayers),
+  };
+}
