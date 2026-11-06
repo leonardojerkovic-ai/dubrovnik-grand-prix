@@ -42,3 +42,22 @@ describe("opisUvjeta", () => {
     ).toBe("U12, igračice, rejting < 1600, članovi Kluba");
   });
 });
+
+describe("opisUvjeta — federacija i skupine", () => {
+  it("federacija kao popis i kao iznimka", () => {
+    expect(opisUvjeta(nagrada({ federacije: ["BIH"] }))).toBe("BIH");
+    expect(
+      opisUvjeta(nagrada({ federacije: ["CRO"], federacijeOsim: true }))
+    ).toBe("osim CRO");
+  });
+
+  it("skupina", () => {
+    expect(opisUvjeta(nagrada({ skupine: ["Škola"] }))).toBe("skupina Škola");
+  });
+
+  it("uz ostale uvjete", () => {
+    expect(
+      opisUvjeta(nagrada({ oznaka: "U12", skupine: ["Škola"], clubMembersOnly: true }))
+    ).toBe("U12, skupina Škola, članovi Kluba");
+  });
+});

@@ -503,3 +503,73 @@ describe("redoslijed je potpun", () => {
     expect(redoslijedDodjele([b, a]).map((n) => n.id)).toEqual(["a", "b"]);
   });
 });
+
+describe("federacija", () => {
+  const polje: Natjecatelj[] = [
+    { mjesto: 1, ime: "Domaći", godiste: 2000, spol: "M", rejting: 2100, clan: true, federacija: "CRO" },
+    { mjesto: 2, ime: "Bosanac", godiste: 1995, spol: "M", rejting: 2000, clan: false, federacija: "BIH" },
+    { mjesto: 3, ime: "Bezoznake", godiste: 1990, spol: "M", rejting: 1900, clan: false },
+  ];
+
+  it("nagrada za određenu federaciju", () => {
+    const d = dodijeliNagrade(polje, [
+      nagrada({ id: "bih", iznos: 100, posebna: true, federacije: ["BIH"] }),
+    ]);
+    expect(d[0]!.ime).toBe("Bosanac");
+  });
+
+  it("stranac je onaj koji nije CRO", () => {
+    const d = dodijeliNagrade(polje, [
+      nagrada({ id: "strani", iznos: 100, posebna: true, federacije: ["CRO"], federacijeOsim: true }),
+    ]);
+    expect(d[0]!.ime).toBe("Bosanac");
+  });
+
+  it("igrač bez zapisane federacije ne dobiva ni jedan ni drugi oblik", () => {
+    // Inače bi "najbolji strani igrač" pao na onoga o kome se ne zna ništa.
+    const samoBezOznake = [polje[2]!];
+    const d = dodijeliNagrade(samoBezOznake, [
+      nagrada({ id: "strani", iznos: 100, posebna: true, federacije: ["CRO"], federacijeOsim: true }),
+      nagrada({ id: "bih", iznos: 90, posebna: true, federacije: ["BIH"] }),
+    ]);
+    expect(d.every((x) => x.ime === null)).toBe(true);
+    expect(d[0]!.razlog).toBe("NEMA_KANDIDATA");
+  });
+
+  it("bez navedenih federacija uvjeta nema", () => {
+    const d = dodijeliNagrade(polje, [nagrada({ id: "prva", iznos: 200 })]);
+    expect(d[0]!.ime).toBe("Domaći");
+  });
+});
+
+describe("skupine", () => {
+  const polje: Natjecatelj[] = [
+    { mjesto: 1, ime: "Najbolji", godiste: 2000, spol: "M", rejting: 2100, clan: true },
+    { mjesto: 2, ime: "Školarac", godiste: 2015, spol: "M", rejting: 1200, clan: true, kategorije: ["U12", "Škola"] },
+  ];
+
+  it("nagrada za skupinu ide članu skupine, i kad mu je godište poznato", () => {
+    // Za razliku od `oznaka`, skupina se provjerava uvijek — pripadnost
+    // školi nema veze s time zna li se godište.
+    const d = dodijeliNagrade(polje, [
+      nagrada({ id: "skola", iznos: 50, posebna: true, skupine: ["ŠKOLA"] }),
+    ]);
+    expect(d[0]!.ime).toBe("Školarac");
+  });
+
+  it("usporedba zanemaruje velika slova i dijakritiku", () => {
+    const d = dodijeliNagrade(polje, [
+      nagrada({ id: "skola", iznos: 50, posebna: true, skupine: ["skola"] }),
+    ]);
+    expect(d[0]!.ime).toBe("Školarac");
+  });
+
+  it("tko nije u skupini, ne dobiva", () => {
+    const samoPrvi = [polje[0]!];
+    const d = dodijeliNagrade(samoPrvi, [
+      nagrada({ id: "skola", iznos: 50, posebna: true, skupine: ["Škola"] }),
+    ]);
+    expect(d[0]!.ime).toBeNull();
+    expect(d[0]!.razlog).toBe("NEMA_KANDIDATA");
+  });
+});

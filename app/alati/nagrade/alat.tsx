@@ -43,6 +43,12 @@ type Redak = {
   rejtingDoUkljucivo: boolean;
   /** Jedna ili više titula, odvojene zarezom. Prazno = bez uvjeta. */
   titule: string;
+  /** Troslovne oznake federacija, odvojene zarezom. Prazno = bez uvjeta. */
+  federacije: string;
+  /** Traži li nagrada da igrač NIJE ni u jednoj od navedenih federacija. */
+  federacijeOsim: boolean;
+  /** Skupine iz stupca „Vrsta", odvojene zarezom. Prazno = bez uvjeta. */
+  skupine: string;
   samoClanovi: boolean;
   broj: string;
 };
@@ -63,6 +69,9 @@ function noviRedak(dio: Partial<Redak> = {}): Redak {
     rejtingDo: "",
     rejtingDoUkljucivo: false,
     titule: "",
+    federacije: "",
+    federacijeOsim: false,
+    skupine: "",
     samoClanovi: false,
     broj: "1",
     ...dio,
@@ -175,6 +184,17 @@ export function NovcaneNagradeAlat() {
             .split(/[\s,;]+/)
             .map((t) => t.trim())
             .filter((t) => t !== ""),
+          federacije: r.federacije
+            .split(/[\s,;]+/)
+            .map((f) => f.trim().toUpperCase())
+            .filter((f) => f !== ""),
+          federacijeOsim: r.federacijeOsim,
+          // Skupine se dijele samo zarezom i točkom-zarezom, ne razmakom:
+          // naziv skupine zna imati razmak („Škola šaha").
+          skupine: r.skupine
+            .split(/[,;]+/)
+            .map((g) => g.trim())
+            .filter((g) => g !== ""),
           clubMembersOnly: r.samoClanovi,
         };
       });
@@ -545,6 +565,40 @@ export function NovcaneNagradeAlat() {
                       />
                     </div>
                   </td>
+                  <td className="py-1.5 pr-2">
+                    <div className="flex items-center gap-1">
+                      <select
+                        value={r.federacijeOsim ? "osim" : "samo"}
+                        onChange={(e) =>
+                          promijeni(r.id, { federacijeOsim: e.target.value === "osim" })
+                        }
+                        className="input w-[4.5rem] px-1"
+                        aria-label={`Federacija, uključivo ili osim — ${r.naziv || "nova nagrada"}`}
+                        title="„osim CRO” je najbolji strani igrač"
+                      >
+                        <option value="samo">samo</option>
+                        <option value="osim">osim</option>
+                      </select>
+                      <input
+                        value={r.federacije}
+                        onChange={(e) => promijeni(r.id, { federacije: e.target.value })}
+                        placeholder="—"
+                        className="input w-20 uppercase"
+                        aria-label={`Federacije — ${r.naziv || "nova nagrada"}`}
+                        title="Troslovno, npr. CRO. Više njih odvoji zarezom."
+                      />
+                    </div>
+                  </td>
+                  <td className="py-1.5 pr-2">
+                    <input
+                      value={r.skupine}
+                      onChange={(e) => promijeni(r.id, { skupine: e.target.value })}
+                      placeholder="—"
+                      className="input w-28"
+                      aria-label={`Skupina — ${r.naziv || "nova nagrada"}`}
+                      title="Iz stupca „Vrsta” u izvozu. Više njih odvoji zarezom."
+                    />
+                  </td>
                   <td className="py-1.5 pr-2 text-center">
                     <input
                       type="checkbox"
@@ -591,7 +645,14 @@ export function NovcaneNagradeAlat() {
             tablici; odlučuje samo kad su iznosi jednaki. Za dob koju gotove
             oznake ne pokrivaju odaberi &bdquo;godište…&rdquo; i upiši raspon — prazno
             polje znači da s te strane nema granice. Titula se upisuje
-            doslovno — WIM nije IM; više titula odvoji zarezom.
+            doslovno — WIM nije IM; više titula odvoji zarezom.{" "}
+            <strong>Federacija</strong> se čita iz stupca FED u izvozu:
+            &bdquo;samo BIH&rdquo; je nagrada za igrača te federacije, a
+            &bdquo;osim CRO&rdquo; je najbolji strani igrač. Igrač bez
+            zapisane federacije ne zadovoljava ni jedno ni drugo.{" "}
+            <strong>Skupina</strong> se čita iz stupca &bdquo;Vrsta&rdquo;,
+            gdje je u Swiss-Manageru možeš namjestiti u prikazu — upiši je
+            isto kako je tamo piše, velika slova i kvačice nisu bitni.
           </span>
         </div>
       </section>

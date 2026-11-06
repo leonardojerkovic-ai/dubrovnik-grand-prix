@@ -1,5 +1,6 @@
 import { matchesCriteria, type PrizeCriteria } from "../scoring/prizes";
 import { oznakaZadovoljava } from "./dob";
+import { zaUsporedbu } from "./tekst";
 
 /**
  * Raspodjela NOVČANIH nagrada na turniru.
@@ -75,6 +76,35 @@ export interface NovcanaNagrada extends PrizeCriteria {
    * za IM-a ode WIM-ici — ili obrnuto.
    */
   titule?: string[] | null;
+  /**
+   * Federacije koje nagrada traži, troslovno: ["CRO"], ["BIH", "MNE"]…
+   *
+   * Uz `federacijeOsim` pokriva oba oblika kakva stoje u raspisima:
+   * „najbolji igrač iz BiH" je ["BIH"], a „najbolji strani igrač" je
+   * ["CRO"] uz `federacijeOsim: true` — stranac je onaj koji nije CRO.
+   *
+   * Igrač bez zapisane federacije ne zadovoljava nijedan od ta dva oblika:
+   * kad izvoz ne nosi stupac FED, nagrada ostaje nedodijeljena i izvještaj
+   * kaže da nitko ne zadovoljava uvjete, umjesto da je dobije netko o kome
+   * se ne zna ništa.
+   */
+  federacije?: string[] | null;
+  /** Traži li nagrada da igrač NIJE ni u jednoj od navedenih federacija. */
+  federacijeOsim?: boolean;
+  /**
+   * Skupine koje nagrada traži, npr. ["ŠKOLA"]. Igrač mora pripadati
+   * barem jednoj.
+   *
+   * Skupine dolaze iz istog stupca izvoza kao dobne oznake („Vrsta" u
+   * Swiss-Manageru), gdje ih se može namjestiti u prikazu. Za razliku od
+   * `oznaka`, koja vrijedi samo kad godište nije poznato, ovaj se uvjet
+   * provjerava UVIJEK — pripadnost školi nema veze s time zna li se
+   * igračevo godište.
+   *
+   * Usporedba zanemaruje velika slova i dijakritiku, jer se iste skupine
+   * u izvozu znaju pisati različito.
+   */
+  skupine?: string[] | null;
 }
 
 export interface Natjecatelj {
@@ -88,6 +118,12 @@ export interface Natjecatelj {
   clan: boolean;
   /** Klub iz izvora, kad ga izvoz nosi. Služi utvrđivanju članstva. */
   klub?: string;
+  /**
+   * Federacija za koju igrač nastupa, troslovno kako je daje izvoz: CRO,
+   * BIH, MNE… Nije državljanstvo: Hrvat koji nastupa za BiH ovdje je BIH,
+   * i tako se dodjeljuju i nagrade.
+   */
+  federacija?: string;
   /**
    * Titula ispred imena, onako kako je daje izvoz: GM, IM, FM, WIM, MK…
    * Swiss-Manager u istom stupcu nosi i nacionalne kategorije (MK, I, II),
@@ -164,6 +200,27 @@ function kaoKandidat(n: Natjecatelj, index: number) {
   };
 }
 
+function zadovoljavaFederaciju(n: Natjecatelj, nagrada: NovcanaNagrada): boolean {
+  const trazene = (nagrada.federacije ?? []).filter((f) => f.trim() !== "");
+  if (trazene.length === 0) return true;
+
+  // Bez zapisane federacije nagrada ne pripada nikome: ni „iz BiH" ni
+  // „strani igrač" ne smiju pasti na igrača o kojem se to ne zna.
+  const igraceva = n.federacija?.trim().toUpperCase();
+  if (!igraceva) return false;
+
+  const jeNaPopisu = trazene.some((f) => f.trim().toUpperCase() === igraceva);
+  return nagrada.federacijeOsim ? !jeNaPopisu : jeNaPopisu;
+}
+
+function zadovoljavaSkupine(n: Natjecatelj, nagrada: NovcanaNagrada): boolean {
+  const trazene = (nagrada.skupine ?? []).filter((s) => s.trim() !== "");
+  if (trazene.length === 0) return true;
+
+  const igraceve = (n.kategorije ?? []).map(zaUsporedbu);
+  return trazene.some((s) => igraceve.includes(zaUsporedbu(s)));
+}
+
 function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): boolean {
   // Nepoznato godište ne smije proći kroz usporedbu s NaN, koja je uvijek
   // false u jednom smjeru i true u drugom.
@@ -173,6 +230,8 @@ function zadovoljava(n: Natjecatelj, index: number, nagrada: NovcanaNagrada): bo
       : nagrada.birthYearMax !== null && nagrada.birthYearMax !== undefined;
   if (nagrada.gender && n.spol === null) return false;
   if (!zadovoljavaRejting(n, nagrada)) return false;
+  if (!zadovoljavaFederaciju(n, nagrada)) return false;
+  if (!zadovoljavaSkupine(n, nagrada)) return false;
 
   if (nagrada.titule && nagrada.titule.length > 0) {
     const igraceva = n.titula?.trim().toUpperCase();

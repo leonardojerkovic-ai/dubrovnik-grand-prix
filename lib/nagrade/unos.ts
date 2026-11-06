@@ -1,4 +1,5 @@
 import type { Natjecatelj } from "./dodjela";
+import { zaUsporedbu } from "./tekst";
 
 /**
  * Čita tablicu rezultata onakvu kakva ispadne kad se stupci označe u Excelu
@@ -67,6 +68,14 @@ const ZAGLAVLJA: Record<string, keyof Natjecatelj | "mjesto"> = {
   title: "titula",
   tit: "titula",
   zvanje: "titula",
+  fed: "federacija",
+  federacija: "federacija",
+  federation: "federacija",
+  savez: "federacija",
+  drzava: "federacija",
+  država: "federacija",
+  zemlja: "federacija",
+  country: "federacija",
   klub: "klub",
   club: "klub",
   "club/city": "klub",
@@ -152,15 +161,6 @@ function citajBroj(vrijednost: string): number | null {
 }
 
 /** Bez dijakritike i suvišnih razmaka, da se „ŠK" i „SK" poklope. */
-function zaUsporedbu(tekst: string): string {
-  return tekst
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/đ/gi, "d")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
 
 export interface MogucnostiUnosa {
   /**
@@ -267,6 +267,9 @@ export function procitajTablicu(
         ? citajClanstvo(polje("clan"))
         : domaci !== null && klub !== "" && zaUsporedbu(klub).includes(domaci),
       ...(klub !== "" ? { klub } : {}),
+      ...(polje("federacija") !== ""
+        ? { federacija: polje("federacija").trim().toUpperCase() }
+        : {}),
       ...(polje("titula") !== "" ? { titula: polje("titula") } : {}),
     });
   });

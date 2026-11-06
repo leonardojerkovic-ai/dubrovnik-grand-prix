@@ -40,6 +40,15 @@ export function opisUvjeta(nagrada: NovcanaNagrada): string {
     dijelovi.push(`titula ${nagrada.titule.join(" ili ")}`);
   }
 
+  if (nagrada.federacije && nagrada.federacije.length > 0) {
+    const popis = nagrada.federacije.join(", ");
+    dijelovi.push(nagrada.federacijeOsim ? `osim ${popis}` : popis);
+  }
+
+  if (nagrada.skupine && nagrada.skupine.length > 0) {
+    dijelovi.push(`skupina ${nagrada.skupine.join(" ili ")}`);
+  }
+
   if (nagrada.clubMembersOnly) dijelovi.push("članovi Kluba");
 
   return dijelovi.join(", ");

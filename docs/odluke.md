@@ -324,3 +324,28 @@ nam `dev` ne treba ni za generiranje.
 Skripta `prisma:migrate` koja je pokretala `migrate dev` zamijenjena je s
 `prisma:deploy` i `prisma:status`. Naredba koja može obrisati bazu ne smije
 stajati iza jedne riječi u `package.json`.
+
+## Nagrade po federaciji i po skupini
+
+Dva nova uvjeta u kalkulatoru novčanih nagrada, oba se čitaju iz izvoza
+Swiss-Managera.
+
+**Federacija** dolazi iz stupca `FED` i zapisuje se velikim slovima.
+Nagrada traži popis federacija, uz kvačicu „osim": `["BIH"]` je nagrada za
+igrača te federacije, a `["CRO"]` s „osim" je najbolji strani igrač —
+stranac je onaj koji nije na listi CRO. Igrač **bez zapisane federacije ne
+zadovoljava ni jedan ni drugi oblik**: kad izvoz nema stupac FED, nagrada
+ostaje nedodijeljena i izvještaj kaže da nitko ne zadovoljava uvjete,
+umjesto da je dobije netko o kome se to ne zna.
+
+`FED` je federacija za koju igrač nastupa, ne državljanstvo. Hrvat koji
+nastupa za BiH ovdje je BIH, i tako se nagrada i dodjeljuje.
+
+**Skupina** (polaznici škole i slično) dolazi iz istog stupca kao dobne
+oznake — „Vrsta" u Swiss-Manageru, gdje se skupine mogu namjestiti u
+prikazu. Zato nije trebalo nikakvo zasebno vođenje popisa u aplikaciji.
+
+Za razliku od `oznaka`, koja vrijedi **samo kad godište nije poznato**,
+skupina se provjerava **uvijek**: pripadnost školi nema veze s time zna li
+se igračevo godište. Usporedba zanemaruje velika slova i dijakritiku, jer
+se ista skupina u izvozu zna pisati različito.

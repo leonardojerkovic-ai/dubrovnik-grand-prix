@@ -102,3 +102,18 @@ describe("stupac s dobnom oznakom", () => {
     });
   });
 });
+
+describe("federacija iz izvoza", () => {
+  it("čita stupac FED i piše ga velikim slovima", () => {
+    const { natjecatelji } = procitajTablicu(
+      ["Ime\tFED\tRtg", "Ivić Ivo\tcro\t2000", "Marić Mujo\tBIH\t1900"].join("\n")
+    );
+    expect(natjecatelji[0]!.federacija).toBe("CRO");
+    expect(natjecatelji[1]!.federacija).toBe("BIH");
+  });
+
+  it("bez stupca federacije polje ostaje prazno", () => {
+    const { natjecatelji } = procitajTablicu(["Ime\tRtg", "Ivić Ivo\t2000"].join("\n"));
+    expect(natjecatelji[0]!.federacija).toBeUndefined();
+  });
+});
