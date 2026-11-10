@@ -349,3 +349,19 @@ Za razliku od `oznaka`, koja vrijedi **samo kad godište nije poznato**,
 skupina se provjerava **uvijek**: pripadnost školi nema veze s time zna li
 se igračevo godište. Usporedba zanemaruje velika slova i dijakritiku, jer
 se ista skupina u izvozu zna pisati različito.
+
+## Oznake titula imaju legendu, turnir prikazuje broj kola
+
+Uz ime na ljestvici i u tablici turnira stoji samo oznaka titule ili
+kategorije („III", „MK", „WIM"). Ljestvicu Akademije najviše gledaju
+roditelji, kojima ta oznaka ne znači ništa. Zato:
+
+- oznaka na prelazak mišem pokazuje puni naziv;
+- ispod tablice stoji legenda, jer se opis na dodir ne prikazuje, a stranica
+  se najčešće gleda s telefona.
+
+Legenda navodi **samo oznake koje se u toj tablici pojavljuju**, redom
+jačine. Nazivi su na jednom mjestu, u `lib/players/titula.ts`.
+
+Stranica turnira sada prikazuje i broj kola (dosad ga je imala samo
+naslovnica), a na stranici Prijave naziv turnira vodi na stranicu turnira.

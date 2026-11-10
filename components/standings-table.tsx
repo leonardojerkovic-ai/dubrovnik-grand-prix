@@ -1,5 +1,6 @@
 import { RankBadge } from "@/components/rank-badge";
 import { PlayerName } from "@/components/player-name";
+import { LegendaTitula } from "@/components/legenda-titula";
 
 type Row = {
   player: {
@@ -102,6 +103,8 @@ export function StandingsTable({ rows }: { rows: Row[] }) {
           svi kriteriji pravilnika daju jednak rezultat.
         </p>
       )}
+
+      <LegendaTitula titule={rows.map((row) => row.player.title)} />
     </>
   );
 }

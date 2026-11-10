@@ -8,6 +8,7 @@ import {
 } from "@/lib/players/sort";
 import { prikazanaTitula } from "@/lib/players/titula";
 import { PlayerName } from "@/components/player-name";
+import { LegendaTitula } from "@/components/legenda-titula";
 import { RegisterButton } from "@/components/register-button";
 import { MedalList } from "@/components/medal-list";
 import { CsvDownload } from "@/components/csv-download";
@@ -273,6 +274,14 @@ export default async function TournamentDetailPage(props: {
             {timeControl ?? "nije objavljeno"}
           </dd>
         </div>
+        {/* Naslovnica broj kola prikazuje, a ovdje ga nije bilo — pa se za
+            osnovni podatak o turniru moralo otvarati raspis. */}
+        {tournament.rounds > 0 && (
+          <div>
+            <dt className="text-xs uppercase tracking-wide text-muted">Broj kola</dt>
+            <dd className="font-medium text-navy">{tournament.rounds}</dd>
+          </div>
+        )}
       </dl>
 
       {tournament.announcementUrl && (
@@ -336,6 +345,8 @@ export default async function TournamentDetailPage(props: {
           </table>
         </div>
       )}
+
+      <LegendaTitula titule={displayPlayers.map((p) => p.title)} />
 
       {displayPlayers.some((p) => p.neocijenjenUIzracunu) && (
         <p className="mt-2 text-xs text-subtle">

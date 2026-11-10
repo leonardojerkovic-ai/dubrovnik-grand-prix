@@ -1,4 +1,5 @@
 import { PlayerLink } from "@/components/player-link";
+import { opisTitule } from "@/lib/players/titula";
 
 /**
  * Ime igrača, kao poveznica na profil ili kao običan tekst.
@@ -27,7 +28,11 @@ export function PlayerName({
   return (
     <>
       {title && title !== "NONE" && (
-        <span className="badge-title mr-2">{title}</span>
+        // Puni naziv na prelazak mišem; za dodir ga nosi LegendaTitula
+        // ispod tablice.
+        <span className="badge-title mr-2" title={opisTitule(title) ?? undefined}>
+          {title}
+        </span>
       )}
       <PlayerLink
         id={id}

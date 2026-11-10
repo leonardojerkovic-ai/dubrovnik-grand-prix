@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { RegisterButton } from "@/components/register-button";
 
@@ -47,7 +48,13 @@ export default async function PrijavePage() {
             className="flex items-center justify-between rounded-lg border border-navy/10 bg-white px-4 py-4"
           >
             <div>
-              <p className="font-semibold text-navy">{t.name}</p>
+              {/* Popis sudionika, tempo i raspis su na stranici turnira;
+                  bez poveznice se do nje odavde nije moglo doći. */}
+              <p className="font-semibold text-navy">
+                <Link href={`/turniri/${t.id}`} className="hover:text-crimson">
+                  {t.name}
+                </Link>
+              </p>
               <p className="text-sm text-muted">
                 {t.date.toLocaleDateString("hr-HR", {
                   day: "numeric",
